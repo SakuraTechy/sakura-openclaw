@@ -25,6 +25,7 @@ import { createSessionsYieldTool } from "./tools/sessions-yield-tool.js";
 import { createSubagentsTool } from "./tools/subagents-tool.js";
 import { createTtsTool } from "./tools/tts-tool.js";
 import { createWebFetchTool, createWebSearchTool } from "./tools/web-tools.js";
+import { createGenerateTools } from "./tools/shengsuanyun/generate.js";
 import { resolveWorkspaceRoot } from "./workspace-dir.js";
 
 export function createOpenClawTools(
@@ -120,6 +121,10 @@ export function createOpenClawTools(
     sandboxed: options?.sandboxed,
     runtimeFirecrawl: runtimeWebTools?.fetch.firecrawl,
   });
+  const hasShengSuanYunProvider = Boolean(options?.config?.models?.providers?.shengsuanyun);
+  const shengsuanyunGenerateTools = hasShengSuanYunProvider
+    ? createGenerateTools({ config: options?.config })
+    : [];
   const messageTool = options?.disableMessageTool
     ? null
     : createMessageTool({
@@ -213,6 +218,7 @@ export function createOpenClawTools(
     ...(webSearchTool ? [webSearchTool] : []),
     ...(webFetchTool ? [webFetchTool] : []),
     ...(imageTool ? [imageTool] : []),
+    ...shengsuanyunGenerateTools,
     ...(pdfTool ? [pdfTool] : []),
   ];
 

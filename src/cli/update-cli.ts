@@ -37,7 +37,7 @@ export function registerUpdateCli(program: Command) {
     .description("Update OpenClaw and inspect update channel status")
     .option("--json", "Output result as JSON", false)
     .option("--no-restart", "Skip restarting the gateway service after a successful update")
-    .option("--dry-run", "Preview update actions without making changes", false)
+    .option("--dry-run", "预览更新操作而不做任何更改", false)
     .option("--channel <stable|beta|dev>", "Persist update channel (git + npm)")
     .option(
       "--tag <dist-tag|version|spec>",
@@ -52,7 +52,7 @@ export function registerUpdateCli(program: Command) {
         ["openclaw update --channel dev", "Switch to dev channel (git + npm)"],
         ["openclaw update --tag beta", "One-off update to a dist-tag or version"],
         ["openclaw update --tag main", "One-off package install from GitHub main"],
-        ["openclaw update --dry-run", "Preview actions without changing anything"],
+        ["openclaw update --dry-run", "预览操作而不做任何更改"],
         ["openclaw update --no-restart", "Update without restarting the service"],
         ["openclaw update --json", "Output result as JSON"],
         ["openclaw update --yes", "Non-interactive (accept downgrade prompts)"],
@@ -63,24 +63,24 @@ export function registerUpdateCli(program: Command) {
         .map(([cmd, desc]) => `  ${theme.command(cmd)} ${theme.muted(`# ${desc}`)}`)
         .join("\n");
       return `
-${theme.heading("What this does:")}
+${theme.heading("此命令功能：")}
   - Git checkouts: fetches, rebases, installs deps, builds, and runs doctor
   - npm installs: updates via detected package manager
 
-${theme.heading("Switch channels:")}
+${theme.heading("切换更新通道：")}
   - Use --channel stable|beta|dev to persist the update channel in config
   - Run openclaw update status to see the active channel and source
   - Use --tag <dist-tag|version|spec> for a one-off package update without persisting
 
-${theme.heading("Non-interactive:")}
+${theme.heading("非交互模式：")}
   - Use --yes to accept downgrade prompts
   - Combine with --channel/--tag/--restart/--json/--timeout as needed
-  - Use --dry-run to preview actions without writing config/installing/restarting
+  - 使用 --dry-run 预览操作而不写入配置/安装/重启
 
-${theme.heading("Examples:")}
+${theme.heading("示例：")}
 ${fmtExamples}
 
-${theme.heading("Notes:")}
+${theme.heading("注意事项：")}
   - Switch channels with --channel stable|beta|dev
   - For global installs: auto-updates via detected package manager when possible (see docs/install/updating.md)
   - Downgrades require confirmation (can break configuration)
@@ -132,11 +132,11 @@ ${theme.muted("Docs:")} ${formatDocsLink("/cli/update", "docs.openclaw.ai/cli/up
     .addHelpText(
       "after",
       () =>
-        `\n${theme.heading("Examples:")}\n${formatHelpExamples([
+        `\n${theme.heading("示例：")}\n${formatHelpExamples([
           ["openclaw update status", "Show channel + version status."],
           ["openclaw update status --json", "JSON output."],
           ["openclaw update status --timeout 10", "Custom timeout."],
-        ])}\n\n${theme.heading("Notes:")}\n${theme.muted(
+        ])}\n\n${theme.heading("注意事项：")}\n${theme.muted(
           "- Shows current update channel (stable/beta/dev) and source",
         )}\n${theme.muted("- Includes git tag/branch/SHA for source checkouts")}\n\n${theme.muted(
           "Docs:",

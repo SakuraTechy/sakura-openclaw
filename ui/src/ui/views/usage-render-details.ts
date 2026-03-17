@@ -59,7 +59,7 @@ function renderSessionSummary(
   const usage = filteredUsage || session.usage;
   if (!usage) {
     return html`
-      <div class="muted">No usage data for this session.</div>
+      <div class="muted">此会话暂无用量数据。</div>
     `;
   }
 
@@ -121,29 +121,29 @@ function renderSessionSummary(
     ${badges.length > 0 ? html`<div class="usage-badges">${badges.map((b) => html`<span class="usage-badge">${b}</span>`)}</div>` : nothing}
     <div class="session-summary-grid">
       <div class="session-summary-card">
-        <div class="session-summary-title">Messages</div>
+        <div class="session-summary-title">消息</div>
         <div class="session-summary-value">${usage.messageCounts?.total ?? 0}</div>
         <div class="session-summary-meta">${usage.messageCounts?.user ?? 0} user · ${usage.messageCounts?.assistant ?? 0} assistant</div>
       </div>
       <div class="session-summary-card">
-        <div class="session-summary-title">Tool Calls</div>
+        <div class="session-summary-title">工具调用</div>
         <div class="session-summary-value">${toolCallCount}</div>
         <div class="session-summary-meta">${uniqueToolCount} tools</div>
       </div>
       <div class="session-summary-card">
-        <div class="session-summary-title">Errors</div>
+        <div class="session-summary-title">错误</div>
         <div class="session-summary-value">${usage.messageCounts?.errors ?? 0}</div>
         <div class="session-summary-meta">${usage.messageCounts?.toolResults ?? 0} tool results</div>
       </div>
       <div class="session-summary-card">
-        <div class="session-summary-title">Duration</div>
+        <div class="session-summary-title">时长</div>
         <div class="session-summary-value">${formatDurationCompact(usage.durationMs, { spaced: true }) ?? "—"}</div>
         <div class="session-summary-meta">${formatTs(usage.firstActivity)} → ${formatTs(usage.lastActivity)}</div>
       </div>
     </div>
     <div class="usage-insights-grid" style="margin-top: 12px;">
-      ${renderInsightList("Top Tools", toolItems, "No tool calls")}
-      ${renderInsightList("Model Mix", modelItems, "No model data")}
+      ${renderInsightList("热门工具", toolItems, "暂无工具调用")}
+      ${renderInsightList("模型组合", modelItems, "暂无模型数据")}
     </div>
   `;
 }
@@ -274,7 +274,7 @@ function renderSessionDetailPanel(
               : nothing
           }
         </div>
-        <button class="session-close-btn" @click=${onClose} title="Close session details">×</button>
+        <button class="session-close-btn" @click=${onClose} title="关闭会话详情">×</button>
       </div>
       <div class="session-detail-content">
         ${renderSessionSummary(
@@ -339,14 +339,14 @@ function renderTimeSeriesCompact(
   if (loading) {
     return html`
       <div class="session-timeseries-compact">
-        <div class="muted" style="padding: 20px; text-align: center">Loading...</div>
+        <div class="muted" style="padding: 20px; text-align: center">加载中...</div>
       </div>
     `;
   }
   if (!timeSeries || timeSeries.points.length < 2) {
     return html`
       <div class="session-timeseries-compact">
-        <div class="muted" style="padding: 20px; text-align: center">No timeline data</div>
+        <div class="muted" style="padding: 20px; text-align: center">暂无时间线数据</div>
       </div>
     `;
   }
@@ -371,7 +371,7 @@ function renderTimeSeriesCompact(
   if (points.length < 2) {
     return html`
       <div class="session-timeseries-compact">
-        <div class="muted" style="padding: 20px; text-align: center">No data in range</div>
+        <div class="muted" style="padding: 20px; text-align: center">范围内无数据</div>
       </div>
     `;
   }
@@ -391,7 +391,7 @@ function renderTimeSeriesCompact(
     return { ...p, cumulativeTokens: cumTokens, cumulativeCost: cumCost };
   });
 
-  // Compute range-filtered sums for "Tokens by Type"
+  // Compute range-filtered sums for "按类型的令牌数"
   const hasSelection = cursorStart != null && cursorEnd != null;
   const rangeStartTs = hasSelection ? Math.min(cursorStart, cursorEnd) : 0;
   const rangeEndTs = hasSelection ? Math.max(cursorStart, cursorEnd) : Infinity;
@@ -452,13 +452,13 @@ function renderTimeSeriesCompact(
   return html`
     <div class="session-timeseries-compact">
       <div class="timeseries-header-row">
-        <div class="card-title" style="font-size: 12px; color: var(--text);">Usage Over Time</div>
+        <div class="card-title" style="font-size: 12px; color: var(--text);">用量趋势</div>
         <div class="timeseries-controls">
           ${
             hasSelection
               ? html`
             <div class="chart-toggle small">
-              <button class="toggle-btn active" @click=${() => onCursorRangeChange?.(null, null)}>Reset</button>
+              <button class="toggle-btn active" @click=${() => onCursorRangeChange?.(null, null)}>重置</button>
             </div>
           `
               : nothing
@@ -685,7 +685,7 @@ function renderTimeSeriesCompact(
         breakdownByType
           ? html`
               <div style="margin-top: 8px;">
-                <div class="card-title" style="font-size: 12px; margin-bottom: 6px; color: var(--text);">Tokens by Type</div>
+                <div class="card-title" style="font-size: 12px; margin-bottom: 6px; color: var(--text);">按类型的令牌数</div>
                 <div class="cost-breakdown-bar" style="height: 18px;">
                   <div class="cost-segment output" style="width: ${pct(filteredOutput, totalTypeTokens).toFixed(1)}%"></div>
                   <div class="cost-segment input" style="width: ${pct(filteredInput, totalTypeTokens).toFixed(1)}%"></div>
@@ -693,16 +693,16 @@ function renderTimeSeriesCompact(
                   <div class="cost-segment cache-read" style="width: ${pct(filteredCacheRead, totalTypeTokens).toFixed(1)}%"></div>
                 </div>
                 <div class="cost-breakdown-legend">
-                  <div class="legend-item" title="Assistant output tokens">
+                  <div class="legend-item" title="助手输出令牌">
                     <span class="legend-dot output"></span>Output ${formatTokens(filteredOutput)}
                   </div>
                   <div class="legend-item" title="User + tool input tokens">
                     <span class="legend-dot input"></span>Input ${formatTokens(filteredInput)}
                   </div>
-                  <div class="legend-item" title="Tokens written to cache">
+                  <div class="legend-item" title="写入缓存的令牌">
                     <span class="legend-dot cache-write"></span>Cache Write ${formatTokens(filteredCacheWrite)}
                   </div>
-                  <div class="legend-item" title="Tokens read from cache">
+                  <div class="legend-item" title="从缓存读取的令牌">
                     <span class="legend-dot cache-read"></span>Cache Read ${formatTokens(filteredCacheRead)}
                   </div>
                 </div>
@@ -724,7 +724,7 @@ function renderContextPanel(
   if (!contextWeight) {
     return html`
       <div class="context-details-panel">
-        <div class="muted" style="padding: 20px; text-align: center">No context data</div>
+        <div class="muted" style="padding: 20px; text-align: center">暂无上下文数据</div>
       </div>
     `;
   }
@@ -766,17 +766,17 @@ function renderContextPanel(
   return html`
     <div class="context-details-panel">
       <div class="context-breakdown-header">
-        <div class="card-title" style="font-size: 12px; color: var(--text);">System Prompt Breakdown</div>
+        <div class="card-title" style="font-size: 12px; color: var(--text);">系统提示分解</div>
         ${
           hasMore
             ? html`<button class="context-expand-btn" @click=${onToggleExpanded}>
-                ${showAll ? "Collapse" : "Expand all"}
+                ${showAll ? "Collapse" : "展开全部"}
               </button>`
             : nothing
         }
       </div>
       <p class="context-weight-desc">
-        ${contextPct || "Base context per message"}
+        ${contextPct || "每条消息基础上下文"}
       </p>
       <div class="context-stacked-bar">
         <div class="context-segment system" style="width: ${pct(systemTokens, totalContextTokens).toFixed(1)}%" title="System: ~${formatTokens(systemTokens)}"></div>
@@ -900,16 +900,16 @@ function renderSessionLogsCompact(
   if (loading) {
     return html`
       <div class="session-logs-compact">
-        <div class="session-logs-header">Conversation</div>
-        <div class="muted" style="padding: 20px; text-align: center">Loading...</div>
+        <div class="session-logs-header">对话</div>
+        <div class="muted" style="padding: 20px; text-align: center">加载中...</div>
       </div>
     `;
   }
   if (!logs || logs.length === 0) {
     return html`
       <div class="session-logs-compact">
-        <div class="session-logs-header">Conversation</div>
-        <div class="muted" style="padding: 20px; text-align: center">No messages</div>
+        <div class="session-logs-header">对话</div>
+        <div class="muted" style="padding: 20px; text-align: center">暂无消息</div>
       </div>
     `;
   }
@@ -972,7 +972,7 @@ function renderSessionLogsCompact(
       <div class="session-logs-header">
         <span>Conversation <span style="font-weight: normal; color: var(--muted);">(${displayedCount} messages)</span></span>
         <button class="btn btn-sm usage-action-btn usage-secondary-btn" @click=${onToggleExpandedAll}>
-          ${expandedAll ? "Collapse All" : "Expand All"}
+          ${expandedAll ? "折叠全部" : "Expand All"}
         </button>
       </div>
       <div class="usage-filters-inline" style="margin: 10px 12px;">
@@ -986,10 +986,10 @@ function renderSessionLogsCompact(
               ),
             )}
         >
-          <option value="user" ?selected=${roleSelected.has("user")}>User</option>
-          <option value="assistant" ?selected=${roleSelected.has("assistant")}>Assistant</option>
-          <option value="tool" ?selected=${roleSelected.has("tool")}>Tool</option>
-          <option value="toolResult" ?selected=${roleSelected.has("toolResult")}>Tool result</option>
+          <option value="user" ?selected=${roleSelected.has("user")}>用户</option>
+          <option value="assistant" ?selected=${roleSelected.has("assistant")}>助手</option>
+          <option value="tool" ?selected=${roleSelected.has("tool")}>工具</option>
+          <option value="toolResult" ?selected=${roleSelected.has("toolResult")}>工具结果</option>
         </select>
         <select
           multiple
@@ -1017,7 +1017,7 @@ function renderSessionLogsCompact(
         </label>
         <input
           type="text"
-          placeholder="Search conversation"
+          placeholder="搜索对话"
           .value=${filters.query}
           @input=${(event: Event) => onFilterQueryChange((event.target as HTMLInputElement).value)}
         />
@@ -1061,7 +1061,7 @@ function renderSessionLogsCompact(
         ${
           filteredEntries.length === 0
             ? html`
-                <div class="muted" style="padding: 12px">No messages match the filters.</div>
+                <div class="muted" style="padding: 12px">没有消息匹配过滤条件。</div>
               `
             : nothing
         }

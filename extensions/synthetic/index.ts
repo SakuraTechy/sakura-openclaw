@@ -28,7 +28,7 @@ const syntheticPlugin = {
           optionKey: "syntheticApiKey",
           flagName: "--synthetic-api-key",
           envVar: "SYNTHETIC_API_KEY",
-          promptMessage: "Enter Synthetic API key",
+          promptMessage: "输入 Synthetic API 密钥",
           defaultModel: SYNTHETIC_DEFAULT_MODEL_REF,
           expectedProviders: ["synthetic"],
           applyConfig: (cfg) => applySyntheticConfig(cfg),

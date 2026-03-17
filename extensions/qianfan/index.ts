@@ -25,7 +25,7 @@ const qianfanPlugin = {
           optionKey: "qianfanApiKey",
           flagName: "--qianfan-api-key",
           envVar: "QIANFAN_API_KEY",
-          promptMessage: "Enter Qianfan API key",
+          promptMessage: "输入千帆 API 密钥",
           defaultModel: QIANFAN_DEFAULT_MODEL_REF,
           expectedProviders: ["qianfan"],
           applyConfig: (cfg) => applyQianfanConfig(cfg),

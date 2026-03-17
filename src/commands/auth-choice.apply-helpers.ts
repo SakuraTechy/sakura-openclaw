@@ -107,18 +107,18 @@ export async function promptSecretRefForSetup(params: {
 
   while (true) {
     const sourceRaw: SecretRefChoice = await params.prompter.select<SecretRefChoice>({
-      message: params.copy?.sourceMessage ?? "Where is this API key stored?",
+      message: params.copy?.sourceMessage ?? "此 API 密钥存储在哪里？",
       initialValue: sourceChoice,
       options: [
         {
           value: "env",
-          label: "Environment variable",
-          hint: "Reference a variable from your runtime environment",
+          label: "环境变量",
+          hint: "引用运行时环境中的变量",
         },
         {
           value: "provider",
-          label: "Configured secret provider",
-          hint: "Use a configured file or exec secret provider",
+          label: "已配置的密钥提供商",
+          hint: "使用已配置的文件或 exec 密钥提供商",
         },
       ],
     });
@@ -127,7 +127,7 @@ export async function promptSecretRefForSetup(params: {
 
     if (source === "env") {
       const envVarRaw = await params.prompter.text({
-        message: params.copy?.envVarMessage ?? "Environment variable name",
+        message: params.copy?.envVarMessage ?? "环境变量名称",
         initialValue: defaultEnvVar || undefined,
         placeholder: params.copy?.envVarPlaceholder ?? "OPENAI_API_KEY",
         validate: (value) => {
@@ -169,7 +169,7 @@ export async function promptSecretRefForSetup(params: {
       await params.prompter.note(
         params.copy?.envValidatedMessage?.(envVar) ??
           `Validated environment variable ${envVar}. OpenClaw will store a reference, not the key value.`,
-        "Reference validated",
+        "引用已验证",
       );
       return { ref, resolvedValue };
     }
@@ -180,8 +180,8 @@ export async function promptSecretRefForSetup(params: {
     if (externalProviders.length === 0) {
       await params.prompter.note(
         params.copy?.noProvidersMessage ??
-          "No file/exec secret providers are configured yet. Add one under secrets.providers, or select Environment variable.",
-        "No providers configured",
+          "尚未配置文件/exec 密钥提供商。请在 secrets.providers 下添加，或选择环境变量。",
+        "未配置提供商",
       );
       continue;
     }
@@ -189,7 +189,7 @@ export async function promptSecretRefForSetup(params: {
       preferFirstProviderForSource: true,
     });
     const selectedProvider = await params.prompter.select<string>({
-      message: "Select secret provider",
+      message: "选择密钥提供商",
       initialValue:
         externalProviders.find(([providerName]) => providerName === defaultProvider)?.[0] ??
         externalProviders[0]?.[0],
@@ -203,7 +203,7 @@ export async function promptSecretRefForSetup(params: {
     if (!providerEntry || (providerEntry.source !== "file" && providerEntry.source !== "exec")) {
       await params.prompter.note(
         `Provider "${selectedProvider}" is not a file/exec provider.`,
-        "Invalid provider",
+        "无效的提供商",
       );
       continue;
     }
@@ -260,7 +260,7 @@ export async function promptSecretRefForSetup(params: {
       await params.prompter.note(
         params.copy?.providerValidatedMessage?.(selectedProvider, id, providerEntry.source) ??
           `Validated ${providerEntry.source} reference ${selectedProvider}:${id}. OpenClaw will store a reference, not the key value.`,
-        "Reference validated",
+        "引用已验证",
       );
       return { ref, resolvedValue };
     } catch (error) {
@@ -284,8 +284,8 @@ export function createAuthChoiceAgentModelNoter(
       return;
     }
     await params.prompter.note(
-      `Default model set to ${model} for agent "${params.agentId}".`,
-      "Model configured",
+      `默认模型已设置为 ${model}，用于智能体 "${params.agentId}"。`,
+      "模型已配置",
     );
   };
 }
@@ -394,20 +394,20 @@ export async function resolveSecretInputModeForEnvSelection(params: {
     return "plaintext";
   }
   const selected = await params.prompter.select<SecretInputMode>({
-    message: params.copy?.modeMessage ?? "How do you want to provide this API key?",
+    message: params.copy?.modeMessage ?? "你想如何提供此 API 密钥？",
     initialValue: "plaintext",
     options: [
       {
         value: "plaintext",
-        label: params.copy?.plaintextLabel ?? "Paste API key now",
-        hint: params.copy?.plaintextHint ?? "Stores the key directly in OpenClaw config",
+        label: params.copy?.plaintextLabel ?? "直接粘贴 API 密钥",
+        hint: params.copy?.plaintextHint ?? "将密钥直接存储在 OpenClaw 配置中",
       },
       {
         value: "ref",
-        label: params.copy?.refLabel ?? "Use external secret provider",
+        label: params.copy?.refLabel ?? "使用外部密钥提供商",
         hint:
           params.copy?.refHint ??
-          "Stores a reference to env or configured external secret providers",
+          "存储对环境变量或已配置的外部密钥提供商的引用",
       },
     ],
   });

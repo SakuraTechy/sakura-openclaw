@@ -3,25 +3,25 @@ import { getTailnetHostname } from "../infra/tailscale.js";
 import { isIpv6Address, parseCanonicalIpAddress } from "../shared/net/ip.js";
 
 export const TAILSCALE_EXPOSURE_OPTIONS = [
-  { value: "off", label: "Off", hint: "No Tailscale exposure" },
+  { value: "off", label: "Off", hint: "无 Tailscale 暴露" },
   {
     value: "serve",
     label: "Serve",
-    hint: "Private HTTPS for your tailnet (devices on Tailscale)",
+    hint: "Tailnet 私有 HTTPS (Tailscale 设备)",
   },
   {
     value: "funnel",
     label: "Funnel",
-    hint: "Public HTTPS via Tailscale Funnel (internet)",
+    hint: "通过 Tailscale Funnel 的公共 HTTPS (互联网)",
   },
 ] as const;
 
 export const TAILSCALE_MISSING_BIN_NOTE_LINES = [
-  "Tailscale binary not found in PATH or /Applications.",
-  "Ensure Tailscale is installed from:",
+  "在 PATH 或 /Applications 中未找到 Tailscale 二进制文件。",
+  "请确保已安装 Tailscale：",
   "  https://tailscale.com/download/mac",
   "",
-  "You can continue setup, but serve/funnel will fail at runtime.",
+  "您可以继续设置，但 serve/funnel 将在运行时失败。",
 ] as const;
 
 export const TAILSCALE_DOCS_LINES = [

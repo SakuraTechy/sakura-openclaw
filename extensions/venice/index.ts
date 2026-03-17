@@ -25,14 +25,14 @@ const venicePlugin = {
           optionKey: "veniceApiKey",
           flagName: "--venice-api-key",
           envVar: "VENICE_API_KEY",
-          promptMessage: "Enter Venice AI API key",
+          promptMessage: "输入 Venice AI API 密钥",
           defaultModel: VENICE_DEFAULT_MODEL_REF,
           expectedProviders: ["venice"],
           applyConfig: (cfg) => applyVeniceConfig(cfg),
           noteMessage: [
-            "Venice AI provides privacy-focused inference with uncensored models.",
-            "Get your API key at: https://venice.ai/settings/api",
-            "Supports 'private' (fully private) and 'anonymized' (proxy) modes.",
+            "Venice AI 提供注重隐私的推理（使用无审查模型）。",
+            "在此获取 API 密钥: https://venice.ai/settings/api",
+            "支持 'private' (完全私有) 和 'anonymized' (代理) 模式。",
           ].join("\n"),
           noteTitle: "Venice AI",
           wizard: {

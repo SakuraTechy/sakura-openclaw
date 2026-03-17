@@ -484,6 +484,79 @@ export function applyKilocodeConfig(cfg: OpenClawConfig): OpenClawConfig {
   return applyAgentDefaultModelPrimary(next, KILOCODE_DEFAULT_MODEL_REF);
 }
 
+// ── 胜算云配置 (OpenClaw 汉化版内置) ────────────────────────────────────
+export const SHENGSUANYUN_BASE_URL = "https://router.shengsuanyun.com/api/v1";
+export const SHENGSUANYUN_DEFAULT_MODEL_ID = "openai/gpt-4.1-nano";
+
+export function applyShengsuanyunProviderConfig(cfg: OpenClawConfig): OpenClawConfig {
+  const SHENGSUANYUN_DEFAULT_MODEL_REF = "shengsuanyun/openai/gpt-4.1-nano";
+  const models = { ...cfg.agents?.defaults?.models };
+  models[SHENGSUANYUN_DEFAULT_MODEL_REF] = {
+    ...models[SHENGSUANYUN_DEFAULT_MODEL_REF],
+    alias: models[SHENGSUANYUN_DEFAULT_MODEL_REF]?.alias ?? "胜算云",
+  };
+
+  const providers = { ...cfg.models?.providers };
+  const existingProvider = providers.shengsuanyun;
+  const {
+    apiKey: existingApiKey,
+    api: existingApi,
+    ...existingProviderRest
+  } = (existingProvider ?? {}) as Record<string, unknown> as {
+    apiKey?: string;
+    api?: ModelApi;
+  };
+  const resolvedApiKey = typeof existingApiKey === "string" ? existingApiKey : undefined;
+  const normalizedApiKey = resolvedApiKey?.trim();
+
+  providers.shengsuanyun = {
+    ...existingProviderRest,
+    baseUrl: SHENGSUANYUN_BASE_URL,
+    api: existingApi ?? "openai-completions",
+    ...(normalizedApiKey ? { apiKey: normalizedApiKey } : {}),
+    // 模型由 resolveImplicitProviders 实时发现
+    models: [],
+  };
+
+  return {
+    ...cfg,
+    agents: {
+      ...cfg.agents,
+      defaults: {
+        ...cfg.agents?.defaults,
+        models,
+      },
+    },
+    models: {
+      mode: cfg.models?.mode ?? "merge",
+      providers,
+    },
+  };
+}
+
+export function applyShengsuanyunConfig(cfg: OpenClawConfig): OpenClawConfig {
+  const SHENGSUANYUN_DEFAULT_MODEL_REF = "shengsuanyun/openai/gpt-4.1-nano";
+  const next = applyShengsuanyunProviderConfig(cfg);
+  const existingModel = next.agents?.defaults?.model;
+  return {
+    ...next,
+    agents: {
+      ...next.agents,
+      defaults: {
+        ...next.agents?.defaults,
+        model: {
+          ...(existingModel && "fallbacks" in (existingModel as Record<string, unknown>)
+            ? {
+                fallbacks: (existingModel as { fallbacks?: string[] }).fallbacks,
+              }
+            : undefined),
+          primary: SHENGSUANYUN_DEFAULT_MODEL_REF,
+        },
+      },
+    },
+  };
+}
+
 export function applyAuthProfileConfig(
   cfg: OpenClawConfig,
   params: {

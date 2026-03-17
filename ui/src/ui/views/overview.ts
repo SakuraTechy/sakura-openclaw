@@ -94,7 +94,7 @@ export function renderOverview(props: OverviewProps) {
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Device pairing docs (opens in new tab)"
-            >Docs: Device pairing</a
+            >文档：设备配对</a
           >
         </div>
       </div>
@@ -127,7 +127,7 @@ export function renderOverview(props: OverviewProps) {
               target=${EXTERNAL_LINK_TARGET}
               rel=${buildExternalLinkRel()}
               title="Control UI auth docs (opens in new tab)"
-              >Docs: Control UI auth</a
+              >文档：控制面板认证</a
             >
           </div>
         </div>
@@ -143,7 +143,7 @@ export function renderOverview(props: OverviewProps) {
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Control UI auth docs (opens in new tab)"
-            >Docs: Control UI auth</a
+            >文档：控制面板认证</a
           >
         </div>
       </div>
@@ -174,7 +174,7 @@ export function renderOverview(props: OverviewProps) {
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Tailscale Serve docs (opens in new tab)"
-            >Docs: Tailscale Serve</a
+            >文档：Tailscale Serve</a
           >
           <span class="muted"> · </span>
           <a
@@ -183,7 +183,7 @@ export function renderOverview(props: OverviewProps) {
             target=${EXTERNAL_LINK_TARGET}
             rel=${buildExternalLinkRel()}
             title="Insecure HTTP docs (opens in new tab)"
-            >Docs: Insecure HTTP</a
+            >文档：不安全 HTTP</a
           >
         </div>
       </div>

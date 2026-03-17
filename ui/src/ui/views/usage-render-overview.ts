@@ -92,7 +92,7 @@ function renderFilterChips(
           ? html`
             <div class="filter-chip">
               <span class="filter-chip-label">Days: ${daysLabel}</span>
-              <button class="filter-chip-remove" @click=${onClearDays} title="Remove filter">×</button>
+              <button class="filter-chip-remove" @click=${onClearDays} title="移除过滤">×</button>
             </div>
           `
           : nothing
@@ -102,7 +102,7 @@ function renderFilterChips(
           ? html`
             <div class="filter-chip">
               <span class="filter-chip-label">Hours: ${hoursLabel}</span>
-              <button class="filter-chip-remove" @click=${onClearHours} title="Remove filter">×</button>
+              <button class="filter-chip-remove" @click=${onClearHours} title="移除过滤">×</button>
             </div>
           `
           : nothing
@@ -112,7 +112,7 @@ function renderFilterChips(
           ? html`
             <div class="filter-chip" title="${sessionsFullName}">
               <span class="filter-chip-label">Session: ${sessionsLabel}</span>
-              <button class="filter-chip-remove" @click=${onClearSessions} title="Remove filter">×</button>
+              <button class="filter-chip-remove" @click=${onClearSessions} title="移除过滤">×</button>
             </div>
           `
           : nothing
@@ -141,8 +141,8 @@ function renderDailyChartCompact(
   if (!daily.length) {
     return html`
       <div class="daily-chart-compact">
-        <div class="sessions-panel-title">Daily Usage</div>
-        <div class="muted" style="padding: 20px; text-align: center">No data</div>
+        <div class="sessions-panel-title">每日用量</div>
+        <div class="muted" style="padding: 20px; text-align: center">无数据</div>
       </div>
     `;
   }
@@ -448,7 +448,7 @@ function renderUsageInsights(
 
   return html`
     <section class="card" style="margin-top: 16px;">
-      <div class="card-title">Usage Overview</div>
+      <div class="card-title">用量概览</div>
       <div class="usage-summary-grid">
         <div class="usage-summary-card">
           <div class="usage-summary-title">
@@ -530,13 +530,13 @@ function renderUsageInsights(
         </div>
       </div>
       <div class="usage-insights-grid">
-        ${renderInsightList("Top Models", topModels, "No model data")}
-        ${renderInsightList("Top Providers", topProviders, "No provider data")}
-        ${renderInsightList("Top Tools", topTools, "No tool calls")}
-        ${renderInsightList("Top Agents", topAgents, "No agent data")}
-        ${renderInsightList("Top Channels", topChannels, "No channel data")}
-        ${renderPeakErrorList("Peak Error Days", errorDays, "No error data")}
-        ${renderPeakErrorList("Peak Error Hours", errorHours, "No error data")}
+        ${renderInsightList("热门模型", topModels, "暂无模型数据")}
+        ${renderInsightList("热门提供商", topProviders, "暂无提供商数据")}
+        ${renderInsightList("热门工具", topTools, "暂无工具调用")}
+        ${renderInsightList("热门代理", topAgents, "暂无代理数据")}
+        ${renderInsightList("热门渠道", topChannels, "暂无渠道数据")}
+        ${renderPeakErrorList("错误高峰日", errorDays, "暂无错误数据")}
+        ${renderPeakErrorList("错误高峰时段", errorHours, "暂无错误数据")}
       </div>
     </section>
   `;
@@ -667,7 +667,7 @@ function renderSessionsCard(
         <div class="session-bar-actions">
           <button
             class="session-copy-btn"
-            title="Copy session name"
+            title="复制会话名称"
             @click=${(e: MouseEvent) => {
               e.stopPropagation();
               void copySessionName(s);
@@ -692,7 +692,7 @@ function renderSessionsCard(
   return html`
     <div class="card sessions-card">
       <div class="sessions-card-header">
-        <div class="card-title">Sessions</div>
+        <div class="card-title">会话</div>
         <div class="sessions-card-count">
           ${sessions.length} shown${totalSessions !== sessions.length ? ` · ${totalSessions} total` : ""}
         </div>
@@ -717,15 +717,15 @@ function renderSessionsCard(
           </button>
         </div>
         <label class="sessions-sort">
-          <span>Sort</span>
+          <span>排序</span>
           <select
             @change=${(e: Event) => onSessionSortChange((e.target as HTMLSelectElement).value as typeof sessionSort)}
           >
-            <option value="cost" ?selected=${sessionSort === "cost"}>Cost</option>
-            <option value="errors" ?selected=${sessionSort === "errors"}>Errors</option>
-            <option value="messages" ?selected=${sessionSort === "messages"}>Messages</option>
-            <option value="recent" ?selected=${sessionSort === "recent"}>Recent</option>
-            <option value="tokens" ?selected=${sessionSort === "tokens"}>Tokens</option>
+            <option value="cost" ?selected=${sessionSort === "cost"}>费用</option>
+            <option value="errors" ?selected=${sessionSort === "errors"}>错误</option>
+            <option value="messages" ?selected=${sessionSort === "messages"}>消息</option>
+            <option value="recent" ?selected=${sessionSort === "recent"}>最近</option>
+            <option value="tokens" ?selected=${sessionSort === "tokens"}>令牌数</option>
           </select>
         </label>
         <button
@@ -749,7 +749,7 @@ function renderSessionsCard(
         sessionsTab === "recent"
           ? recentEntries.length === 0
             ? html`
-                <div class="muted" style="padding: 20px; text-align: center">No recent sessions</div>
+                <div class="muted" style="padding: 20px; text-align: center">暂无最近会话</div>
               `
             : html`
 	                <div class="session-bars" style="max-height: 220px; margin-top: 6px;">
@@ -758,7 +758,7 @@ function renderSessionsCard(
 	              `
           : sessions.length === 0
             ? html`
-                <div class="muted" style="padding: 20px; text-align: center">No sessions in range</div>
+                <div class="muted" style="padding: 20px; text-align: center">范围内无会话</div>
               `
             : html`
 	                <div class="session-bars">

@@ -30,18 +30,18 @@ export const CORE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
   {
     value: "litellm-api-key",
     label: "LiteLLM API key",
-    hint: "Unified gateway for 100+ LLM providers",
+    hint: "统一 LLM 网关（100+ 提供商）",
     groupId: "litellm",
     groupLabel: "LiteLLM",
-    groupHint: "Unified LLM gateway (100+ providers)",
+    groupHint: "统一 LLM 网关（100+ 提供商）",
   },
   {
     value: "custom-api-key",
-    label: "Custom Provider",
-    hint: "Any OpenAI or Anthropic compatible endpoint",
+    label: "自定义服务商",
+    hint: "任意 OpenAI 或 Anthropic 兼容端点",
     groupId: "custom",
-    groupLabel: "Custom Provider",
-    groupHint: "Any OpenAI or Anthropic compatible endpoint",
+    groupLabel: "自定义服务商",
+    groupHint: "任意 OpenAI 或 Anthropic 兼容端点",
   },
 ];
 

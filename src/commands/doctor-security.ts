@@ -54,8 +54,8 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
 
   if (cfg.approvals?.exec?.enabled === false) {
     warnings.push(
-      "- Note: approvals.exec.enabled=false disables approval forwarding only.",
-      "  Host exec gating still comes from ~/.openclaw/exec-approvals.json.",
+      "- 注意: approvals.exec.enabled=false 仅禁用审批转发。",
+      "  主机执行控制仍来自 ~/.openclaw/exec-approvals.json。",
       `  Check local policy with: ${formatCliCommand("openclaw approvals get --gateway")}`,
     );
   }
@@ -97,8 +97,8 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
     (resolvedAuth.mode === "password" && hasPassword);
   const bindDescriptor = `"${gatewayBind}" (${resolvedBindHost})`;
   const saferRemoteAccessLines = [
-    "  Safer remote access: keep bind loopback and use Tailscale Serve/Funnel or an SSH tunnel.",
-    "  Example tunnel: ssh -N -L 18789:127.0.0.1:18789 user@gateway-host",
+    "  更安全的远程访问方式: 保持绑定回环地址，使用 Tailscale Serve/Funnel 或 SSH 隧道。",
+    "  隧道示例: ssh -N -L 18789:127.0.0.1:18789 user@gateway-host",
     "  Docs: https://docs.openclaw.ai/gateway/remote",
   ];
 
@@ -117,8 +117,8 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
               )}`,
             ];
       warnings.push(
-        `- CRITICAL: Gateway bound to ${bindDescriptor} without authentication.`,
-        `  Anyone on your network (or internet if port-forwarded) can fully control your agent.`,
+        `- 严重警告: 网关绑定到 ${bindDescriptor} 但未设置认证。`,
+        `  你网络上的任何人（如果做了端口转发则是互联网上的任何人）都可以完全控制你的 AI 助手。`,
         `  Fix: ${formatCliCommand("openclaw config set gateway.bind loopback")}`,
         ...saferRemoteAccessLines,
         ...authFixLines,
@@ -126,8 +126,8 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
     } else {
       // Auth is configured, but still warn about network exposure
       warnings.push(
-        `- WARNING: Gateway bound to ${bindDescriptor} (network-accessible).`,
-        `  Ensure your auth credentials are strong and not exposed.`,
+        `- WARNING: Gateway bound to ${bindDescriptor} (可被网络访问)。`,
+        `  请确保你的认证凭据足够强且未被泄露。`,
         ...saferRemoteAccessLines,
       );
     }
@@ -156,7 +156,7 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
 
     if (dmPolicy === "open") {
       const allowFromPath = `${params.allowFromPath}allowFrom`;
-      warnings.push(`- ${params.label} DMs: OPEN (${policyPath}="open"). Anyone can DM it.`);
+      warnings.push(`- ${params.label} DMs: OPEN (${policyPath}="open"). 任何人都可以向它发私信。`);
       if (!hasWildcard) {
         warnings.push(
           `- ${params.label} DMs: config invalid — "open" requires ${allowFromPath} to include "*".`,
@@ -171,7 +171,7 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
 
     if (dmPolicy !== "open" && allowCount === 0) {
       warnings.push(
-        `- ${params.label} DMs: locked (${policyPath}="${dmPolicy}") with no allowlist; unknown senders will be blocked / get a pairing code.`,
+        `- ${params.label} DMs: locked (${policyPath}="${dmPolicy}") with no allowlist; 未知发送者将被阻止 / get a pairing code.`,
       );
       warnings.push(`  ${params.approveHint}`);
     }
@@ -233,7 +233,7 @@ export async function noteSecurityWarnings(cfg: OpenClawConfig) {
     }
   }
 
-  const lines = warnings.length > 0 ? warnings : ["- No channel security warnings detected."];
+  const lines = warnings.length > 0 ? warnings : ["- 未检测到频道安全警告。"];
   lines.push(auditHint);
-  note(lines.join("\n"), "Security");
+  note(lines.join("\n"), "安全");
 }

@@ -26,55 +26,55 @@ const PALETTE_ITEMS: PaletteItem[] = [
   ...SLASH_PALETTE_ITEMS,
   {
     id: "nav-overview",
-    label: "Overview",
+    label: "概览",
     icon: "barChart",
     category: "navigation",
     action: "nav:overview",
   },
   {
     id: "nav-sessions",
-    label: "Sessions",
+    label: "会话",
     icon: "fileText",
     category: "navigation",
     action: "nav:sessions",
   },
   {
     id: "nav-cron",
-    label: "Scheduled",
+    label: "定时任务",
     icon: "scrollText",
     category: "navigation",
     action: "nav:cron",
   },
-  { id: "nav-skills", label: "Skills", icon: "zap", category: "navigation", action: "nav:skills" },
+  { id: "nav-skills", label: "技能", icon: "zap", category: "navigation", action: "nav:skills" },
   {
     id: "nav-config",
-    label: "Settings",
+    label: "设置",
     icon: "settings",
     category: "navigation",
     action: "nav:config",
   },
   {
     id: "nav-agents",
-    label: "Agents",
+    label: "代理",
     icon: "folder",
     category: "navigation",
     action: "nav:agents",
   },
   {
     id: "skill-shell",
-    label: "Shell Command",
+    label: "Shell 命令",
     icon: "monitor",
     category: "skills",
     action: "/skill shell",
-    description: "Run shell",
+    description: "运行 Shell",
   },
   {
     id: "skill-debug",
-    label: "Debug Mode",
+    label: "调试模式",
     icon: "bug",
     category: "skills",
     action: "/verbose full",
-    description: "Toggle debug",
+    description: "切换调试",
   },
 ];
 
@@ -128,7 +128,7 @@ function restoreFocus() {
   previouslyFocused = null;
 }
 
-function selectItem(item: PaletteItem, props: CommandPaletteProps) {
+function 选择Item(item: PaletteItem, props: CommandPaletteProps) {
   if (item.action.startsWith("nav:")) {
     props.onNavigate(item.action.slice(4));
   } else {
@@ -164,7 +164,7 @@ function handleKeydown(e: KeyboardEvent, props: CommandPaletteProps) {
     case "Enter":
       e.preventDefault();
       if (items[props.activeIndex]) {
-        selectItem(items[props.activeIndex], props);
+        选择Item(items[props.activeIndex], props);
       }
       break;
     case "Escape":
@@ -234,7 +234,7 @@ export function renderCommandPalette(props: CommandPaletteProps) {
                       class="cmd-palette__item ${isActive ? "cmd-palette__item--active" : ""}"
                       @click=${(e: Event) => {
                         e.stopPropagation();
-                        selectItem(item, props);
+                        选择Item(item, props);
                       }}
                       @mouseenter=${() => props.onActiveIndexChange(globalIndex)}
                     >
@@ -253,9 +253,9 @@ export function renderCommandPalette(props: CommandPaletteProps) {
           }
         </div>
         <div class="cmd-palette__footer">
-          <span><kbd>↑↓</kbd> navigate</span>
-          <span><kbd>↵</kbd> select</span>
-          <span><kbd>esc</kbd> close</span>
+          <span><kbd>↑↓</kbd> 导航</span>
+          <span><kbd>↵</kbd> 选择</span>
+          <span><kbd>esc</kbd> 关闭</span>
         </div>
       </div>
     </div>

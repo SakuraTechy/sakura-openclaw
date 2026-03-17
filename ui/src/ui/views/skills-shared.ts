@@ -13,10 +13,10 @@ export function computeSkillMissing(skill: SkillStatusEntry): string[] {
 export function computeSkillReasons(skill: SkillStatusEntry): string[] {
   const reasons: string[] = [];
   if (skill.disabled) {
-    reasons.push("disabled");
+    reasons.push("已禁用");
   }
   if (skill.blockedByAllowlist) {
-    reasons.push("blocked by allowlist");
+    reasons.push("被白名单阻止");
   }
   return reasons;
 }
@@ -38,12 +38,12 @@ export function renderSkillStatusChips(params: {
           : nothing
       }
       <span class="chip ${skill.eligible ? "chip-ok" : "chip-warn"}">
-        ${skill.eligible ? "eligible" : "blocked"}
+        ${skill.eligible ? "可用" : "已阻止"}
       </span>
       ${
         skill.disabled
           ? html`
-              <span class="chip chip-warn">disabled</span>
+              <span class="chip chip-warn">已禁用</span>
             `
           : nothing
       }

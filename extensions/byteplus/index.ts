@@ -29,7 +29,7 @@ const byteplusPlugin = {
           optionKey: "byteplusApiKey",
           flagName: "--byteplus-api-key",
           envVar: "BYTEPLUS_API_KEY",
-          promptMessage: "Enter BytePlus API key",
+          promptMessage: "请输入 BytePlus API 密钥",
           defaultModel: BYTEPLUS_DEFAULT_MODEL_REF,
           expectedProviders: ["byteplus"],
           applyConfig: (cfg) =>

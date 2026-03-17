@@ -28,7 +28,7 @@ const vercelAiGatewayPlugin = {
           optionKey: "aiGatewayApiKey",
           flagName: "--ai-gateway-api-key",
           envVar: "AI_GATEWAY_API_KEY",
-          promptMessage: "Enter Vercel AI Gateway API key",
+          promptMessage: "输入 Vercel AI Gateway API 密钥",
           defaultModel: VERCEL_AI_GATEWAY_DEFAULT_MODEL_REF,
           expectedProviders: ["vercel-ai-gateway"],
           applyConfig: (cfg) => applyVercelAiGatewayConfig(cfg),

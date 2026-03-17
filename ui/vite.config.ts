@@ -23,6 +23,9 @@ export default defineConfig(() => {
   const base = envBase ? normalizeBase(envBase) : "./";
   return {
     base,
+    define: {
+      "process.env.VITEST": JSON.stringify(""),
+    },
     publicDir: path.resolve(here, "public"),
     optimizeDeps: {
       include: ["lit/directives/repeat.js"],

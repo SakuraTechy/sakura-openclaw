@@ -16,7 +16,7 @@ export async function handleSubagentsUnfocusAction(
   const { params } = ctx;
   const channel = resolveCommandSurfaceChannel(params);
   if (channel !== "discord" && channel !== "telegram") {
-    return stopWithText("⚠️ /unfocus is only available on Discord and Telegram.");
+    return stopWithText("⚠️ /unfocus 仅在 Discord 和 Telegram 上可用。");
   }
 
   const accountId = resolveChannelAccountId(params);
@@ -35,7 +35,7 @@ export async function handleSubagentsUnfocusAction(
 
   if (!conversationId) {
     if (channel === "discord") {
-      return stopWithText("⚠️ /unfocus must be run inside a Discord thread.");
+      return stopWithText("⚠️ /unfocus 必须在 Discord 线程中运行。");
     }
     return stopWithText(
       "⚠️ /unfocus on Telegram requires a topic context in groups, or a direct-message conversation.",
@@ -50,7 +50,7 @@ export async function handleSubagentsUnfocusAction(
   if (!binding) {
     return stopWithText(
       channel === "discord"
-        ? "ℹ️ This thread is not currently focused."
+        ? "ℹ️ 此线程当前未聚焦。"
         : "ℹ️ This conversation is not currently focused.",
     );
   }
@@ -71,6 +71,6 @@ export async function handleSubagentsUnfocusAction(
     reason: "manual",
   });
   return stopWithText(
-    channel === "discord" ? "✅ Thread unfocused." : "✅ Conversation unfocused.",
+    channel === "discord" ? "✅ 线程已取消聚焦。" : "✅ Conversation unfocused.",
   );
 }

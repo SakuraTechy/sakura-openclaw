@@ -131,7 +131,7 @@ export async function channelsListCommand(
   }
 
   const lines: string[] = [];
-  lines.push(theme.heading("Chat channels:"));
+  lines.push(theme.heading("聊天通道："));
 
   for (const plugin of plugins) {
     const accounts = plugin.config.listAccountIds(cfg);
@@ -154,7 +154,7 @@ export async function channelsListCommand(
   }
 
   lines.push("");
-  lines.push(theme.heading("Auth providers (OAuth + API keys):"));
+  lines.push(theme.heading("认证提供商（OAuth + API 密钥）："));
   if (authProfiles.length === 0) {
     lines.push(theme.muted("- none"));
   } else {

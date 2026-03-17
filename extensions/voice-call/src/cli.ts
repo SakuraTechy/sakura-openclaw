@@ -111,27 +111,27 @@ export function registerVoiceCallCli(params: {
   const { program, config, ensureRuntime, logger } = params;
   const root = program
     .command("voicecall")
-    .description("Voice call utilities")
+    .description("语音通话工具")
     .addHelpText("after", () => `\nDocs: https://docs.openclaw.ai/cli/voicecall\n`);
 
   root
     .command("call")
-    .description("Initiate an outbound voice call")
-    .requiredOption("-m, --message <text>", "Message to speak when call connects")
+    .description("发起外呼语音通话")
+    .requiredOption("-m, --message <text>", "通话连接时朗读的消息")
     .option(
       "-t, --to <phone>",
-      "Phone number to call (E.164 format, uses config toNumber if not set)",
+      "呼叫的电话号码 (E.164 格式，如果未设置则使用配置的 toNumber)",
     )
     .option(
       "--mode <mode>",
-      "Call mode: notify (hangup after message) or conversation (stay open)",
+      "通话模式: notify (消息后挂断) 或 conversation (保持通话)",
       "conversation",
     )
     .action(async (options: { message: string; to?: string; mode?: string }) => {
       const rt = await ensureRuntime();
       const to = options.to ?? rt.config.toNumber;
       if (!to) {
-        throw new Error("Missing --to and no toNumber configured");
+        throw new Error("缺少 --to 且未配置 toNumber");
       }
       await initiateCallAndPrintId({
         runtime: rt,
@@ -143,12 +143,12 @@ export function registerVoiceCallCli(params: {
 
   root
     .command("start")
-    .description("Alias for voicecall call")
-    .requiredOption("--to <phone>", "Phone number to call")
-    .option("--message <text>", "Message to speak when call connects")
+    .description("voicecall call 的别名")
+    .requiredOption("--to <phone>", "呼叫的电话号码")
+    .option("--message <text>", "通话连接时朗读的消息")
     .option(
       "--mode <mode>",
-      "Call mode: notify (hangup after message) or conversation (stay open)",
+      "通话模式: notify (消息后挂断) 或 conversation (保持通话)",
       "conversation",
     )
     .action(async (options: { to: string; message?: string; mode?: string }) => {
@@ -163,9 +163,9 @@ export function registerVoiceCallCli(params: {
 
   root
     .command("continue")
-    .description("Speak a message and wait for a response")
-    .requiredOption("--call-id <id>", "Call ID")
-    .requiredOption("--message <text>", "Message to speak")
+    .description("朗读消息并等待响应")
+    .requiredOption("--call-id <id>", "通话 ID")
+    .requiredOption("--message <text>", "要朗读的消息")
     .action(async (options: { callId: string; message: string }) => {
       const rt = await ensureRuntime();
       const result = await rt.manager.continueCall(options.callId, options.message);
@@ -178,9 +178,9 @@ export function registerVoiceCallCli(params: {
 
   root
     .command("speak")
-    .description("Speak a message without waiting for response")
-    .requiredOption("--call-id <id>", "Call ID")
-    .requiredOption("--message <text>", "Message to speak")
+    .description("朗读消息而不等待响应")
+    .requiredOption("--call-id <id>", "通话 ID")
+    .requiredOption("--message <text>", "要朗读的消息")
     .action(async (options: { callId: string; message: string }) => {
       const rt = await ensureRuntime();
       const result = await rt.manager.speak(options.callId, options.message);
@@ -193,8 +193,8 @@ export function registerVoiceCallCli(params: {
 
   root
     .command("end")
-    .description("Hang up an active call")
-    .requiredOption("--call-id <id>", "Call ID")
+    .description("挂断活动通话")
+    .requiredOption("--call-id <id>", "通话 ID")
     .action(async (options: { callId: string }) => {
       const rt = await ensureRuntime();
       const result = await rt.manager.endCall(options.callId);
@@ -207,8 +207,8 @@ export function registerVoiceCallCli(params: {
 
   root
     .command("status")
-    .description("Show call status")
-    .requiredOption("--call-id <id>", "Call ID")
+    .description("显示通话状态")
+    .requiredOption("--call-id <id>", "通话 ID")
     .action(async (options: { callId: string }) => {
       const rt = await ensureRuntime();
       const call = rt.manager.getCall(options.callId);
@@ -218,10 +218,10 @@ export function registerVoiceCallCli(params: {
 
   root
     .command("tail")
-    .description("Tail voice-call JSONL logs (prints new lines; useful during provider tests)")
-    .option("--file <path>", "Path to calls.jsonl", resolveDefaultStorePath(config))
-    .option("--since <n>", "Print last N lines first", "25")
-    .option("--poll <ms>", "Poll interval in ms", "250")
+    .description("跟踪 voice-call JSONL 日志 (打印新行；用于提供商测试)")
+    .option("--file <path>", "calls.jsonl 的路径", resolveDefaultStorePath(config))
+    .option("--since <n>", "先打印最后 N 行", "25")
+    .option("--poll <ms>", "轮询间隔 (毫秒)", "250")
     .action(async (options: { file: string; since?: string; poll?: string }) => {
       const file = options.file;
       const since = Math.max(0, Number(options.since ?? 0));
@@ -272,7 +272,7 @@ export function registerVoiceCallCli(params: {
   root
     .command("latency")
     .description("Summarize turn latency metrics from voice-call JSONL logs")
-    .option("--file <path>", "Path to calls.jsonl", resolveDefaultStorePath(config))
+    .option("--file <path>", "calls.jsonl 的路径", resolveDefaultStorePath(config))
     .option("--last <n>", "Analyze last N records", "200")
     .action(async (options: { file: string; last?: string }) => {
       const file = options.file;
@@ -322,11 +322,11 @@ export function registerVoiceCallCli(params: {
 
   root
     .command("expose")
-    .description("Enable/disable Tailscale serve/funnel for the webhook")
-    .option("--mode <mode>", "off | serve (tailnet) | funnel (public)", "funnel")
-    .option("--path <path>", "Tailscale path to expose (recommend matching serve.path)")
-    .option("--port <port>", "Local webhook port")
-    .option("--serve-path <path>", "Local webhook path")
+    .description("启用/禁用 Webhook 的 Tailscale serve/funnel")
+    .option("--mode <mode>", "off | serve (Tailnet) | funnel (公共)", "funnel")
+    .option("--path <path>", "要暴露的 Tailscale 路径 (建议匹配 serve.path)")
+    .option("--port <port>", "本地 Webhook 端口")
+    .option("--serve-path <path>", "本地 Webhook 路径")
     .action(
       async (options: { mode?: string; port?: string; path?: string; servePath?: string }) => {
         const mode = resolveMode(options.mode ?? "funnel");

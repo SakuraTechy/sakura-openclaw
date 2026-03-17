@@ -510,11 +510,11 @@ export async function noteStateIntegrity(
   let stateDirExists = existsDir(stateDir);
   if (!stateDirExists) {
     warnings.push(
-      `- CRITICAL: state directory missing (${displayStateDir}). Sessions, credentials, logs, and config are stored there.`,
+      `- 严重：状态目录缺失 (${displayStateDir})。会话、凭据、日志和配置都存储在那里。`,
     );
     if (cfg.gateway?.mode === "remote") {
       warnings.push(
-        "- Gateway is in remote mode; run doctor on the remote host where the gateway runs.",
+        "- 网关处于远程模式；请在运行网关的远程主机上执行 doctor。",
       );
     }
     const create = await prompter.confirmSkipInNonInteractive({
@@ -533,7 +533,7 @@ export async function noteStateIntegrity(
   }
 
   if (stateDirExists && !canWriteDir(stateDir)) {
-    warnings.push(`- State directory not writable (${displayStateDir}).`);
+    warnings.push(`- 状态目录不可写 (${displayStateDir})。`);
     const hint = dirPermissionHint(stateDir);
     if (hint) {
       warnings.push(`  ${hint}`);
@@ -565,7 +565,7 @@ export async function noteStateIntegrity(
       const isImmutableStore = resolvedDir.startsWith("/nix/store/");
       if (!isImmutableStore && (stat.mode & 0o077) !== 0) {
         warnings.push(
-          `- State directory permissions are too open (${displayStateDir}). Recommend chmod 700.`,
+          `- 状态目录权限过于开放 (${displayStateDir})。建议 chmod 700。`,
         );
         const tighten = await prompter.confirmSkipInNonInteractive({
           message: `Tighten permissions on ${displayStateDir} to 700?`,
@@ -612,10 +612,10 @@ export async function noteStateIntegrity(
 
   if (stateDirExists) {
     const dirCandidates = new Map<string, string>();
-    dirCandidates.set(sessionsDir, "Sessions dir");
-    dirCandidates.set(storeDir, "Session store dir");
+    dirCandidates.set(sessionsDir, "会话目录");
+    dirCandidates.set(storeDir, "会话存储目录");
     if (requireOAuthDir) {
-      dirCandidates.set(oauthDir, "OAuth dir");
+      dirCandidates.set(oauthDir, "OAuth 目录");
     } else if (!existsDir(oauthDir)) {
       warnings.push(
         `- OAuth dir not present (${displayOauthDir}). Skipping create because no WhatsApp/pairing channel config is active.`,
@@ -637,7 +637,7 @@ export async function noteStateIntegrity(
     for (const [dir, label] of dirCandidates) {
       const displayDir = displayDirFor(dir);
       if (!existsDir(dir)) {
-        warnings.push(`- CRITICAL: ${label} missing (${displayDir}).`);
+        warnings.push(`- 严重：${label} 缺失 (${displayDir})。`);
         const create = await prompter.confirmSkipInNonInteractive({
           message: `Create ${label} at ${displayDir}?`,
           initialValue: true,
@@ -653,7 +653,7 @@ export async function noteStateIntegrity(
         continue;
       }
       if (!canWriteDir(dir)) {
-        warnings.push(`- ${label} not writable (${displayDir}).`);
+        warnings.push(`- ${label} 不可写 (${displayDir})。`);
         const hint = dirPermissionHint(dir);
         if (hint) {
           warnings.push(`  ${hint}`);
@@ -688,7 +688,7 @@ export async function noteStateIntegrity(
   if (extraStateDirs.size > 0) {
     warnings.push(
       [
-        "- Multiple state directories detected. This can split session history.",
+        "- 检测到多个状态目录。这可能导致会话历史分散。",
         ...Array.from(extraStateDirs).map((dir) => `  - ${shortenHomePath(dir)}`),
         `  Active state dir: ${displayStateDir}`,
       ].join("\n"),
@@ -719,9 +719,9 @@ export async function noteStateIntegrity(
     if (missing.length > 0) {
       warnings.push(
         [
-          `- ${missing.length}/${recentTranscriptCandidates.length} recent sessions are missing transcripts.`,
-          `  Verify sessions in store: ${formatCliCommand(`openclaw sessions --store "${absoluteStorePath}"`)}`,
-          `  Preview cleanup impact: ${formatCliCommand(`openclaw sessions cleanup --store "${absoluteStorePath}" --dry-run`)}`,
+          `- ${missing.length}/${recentTranscriptCandidates.length} 个最近会话缺少记录文件。`,
+          `  验证存储中的会话: ${formatCliCommand(`openclaw sessions --store "${absoluteStorePath}"`)}`,
+          `  预览清理影响: ${formatCliCommand(`openclaw sessions cleanup --store "${absoluteStorePath}" --dry-run`)}`,
           `  Prune missing entries: ${formatCliCommand(`openclaw sessions cleanup --store "${absoluteStorePath}" --enforce --fix-missing`)}`,
         ].join("\n"),
       );
@@ -737,13 +737,13 @@ export async function noteStateIntegrity(
       );
       if (!existsFile(transcriptPath)) {
         warnings.push(
-          `- Main session transcript missing (${shortenHomePath(transcriptPath)}). History will appear to reset.`,
+          `- 主会话记录缺失 (${shortenHomePath(transcriptPath)})。历史记录将显示为已重置。`,
         );
       } else {
         const lineCount = countJsonlLines(transcriptPath);
         if (lineCount <= 1) {
           warnings.push(
-            `- Main session transcript has only ${lineCount} line. Session history may not be appending.`,
+            `- 主会话记录只有 ${lineCount} 行。会话历史可能没有正常追加。`,
           );
         }
       }
@@ -799,10 +799,10 @@ export async function noteStateIntegrity(
   }
 
   if (warnings.length > 0) {
-    note(warnings.join("\n"), "State integrity");
+    note(warnings.join("\n"), "状态完整性");
   }
   if (changes.length > 0) {
-    note(changes.join("\n"), "Doctor changes");
+    note(changes.join("\n"), "诊断更改");
   }
 }
 
@@ -816,10 +816,10 @@ export function noteWorkspaceBackupTip(workspaceDir: string) {
   }
   note(
     [
-      "- Tip: back up the workspace in a private git repo (GitHub or GitLab).",
-      "- Keep ~/.openclaw out of git; it contains credentials and session history.",
-      "- Details: /concepts/agent-workspace#git-backup-recommended",
+      "- 提示：将工作区备份到私有 git 仓库（GitHub 或 GitLab）。",
+      "- 不要将 ~/.openclaw 提交到 git；它包含凭据和会话历史。",
+      "- 详情：/concepts/agent-workspace#git-backup-recommended",
     ].join("\n"),
-    "Workspace",
+    "工作区",
   );
 }

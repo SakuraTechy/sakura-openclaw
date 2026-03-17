@@ -1,6 +1,19 @@
+networks:
+  openclaw-network:
+    # 使用默认的 bridge 网络
+    # external: true
+    # name: bridge
+    # 使用自定义的 bridge 网络
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.171.0.0/24    # 子网范围
+          gateway: 192.171.0.1      # 网关地址
+
 services:
   openclaw-gateway:
     image: ${OPENCLAW_IMAGE:-openclaw:local}
+    container_name: openclaw-gateway
     environment:
       HOME: /home/node
       TERM: xterm-256color
@@ -9,10 +22,12 @@ services:
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY:-}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY:-}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
-      TZ: ${OPENCLAW_TZ:-UTC}
+      OPENCLAW_GATEWAY_TLS_CERT: /home/node/.openclaw/certs/cert.pem
+      OPENCLAW_GATEWAY_TLS_KEY: /home/node/.openclaw/certs/key.pem
     volumes:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
+      - ${OPENCLAW_CONFIG_DIR}/certs:/home/node/.openclaw/certs:ro
       ## Uncomment the lines below to enable sandbox isolation
       ## (agents.defaults.sandbox). Requires Docker CLI in the image
       ## (build with --build-arg OPENCLAW_INSTALL_DOCKER_CLI=1) or use
@@ -21,6 +36,8 @@ services:
       # - /var/run/docker.sock:/var/run/docker.sock
     # group_add:
     #   - "${DOCKER_GID:-999}"
+    networks:
+      - openclaw-network
     ports:
       - "${OPENCLAW_GATEWAY_PORT:-18789}:18789"
       - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
@@ -32,7 +49,7 @@ services:
         "dist/index.js",
         "gateway",
         "--bind",
-        "${OPENCLAW_GATEWAY_BIND:-lan}",
+        "lan",
         "--port",
         "18789",
       ]
@@ -51,7 +68,9 @@ services:
 
   openclaw-cli:
     image: ${OPENCLAW_IMAGE:-openclaw:local}
-    network_mode: "service:openclaw-gateway"
+    container_name: openclaw-cli
+    networks:
+      - openclaw-network
     cap_drop:
       - NET_RAW
       - NET_ADMIN
@@ -66,7 +85,6 @@ services:
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY:-}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY:-}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE:-}
-      TZ: ${OPENCLAW_TZ:-UTC}
     volumes:
       - ${OPENCLAW_CONFIG_DIR}:/home/node/.openclaw
       - ${OPENCLAW_WORKSPACE_DIR}:/home/node/.openclaw/workspace
@@ -76,3 +94,19 @@ services:
     entrypoint: ["node", "dist/index.js"]
     depends_on:
       - openclaw-gateway
+
+  nginx:
+    image: nginx:alpine
+    container_name: openclaw-nginx
+    ports:
+      - "443:443"
+      - "8080:80"
+      - "18789:18789"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${OPENCLAW_CONFIG_DIR:-./.openclaw}/certs:/etc/nginx/certs:ro
+    networks:
+      - openclaw-network
+    depends_on:
+      - openclaw-gateway
+    restart: unless-stopped    

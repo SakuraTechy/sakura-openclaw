@@ -29,7 +29,7 @@ const volcenginePlugin = {
           optionKey: "volcengineApiKey",
           flagName: "--volcengine-api-key",
           envVar: "VOLCANO_ENGINE_API_KEY",
-          promptMessage: "Enter Volcano Engine API key",
+          promptMessage: "请输入火山引擎 API 密钥",
           defaultModel: VOLCENGINE_DEFAULT_MODEL_REF,
           expectedProviders: ["volcengine"],
           applyConfig: (cfg) =>

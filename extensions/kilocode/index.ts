@@ -32,7 +32,7 @@ const kilocodePlugin = {
           optionKey: "kilocodeApiKey",
           flagName: "--kilocode-api-key",
           envVar: "KILOCODE_API_KEY",
-          promptMessage: "Enter Kilo Gateway API key",
+          promptMessage: "输入 Kilo Gateway API 密钥",
           defaultModel: KILOCODE_DEFAULT_MODEL_REF,
           expectedProviders: ["kilocode"],
           applyConfig: (cfg) => applyKilocodeConfig(cfg),

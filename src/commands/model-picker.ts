@@ -136,14 +136,14 @@ function addModelSelectOption(params: {
     hints.push(`ctx ${formatTokenK(params.entry.contextWindow)}`);
   }
   if (params.entry.reasoning) {
-    hints.push("reasoning");
+    hints.push("推理");
   }
   const aliases = params.aliasIndex.byKey.get(key);
   if (aliases?.length) {
     hints.push(`alias: ${aliases.join(", ")}`);
   }
   if (!params.hasAuth(params.entry.provider)) {
-    hints.push("auth missing");
+    hints.push("未认证");
   }
   params.options.push({
     value: key,
@@ -159,9 +159,9 @@ async function promptManualModel(params: {
   initialValue?: string;
 }): Promise<PromptDefaultModelResult> {
   const modelInput = await params.prompter.text({
-    message: params.allowBlank ? "Default model (blank to keep)" : "Default model",
+    message: params.allowBlank ? "默认模型（留空保持不变）" : "默认模型",
     initialValue: params.initialValue,
-    placeholder: "provider/model",
+    placeholder: "提供商/模型名",
     validate: params.allowBlank ? undefined : (value) => (value?.trim() ? undefined : "Required"),
   });
   const model = String(modelInput ?? "").trim();
@@ -233,15 +233,15 @@ export async function promptDefaultModel(
     !hasPreferredProvider && providerIds.length > 1 && models.length > PROVIDER_FILTER_THRESHOLD;
   if (shouldPromptProvider) {
     const selection = await params.prompter.select({
-      message: "Filter models by provider",
+      message: "按提供商筛选模型",
       options: [
-        { value: "*", label: "All providers" },
+        { value: "*", label: "所有提供商" },
         ...providerIds.map((provider) => {
           const count = models.filter((entry) => entry.provider === provider).length;
           return {
             value: provider,
-            label: provider,
-            hint: `${count} model${count === 1 ? "" : "s"}`,
+            label: provider === "shengsuanyun" ? "胜算云" : provider,
+            hint: `${count} 个模型`,
           };
         }),
       ],
@@ -278,7 +278,7 @@ export async function promptDefaultModel(
     });
   }
   if (includeManual) {
-    options.push({ value: MANUAL_VALUE, label: "Enter model manually" });
+    options.push({ value: MANUAL_VALUE, label: "手动输入模型" });
   }
   if (includeProviderPluginSetups && agentDir) {
     const { resolveProviderModelPickerEntries } = await loadModelPickerRuntime();
@@ -445,7 +445,7 @@ export async function promptModelAllowlist(params: {
     const raw = await params.prompter.text({
       message:
         params.message ??
-        "Allowlist models (comma-separated provider/model; blank to keep current)",
+        "允许的模型（逗号分隔 提供商/模型名；留空保持当前）",
       initialValue: existingKeys.join(", "),
       placeholder: "provider/model, other-provider/model",
     });
@@ -484,7 +484,7 @@ export async function promptModelAllowlist(params: {
     options.push({
       value: key,
       label: key,
-      hint: allowedKeySet ? "allowed (not in catalog)" : "configured (not in catalog)",
+      hint: allowedKeySet ? "已允许（不在模型目录中）" : "已配置（不在模型目录中）",
     });
     seen.add(key);
   }
@@ -494,7 +494,7 @@ export async function promptModelAllowlist(params: {
   }
 
   const selection = await params.prompter.multiselect({
-    message: params.message ?? "Models in /model picker (multi-select)",
+    message: params.message ?? "选择可用模型（多选，空格切换）",
     options,
     initialValues: initialKeys.length > 0 ? initialKeys : undefined,
     searchable: true,
@@ -507,7 +507,7 @@ export async function promptModelAllowlist(params: {
     return { models: [] };
   }
   const confirmClear = await params.prompter.confirm({
-    message: "Clear the model allowlist? (shows all models)",
+    message: "清除模型允许列表？（将显示所有模型）",
     initialValue: false,
   });
   if (!confirmClear) {

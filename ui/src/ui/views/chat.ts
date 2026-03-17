@@ -196,7 +196,7 @@ function renderCompactionIndicator(status: CompactionIndicatorStatus | null | un
   if (status.active) {
     return html`
       <div class="compaction-indicator compaction-indicator--active" role="status" aria-live="polite">
-        ${icons.loader} Compacting context...
+        ${icons.loader} 正在压缩上下文...
       </div>
     `;
   }
@@ -205,7 +205,7 @@ function renderCompactionIndicator(status: CompactionIndicatorStatus | null | un
     if (elapsed < COMPACTION_TOAST_DURATION_MS) {
       return html`
         <div class="compaction-indicator compaction-indicator--complete" role="status" aria-live="polite">
-          ${icons.check} Context compacted
+          ${icons.check} 上下文已压缩
         </div>
       `;
     }
@@ -404,11 +404,11 @@ function renderAttachmentPreview(props: ChatProps): TemplateResult | typeof noth
       ${attachments.map(
         (att) => html`
           <div class="chat-attachment-thumb">
-            <img src=${att.dataUrl} alt="Attachment preview" />
+            <img src=${att.dataUrl} alt="附件预览" />
             <button
               class="chat-attachment-remove"
               type="button"
-              aria-label="Remove attachment"
+              aria-label="移除附件"
               @click=${() => {
                 const next = (props.attachments ?? []).filter((a) => a.id !== att.id);
                 props.onAttachmentsChange?.(next);
@@ -617,7 +617,7 @@ function renderSearchBar(requestUpdate: () => void): TemplateResult | typeof not
       ${icons.search}
       <input
         type="text"
-        placeholder="Search messages..."
+        placeholder="搜索消息..."
         .value=${vs.searchQuery}
         @input=${(e: Event) => {
           vs.searchQuery = (e.target as HTMLInputElement).value;
@@ -825,7 +825,7 @@ export function renderChat(props: ChatProps) {
   const placeholder = props.connected
     ? hasAttachments
       ? "Add a message or paste more images..."
-      : `Message ${props.assistantName || "agent"} (Enter to send)`
+      : `消息 ${props.assistantName || "agent"} (Enter 发送)`
     : "Connect to the gateway to start chatting...";
 
   const requestUpdate = props.onRequestUpdate ?? (() => {});
@@ -864,7 +864,7 @@ export function renderChat(props: ChatProps) {
       ${
         props.loading
           ? html`
-              <div class="chat-loading-skeleton" aria-label="Loading chat">
+              <div class="chat-loading-skeleton" aria-label="正在加载对话">
                 <div class="chat-line assistant">
                   <div class="chat-msg">
                     <div class="chat-bubble">
@@ -897,7 +897,7 @@ export function renderChat(props: ChatProps) {
       ${
         isEmpty && vs.searchOpen
           ? html`
-              <div class="agent-chat__empty">No matching messages</div>
+              <div class="agent-chat__empty">没有匹配的消息</div>
             `
           : nothing
       }
@@ -1135,7 +1135,7 @@ export function renderChat(props: ChatProps) {
         props.queue.length
           ? html`
             <div class="chat-queue" role="status" aria-live="polite">
-              <div class="chat-queue__title">Queued (${props.queue.length})</div>
+              <div class="chat-queue__title">队列中 (${props.queue.length})</div>
               <div class="chat-queue__list">
                 ${props.queue.map(
                   (item) => html`
@@ -1143,13 +1143,13 @@ export function renderChat(props: ChatProps) {
                       <div class="chat-queue__text">
                         ${
                           item.text ||
-                          (item.attachments?.length ? `Image (${item.attachments.length})` : "")
+                          (item.attachments?.length ? `图片 (${item.attachments.length})` : "")
                         }
                       </div>
                       <button
                         class="btn chat-queue__remove"
                         type="button"
-                        aria-label="Remove queued message"
+                        aria-label="移除队列消息"
                         @click=${() => props.onQueueRemove(item.id)}
                       >
                         ${icons.x}
@@ -1215,7 +1215,7 @@ export function renderChat(props: ChatProps) {
               @click=${() => {
                 document.querySelector<HTMLInputElement>(".agent-chat__file-input")?.click();
               }}
-              title="Attach file"
+              title="附加文件"
               ?disabled=${!props.connected}
             >
               ${icons.paperclip}
@@ -1287,14 +1287,14 @@ export function renderChat(props: ChatProps) {
                     <button
                       class="btn-ghost"
                       @click=${props.onNewSession}
-                      title="New session"
-                      aria-label="New session"
+                      title="新会话"
+                      aria-label="新会话"
                     >
                       ${icons.plus}
                     </button>
                   `
             }
-            <button class="btn-ghost" @click=${() => exportMarkdown(props)} title="Export" ?disabled=${props.messages.length === 0}>
+            <button class="btn-ghost" @click=${() => exportMarkdown(props)} title="导出" ?disabled=${props.messages.length === 0}>
               ${icons.download}
             </button>
 
@@ -1315,7 +1315,7 @@ export function renderChat(props: ChatProps) {
                       props.onSend();
                     }}
                     ?disabled=${!props.connected || props.sending}
-                    title=${isBusy ? "Queue" : "Send"}
+                    title=${isBusy ? "排队" : "发送"}
                   >
                     ${icons.send}
                   </button>
@@ -1388,7 +1388,7 @@ function buildChatItems(props: ChatProps): Array<ChatItem | MessageGroup> {
       key: "chat:history:notice",
       message: {
         role: "system",
-        content: `Showing last ${CHAT_HISTORY_RENDER_LIMIT} messages (${historyStart} hidden).`,
+        content: `显示最近 ${CHAT_HISTORY_RENDER_LIMIT} 条消息（已隐藏 ${historyStart} 条）。`,
         timestamp: Date.now(),
       },
     });

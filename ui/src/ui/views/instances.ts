@@ -20,8 +20,8 @@ export function renderInstances(props: InstancesProps) {
     <section class="card">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Connected Instances</div>
-          <div class="card-sub">Presence beacons from the gateway and clients.</div>
+          <div class="card-title">已连接实例</div>
+          <div class="card-sub">来自网关和客户端的存在信标。</div>
         </div>
         <div class="row" style="gap: 8px;">
           <button
@@ -38,7 +38,7 @@ export function renderInstances(props: InstancesProps) {
             ${masked ? icons.eyeOff : icons.eye}
           </button>
           <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-            ${props.loading ? "Loading…" : "Refresh"}
+            ${props.loading ? "加载中…" : "刷新"}
           </button>
         </div>
       </div>
@@ -60,7 +60,7 @@ export function renderInstances(props: InstancesProps) {
         ${
           props.entries.length === 0
             ? html`
-                <div class="muted">No instances reported yet.</div>
+                <div class="muted">暂无实例报告。</div>
               `
             : props.entries.map((entry) => renderEntry(entry, masked))
         }
@@ -107,8 +107,8 @@ function renderEntry(entry: PresenceEntry, masked: boolean) {
       </div>
       <div class="list-meta">
         <div>${formatPresenceAge(entry)}</div>
-        <div class="muted">Last input ${lastInput}</div>
-        <div class="muted">Reason ${entry.reason ?? ""}</div>
+        <div class="muted">最后输入 ${lastInput}</div>
+        <div class="muted">原因 ${entry.reason ?? ""}</div>
       </div>
     </div>
   `;

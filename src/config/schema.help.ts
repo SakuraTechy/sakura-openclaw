@@ -7,42 +7,42 @@ import { IRC_FIELD_HELP } from "./schema.irc.js";
 import { describeTalkSilenceTimeoutDefaults } from "./talk-defaults.js";
 
 export const FIELD_HELP: Record<string, string> = {
-  meta: "Metadata fields automatically maintained by OpenClaw to record write/version history for this config file. Keep these values system-managed and avoid manual edits unless debugging migration history.",
-  "meta.lastTouchedVersion": "Auto-set when OpenClaw writes the config.",
-  "meta.lastTouchedAt": "ISO timestamp of the last config write (auto-set).",
-  env: "Environment import and override settings used to supply runtime variables to the gateway process. Use this section to control shell-env loading and explicit variable injection behavior.",
+  meta: "OpenClaw 自动维护的元数据字段，用于记录此配置文件的写入/版本历史。保持系统管理，除非调试迁移历史，否则避免手动编辑。",
+  "meta.lastTouchedVersion": "OpenClaw 写入配置时自动设置。",
+  "meta.lastTouchedAt": "上次配置写入的 ISO 时间戳（自动设置）。",
+  env: "环境导入和覆盖设置，用于向网关进程提供运行时变量。控制 Shell 环境加载和显式变量注入行为。",
   "env.shellEnv":
-    "Shell environment import controls for loading variables from your login shell during startup. Keep this enabled when you depend on profile-defined secrets or PATH customizations.",
+    "Shell 环境导入控制，在启动期间从登录 Shell 加载变量。依赖配置文件定义的密钥或 PATH 自定义时保持启用。",
   "env.shellEnv.enabled":
-    "Enables loading environment variables from the user shell profile during startup initialization. Keep enabled for developer machines, or disable in locked-down service environments with explicit env management.",
+    "启用在启动初始化期间从用户 Shell 配置文件加载环境变量。开发机器保持启用，或在显式环境管理的锁定服务环境中禁用。",
   "env.shellEnv.timeoutMs":
-    "Maximum time in milliseconds allowed for shell environment resolution before fallback behavior applies. Use tighter timeouts for faster startup, or increase when shell initialization is heavy.",
+    "Shell 环境解析允许的最大时间（毫秒），超时后应用回退。使用更紧的超时加快启动，或在 Shell 初始化较重时增加。",
   "env.vars":
-    "Explicit key/value environment variable overrides merged into runtime process environment for OpenClaw. Use this for deterministic env configuration instead of relying only on shell profile side effects.",
+    "显式键/值环境变量覆盖，合并到 OpenClaw 的运行时进程环境中。用于确定性环境配置，而非仅依赖 Shell 配置文件副作用。",
   wizard:
-    "Setup wizard state tracking fields that record the most recent guided setup run details. Keep these fields for observability and troubleshooting of setup flows across upgrades.",
+    "设置向导状态跟踪字段，记录最近一次引导式配置运行详情。保留以便观察和排除跨升级的设置流程故障。",
   "wizard.lastRunAt":
-    "ISO timestamp for when the setup wizard most recently completed on this host. Use this to confirm setup recency during support and operational audits.",
+    "设置向导在此主机上最近完成时的 ISO 时间戳。用于在支持和运营审计期间确认配置新近性。",
   "wizard.lastRunVersion":
-    "OpenClaw version recorded at the time of the most recent wizard run on this config. Use this when diagnosing behavior differences across version-to-version setup changes.",
+    "最近一次向导运行时记录的 OpenClaw 版本。诊断跨版本配置行为差异时使用。",
   "wizard.lastRunCommit":
-    "Source commit identifier recorded for the last wizard execution in development builds. Use this to correlate setup behavior with exact source state during debugging.",
+    "开发构建中为最后一次向导执行记录的源代码提交标识符。调试时用于将配置行为与确切源代码状态关联。",
   "wizard.lastRunCommand":
-    "Command invocation recorded for the latest wizard run to preserve execution context. Use this to reproduce setup steps when verifying setup regressions.",
+    "为最近向导运行记录的命令调用，保留执行上下文。用于在验证设置回归时重现配置步骤。",
   "wizard.lastRunMode":
     'Wizard execution mode recorded as "local" or "remote" for the most recent setup flow. Use this to understand whether setup targeted direct local runtime or remote gateway topology.',
   diagnostics:
-    "Diagnostics controls for targeted tracing, telemetry export, and cache inspection during debugging. Keep baseline diagnostics minimal in production and enable deeper signals only when investigating issues.",
+    "用于定向跟踪、遥测导出和调试期间缓存检查的诊断控制。生产环境保持最小化，仅在调查问题时启用更深层信号。",
   "diagnostics.otel":
-    "OpenTelemetry export settings for traces, metrics, and logs emitted by gateway components. Use this when integrating with centralized observability backends and distributed tracing pipelines.",
+    "网关组件发出的跟踪、指标和日志的 OpenTelemetry 导出设置。集成集中式可观察性后端和分布式跟踪管道时使用。",
   "diagnostics.cacheTrace":
-    "Cache-trace logging settings for observing cache decisions and payload context in embedded runs. Enable this temporarily for debugging and disable afterward to reduce sensitive log footprint.",
+    "缓存跟踪日志设置，用于观察缓存决策和有效负载上下文。临时启用进行调试，之后禁用以减少敏感日志占用。",
   logging:
-    "Logging behavior controls for severity, output destinations, formatting, and sensitive-data redaction. Keep levels and redaction strict enough for production while preserving useful diagnostics.",
+    "日志行为控制，包括严重性、输出目标、格式和敏感数据脱敏。保持级别和脱敏足够严格以用于生产环境。",
   "logging.level":
     'Primary log level threshold for runtime logger output: "silent", "fatal", "error", "warn", "info", "debug", or "trace". Keep "info" or "warn" for production, and use debug/trace only during investigation.',
   "logging.file":
-    "Optional file path for persisted log output in addition to or instead of console logging. Use a managed writable path and align retention/rotation with your operational policy.",
+    "可选持久化日志输出文件路径。使用托管的可写路径，并将保留/轮换与运维策略对齐。",
   "logging.consoleLevel":
     'Console-specific log threshold: "silent", "fatal", "error", "warn", "info", "debug", or "trace" for terminal output control. Use this to keep local console quieter while retaining richer file logging if needed.',
   "logging.consoleStyle":
@@ -50,99 +50,99 @@ export const FIELD_HELP: Record<string, string> = {
   "logging.redactSensitive":
     'Sensitive redaction mode: "off" disables built-in masking, while "tools" redacts sensitive tool/config payload fields. Keep "tools" in shared logs unless you have isolated secure log sinks.',
   "logging.redactPatterns":
-    "Additional custom redact regex patterns applied to log output before emission/storage. Use this to mask org-specific tokens and identifiers not covered by built-in redaction rules.",
-  cli: "CLI presentation controls for local command output behavior such as banner and tagline style. Use this section to keep startup output aligned with operator preference without changing runtime behavior.",
+    "日志输出中应用的自定义正则表达式脱敏模式。仅在内置脱敏不足以覆盖需求时添加。",
+  cli: "CLI 外观和行为设置，控制横幅显示和 CLI 特定的用户界面元素。",
   "cli.banner":
-    "CLI startup banner controls for title/version line and tagline style behavior. Keep banner enabled for fast version/context checks, then tune tagline mode to your preferred noise level.",
+    "CLI 启动横幅控制，用于标题/版本行和标语样式行为。保持横幅启用以快速检查版本/上下文。",
   "cli.banner.taglineMode":
     'Controls tagline style in the CLI startup banner: "random" (default) picks from the rotating tagline pool, "default" always shows the neutral default tagline, and "off" hides tagline text while keeping the banner version line.',
   update:
-    "Update-channel and startup-check behavior for keeping OpenClaw runtime versions current. Use conservative channels in production and more experimental channels only in controlled environments.",
+    "更新通道和启动检查行为，保持 OpenClaw 运行时版本最新。生产环境使用保守通道。",
   "update.channel": 'Update channel for git + npm installs ("stable", "beta", or "dev").',
-  "update.checkOnStart": "Check for npm updates when the gateway starts (default: true).",
-  "update.auto.enabled": "Enable background auto-update for package installs (default: false).",
+  "update.checkOnStart": "控制 OpenClaw 是否在启动时自动检查可用更新。",
+  "update.auto.enabled": "启用自动更新功能。",
   "update.auto.stableDelayHours":
-    "Minimum delay before stable-channel auto-apply starts (default: 6).",
+    "稳定版更新的延迟时间（小时），新版本发布后等待一段时间再更新。",
   "update.auto.stableJitterHours":
-    "Extra stable-channel rollout spread window in hours (default: 12).",
-  "update.auto.betaCheckIntervalHours": "How often beta-channel checks run in hours (default: 1).",
+    "稳定版更新延迟的随机抖动（小时），避免所有实例同时更新。",
+  "update.auto.betaCheckIntervalHours": "Beta 版更新检查间隔（小时）。",
   gateway:
-    "Gateway runtime surface for bind mode, auth, control UI, remote transport, and operational safety controls. Keep conservative defaults unless you intentionally expose the gateway beyond trusted local interfaces.",
+    "网关服务器配置，包括端口、绑定、认证、TLS 和 API 端点。",
   "gateway.port":
-    "TCP port used by the gateway listener for API, control UI, and channel-facing ingress paths. Use a dedicated port and avoid collisions with reverse proxies or local developer services.",
+    "网关 HTTP/WebSocket 服务器监听的端口号。",
   "gateway.mode":
     'Gateway operation mode: "local" runs channels and agent runtime on this host, while "remote" connects through remote transport. Keep "local" unless you intentionally run a split remote gateway topology.',
   "gateway.bind":
     'Network bind profile: "auto", "lan", "loopback", "custom", or "tailnet" to control interface exposure. Keep "loopback" or "auto" for safest local operation unless external clients must connect.',
   "gateway.customBindHost":
-    "Explicit bind host/IP used when gateway.bind is set to custom for manual interface targeting. Use a precise address and avoid wildcard binds unless external exposure is required.",
+    "自定义绑定主机地址。",
   "gateway.controlUi":
-    "Control UI hosting settings including enablement, pathing, and browser-origin/auth hardening behavior. Keep UI exposure minimal and pair with strong auth controls before internet-facing deployments.",
+    "控制面板 UI 设置。",
   "gateway.controlUi.enabled":
-    "Enables serving the gateway Control UI from the gateway HTTP process when true. Keep enabled for local administration, and disable when an external control surface replaces it.",
+    "启用或禁用控制面板 Web UI。",
   "gateway.auth":
-    "Authentication policy for gateway HTTP/WebSocket access including mode, credentials, trusted-proxy behavior, and rate limiting. Keep auth enabled for every non-loopback deployment.",
+    "网关认证配置，包括令牌、密码和速率限制。",
   "gateway.auth.mode":
     'Gateway auth mode: "none", "token", "password", or "trusted-proxy" depending on your edge architecture. Use token/password for direct exposure, and trusted-proxy only behind hardened identity-aware proxies.',
   "gateway.auth.allowTailscale":
-    "Allows trusted Tailscale identity paths to satisfy gateway auth checks when configured. Use this only when your tailnet identity posture is strong and operator workflows depend on it.",
+    "允许 Tailscale 身份作为认证方式。",
   "gateway.auth.rateLimit":
-    "Login/auth attempt throttling controls to reduce credential brute-force risk at the gateway boundary. Keep enabled in exposed environments and tune thresholds to your traffic baseline.",
+    "网关认证速率限制，防止暴力攻击。",
   "gateway.auth.trustedProxy":
-    "Trusted-proxy auth header mapping for upstream identity providers that inject user claims. Use only with known proxy CIDRs and strict header allowlists to prevent spoofed identity headers.",
+    "可信代理认证模式。",
   "gateway.trustedProxies":
-    "CIDR/IP allowlist of upstream proxies permitted to provide forwarded client identity headers. Keep this list narrow so untrusted hops cannot impersonate users.",
+    "可信代理服务器 CIDR 列表。",
   "gateway.allowRealIpFallback":
-    "Enables x-real-ip fallback when x-forwarded-for is missing in proxy scenarios. Keep disabled unless your ingress stack requires this compatibility behavior.",
+    "允许 x-real-ip 头作为客户端 IP 回退。",
   "gateway.tools":
-    "Gateway-level tool exposure allow/deny policy that can restrict runtime tool availability independent of agent/tool profiles. Use this for coarse emergency controls and production hardening.",
+    "网关工具暴露策略。",
   "gateway.tools.allow":
-    "Explicit gateway-level tool allowlist when you want a narrow set of tools available at runtime. Use this for locked-down environments where tool scope must be tightly controlled.",
+    "网关允许暴露的工具列表。",
   "gateway.tools.deny":
-    "Explicit gateway-level tool denylist to block risky tools even if lower-level policies allow them. Use deny rules for emergency response and defense-in-depth hardening.",
+    "网关拒绝暴露的工具列表。",
   "gateway.channelHealthCheckMinutes":
-    "Interval in minutes for automatic channel health probing and status updates. Use lower intervals for faster detection, or higher intervals to reduce periodic probe noise.",
+    "通道健康检查间隔（分钟）。",
   "gateway.channelStaleEventThresholdMinutes":
     "How many minutes a connected channel can go without receiving any event before the health monitor treats it as a stale socket and triggers a restart. Default: 30.",
   "gateway.channelMaxRestartsPerHour":
     "Maximum number of health-monitor-initiated channel restarts allowed within a rolling one-hour window. Once hit, further restarts are skipped until the window expires. Default: 10.",
   "gateway.tailscale":
-    "Tailscale integration settings for Serve/Funnel exposure and lifecycle handling on gateway start/exit. Keep off unless your deployment intentionally relies on Tailscale ingress.",
+    "Tailscale 集成配置。",
   "gateway.tailscale.mode":
     'Tailscale publish mode: "off", "serve", or "funnel" for private or public exposure paths. Use "serve" for tailnet-only access and "funnel" only when public internet reachability is required.',
   "gateway.tailscale.resetOnExit":
-    "Resets Tailscale Serve/Funnel state on gateway exit to avoid stale published routes after shutdown. Keep enabled unless another controller manages publish lifecycle outside the gateway.",
+    "退出时重置 Tailscale 状态。",
   "gateway.remote":
-    "Remote gateway connection settings for direct or SSH transport when this instance proxies to another runtime host. Use remote mode only when split-host operation is intentionally configured.",
+    "远程网关连接设置。",
   "gateway.remote.transport":
     'Remote connection transport: "direct" uses configured URL connectivity, while "ssh" tunnels through SSH. Use SSH when you need encrypted tunnel semantics without exposing remote ports.',
   "gateway.reload":
-    "Live config-reload policy for how edits are applied and when full restarts are triggered. Keep hybrid behavior for safest operational updates unless debugging reload internals.",
+    "配置重载设置。",
   "gateway.tls":
-    "TLS certificate and key settings for terminating HTTPS directly in the gateway process. Use explicit certificates in production and avoid plaintext exposure on untrusted networks.",
+    "网关 TLS/HTTPS 配置。",
   "gateway.tls.enabled":
-    "Enables TLS termination at the gateway listener so clients connect over HTTPS/WSS directly. Keep enabled for direct internet exposure or any untrusted network boundary.",
+    "启用 TLS 加密。",
   "gateway.tls.autoGenerate":
-    "Auto-generates a local TLS certificate/key pair when explicit files are not configured. Use only for local/dev setups and replace with real certificates for production traffic.",
+    "自动生成自签名 TLS 证书。",
   "gateway.tls.certPath":
-    "Filesystem path to the TLS certificate file used by the gateway when TLS is enabled. Use managed certificate paths and keep renewal automation aligned with this location.",
+    "TLS 证书文件路径。",
   "gateway.tls.keyPath":
-    "Filesystem path to the TLS private key file used by the gateway when TLS is enabled. Keep this key file permission-restricted and rotate per your security policy.",
+    "TLS 私钥文件路径。",
   "gateway.tls.caPath":
-    "Optional CA bundle path for client verification or custom trust-chain requirements at the gateway edge. Use this when private PKI or custom certificate chains are part of deployment.",
+    "TLS CA 证书文件路径。",
   "gateway.http":
-    "Gateway HTTP API configuration grouping endpoint toggles and transport-facing API exposure controls. Keep only required endpoints enabled to reduce attack surface.",
+    "网关 HTTP API 设置。",
   "gateway.http.endpoints":
-    "HTTP endpoint feature toggles under the gateway API surface for compatibility routes and optional integrations. Enable endpoints intentionally and monitor access patterns after rollout.",
+    "HTTP API 端点配置。",
   "gateway.http.securityHeaders":
-    "Optional HTTP response security headers applied by the gateway process itself. Prefer setting these at your reverse proxy when TLS terminates there.",
+    "HTTP 安全响应头配置。",
   "gateway.http.securityHeaders.strictTransportSecurity":
     "Value for the Strict-Transport-Security response header. Set only on HTTPS origins that you fully control; use false to explicitly disable.",
-  "gateway.remote.url": "Remote Gateway WebSocket URL (ws:// or wss://).",
+  "gateway.remote.url": "远程网关 WebSocket URL。",
   "gateway.remote.token":
-    "Bearer token used to authenticate this client to a remote gateway in token-auth deployments. Store via secret/env substitution and rotate alongside remote gateway auth changes.",
+    "远程网关连接令牌。",
   "gateway.remote.password":
-    "Password credential used for remote gateway authentication when password mode is enabled. Keep this secret managed externally and avoid plaintext values in committed config.",
+    "远程网关连接密码。",
   "gateway.remote.tlsFingerprint":
     "Expected sha256 TLS fingerprint for the remote gateway (pin to avoid MITM).",
   "gateway.remote.sshTarget":
@@ -169,21 +169,21 @@ export const FIELD_HELP: Record<string, string> = {
   "talk.interruptOnSpeech":
     "If true (default), stop assistant speech when the user starts speaking in Talk mode. Keep enabled for conversational turn-taking.",
   "talk.silenceTimeoutMs": `Milliseconds of user silence before Talk mode finalizes and sends the current transcript. Leave unset to keep the platform default pause window (${describeTalkSilenceTimeoutDefaults()}).`,
-  acp: "ACP runtime controls for enabling dispatch, selecting backends, constraining allowed agent targets, and tuning streamed turn projection behavior.",
+  acp: "ACP (Agent Communication Protocol) 配置。",
   "acp.enabled":
-    "Global ACP feature gate. Keep disabled unless ACP runtime + policy are configured.",
+    "启用 ACP 运行时。",
   "acp.dispatch.enabled":
     "Independent dispatch gate for ACP session turns (default: true). Set false to keep ACP commands available while blocking ACP turn execution.",
   "acp.backend":
-    "Default ACP runtime backend id (for example: acpx). Must match a registered ACP runtime plugin backend.",
+    "ACP 后端类型。",
   "acp.defaultAgent":
-    "Fallback ACP target agent id used when ACP spawns do not specify an explicit target.",
+    "ACP 默认代理 ID。",
   "acp.allowedAgents":
-    "Allowlist of ACP target agent ids permitted for ACP runtime sessions. Empty means no additional allowlist restriction.",
+    "允许的 ACP 目标代理 ID 列表。",
   "acp.maxConcurrentSessions":
-    "Maximum concurrently active ACP sessions across this gateway process.",
+    "最大并发会话数。",
   "acp.stream":
-    "ACP streaming projection controls for chunk sizing, metadata visibility, and deduped delivery behavior.",
+    "ACP 流式传输设置。",
   "acp.stream.coalesceIdleMs":
     "Coalescer idle flush window in milliseconds for ACP streamed text before block replies are emitted.",
   "acp.stream.maxChunkChars":
@@ -209,11 +209,11 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.list[].skills":
     "Optional allowlist of skills for this agent (omit = all skills; empty = no skills).",
   agents:
-    "Agent runtime configuration root covering defaults and explicit agent entries used for routing and execution context. Keep this section explicit so model/tool behavior stays predictable across multi-agent workflows.",
+    "代理配置，定义 AI 代理的行为、身份、模型和运行时设置。",
   "agents.defaults":
-    "Shared default settings inherited by agents unless overridden per entry in agents.list. Use defaults to enforce consistent baseline behavior and reduce duplicated per-agent configuration.",
+    "代理默认设置，未显式覆盖时使用的基础配置。",
   "agents.list":
-    "Explicit list of configured agents with IDs and optional overrides for model, tools, identity, and workspace. Keep IDs stable over time so bindings, approvals, and session routing remain deterministic.",
+    "代理列表，定义一个或多个代理及其配置。",
   "agents.list[].runtime":
     "Optional runtime descriptor for this agent. Use embedded for default OpenClaw execution or acp for external ACP harness defaults.",
   "agents.list[].runtime.type":
@@ -235,19 +235,19 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.list[].heartbeat.suppressToolErrorWarnings":
     "Suppress tool error warning payloads during heartbeat runs.",
   browser:
-    "Browser runtime controls for local or remote CDP attachment, profile routing, and screenshot/snapshot behavior. Keep defaults unless your automation workflow requires custom browser transport settings.",
+    "浏览器自动化配置。",
   "browser.enabled":
-    "Enables browser capability wiring in the gateway so browser tools and CDP-driven workflows can run. Disable when browser automation is not needed to reduce surface area and startup work.",
+    "启用浏览器自动化。",
   "browser.cdpUrl":
-    "Remote CDP websocket URL used to attach to an externally managed browser instance. Use this for centralized browser hosts and keep URL access restricted to trusted network paths.",
+    "Chrome DevTools Protocol URL。",
   "browser.color":
     "Default accent color used for browser profile/UI cues where colored identity hints are displayed. Use consistent colors to help operators identify active browser profile context quickly.",
   "browser.executablePath":
-    "Explicit browser executable path when auto-discovery is insufficient for your host environment. Use absolute stable paths so launch behavior stays deterministic across restarts.",
+    "浏览器可执行文件路径。",
   "browser.headless":
-    "Forces browser launch in headless mode when the local launcher starts browser instances. Keep headless enabled for server environments and disable only when visible UI debugging is required.",
+    "以无头模式运行浏览器。",
   "browser.noSandbox":
-    "Disables Chromium sandbox isolation flags for environments where sandboxing fails at runtime. Keep this off whenever possible because process isolation protections are reduced.",
+    "禁用浏览器沙箱。",
   "browser.attachOnly":
     "Restricts browser mode to attach-only behavior without starting local browser processes. Use this when all browser sessions are externally managed by a remote CDP provider.",
   "browser.cdpPortRangeStart":
@@ -289,25 +289,25 @@ export const FIELD_HELP: Record<string, string> = {
   "discovery.mdns.mode":
     'mDNS broadcast mode ("minimal" default, "full" includes cliPath/sshPort, "off" disables mDNS).',
   discovery:
-    "Service discovery settings for local mDNS advertisement and optional wide-area presence signaling. Keep discovery scoped to expected networks to avoid leaking service metadata.",
+    "发现服务配置。",
   "discovery.wideArea":
     "Wide-area discovery configuration group for exposing discovery signals beyond local-link scopes. Enable only in deployments that intentionally aggregate gateway presence across sites.",
   "discovery.wideArea.enabled":
     "Enables wide-area discovery signaling when your environment needs non-local gateway discovery. Keep disabled unless cross-network discovery is operationally required.",
   "discovery.wideArea.domain":
-    "Optional unicast DNS-SD domain for wide-area discovery, such as openclaw.internal. Use this when you intentionally publish gateway discovery beyond local mDNS scopes.",
+    "可选的单播 DNS-SD 域名，用于广域发现（如 openclaw.internal）。仅在需要超出本地 mDNS 范围发布网关发现时使用。",
   "discovery.mdns":
     "mDNS discovery configuration group for local network advertisement and discovery behavior tuning. Keep minimal mode for routine LAN discovery unless extra metadata is required.",
   tools:
-    "Global tool access policy and capability configuration across web, exec, media, messaging, and elevated surfaces. Use this section to constrain risky capabilities before broad rollout.",
+    "工具配置，控制代理可用的工具及行为。",
   "tools.allow":
-    "Absolute tool allowlist that replaces profile-derived defaults for strict environments. Use this only when you intentionally run a tightly curated subset of tool capabilities.",
+    "显式允许的工具列表。",
   "tools.deny":
-    "Global tool denylist that blocks listed tools even when profile or provider rules would allow them. Use deny rules for emergency lockouts and long-term defense-in-depth.",
+    "显式拒绝的工具列表。",
   "tools.web":
-    "Web-tool policy grouping for search/fetch providers, limits, and fallback behavior tuning. Keep enabled settings aligned with API key availability and outbound networking policy.",
+    "网页工具配置，包括搜索和获取设置。",
   "tools.exec":
-    "Exec-tool policy grouping for shell execution host, security mode, approval behavior, and runtime bindings. Keep conservative defaults in production and tighten elevated execution paths.",
+    "执行工具配置，控制代理如何运行命令和脚本。",
   "tools.exec.host":
     "Selects execution host strategy for shell commands, typically controlling local vs delegated execution environment. Use the safest host mode that still satisfies your automation requirements.",
   "tools.exec.security":
@@ -363,10 +363,10 @@ export const FIELD_HELP: Record<string, string> = {
     "TCP port used by the canvas host HTTP server when canvas hosting is enabled. Choose a non-conflicting port and align firewall/proxy policy accordingly.",
   "canvasHost.liveReload":
     "Enables automatic live-reload behavior for canvas assets during development workflows. Keep disabled in production-like environments where deterministic output is preferred.",
-  talk: "Talk-mode voice synthesis settings for voice identity, model selection, output format, and interruption behavior. Use this section to tune human-facing voice UX while controlling latency and cost.",
+  talk: "语音通话配置。",
   "gateway.auth.token":
-    "Required by default for gateway access (unless using Tailscale Serve identity); required for non-loopback binds.",
-  "gateway.auth.password": "Required for Tailscale funnel.",
+    "网关认证令牌。支持直接值或 SecretRef。",
+  "gateway.auth.password": "网关认证密码。支持 SecretRef。",
   "agents.defaults.sandbox.browser.network":
     "Docker network for sandbox browser containers (default: openclaw-sandbox-browser). Avoid bridge if you need stricter isolation.",
   "agents.list[].sandbox.browser.network": "Per-agent override for sandbox browser Docker network.",
@@ -379,11 +379,11 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.list[].sandbox.browser.cdpSourceRange":
     "Per-agent override for CDP source CIDR allowlist.",
   "gateway.controlUi.basePath":
-    "Optional URL prefix where the Control UI is served (e.g. /openclaw).",
+    "控制面板 UI 的 URL 基础路径。",
   "gateway.controlUi.root":
-    "Optional filesystem root for Control UI assets (defaults to dist/control-ui).",
+    "控制面板 UI 静态文件的根目录。",
   "gateway.controlUi.allowedOrigins":
-    "Allowed browser origins for Control UI/WebChat websocket connections (full origins only, e.g. https://control.example.com). Required for non-loopback Control UI deployments unless dangerous Host-header fallback is explicitly enabled.",
+    "控制面板 UI 允许的 CORS 来源。",
   "gateway.controlUi.dangerouslyAllowHostHeaderOriginFallback":
     "DANGEROUS toggle that enables Host-header based origin fallback for Control UI/WebChat websocket checks. This mode is supported when your deployment intentionally relies on Host-header origin policy; explicit gateway.controlUi.allowedOrigins remains the recommended hardened default.",
   "gateway.controlUi.allowInsecureAuth":
@@ -424,7 +424,7 @@ export const FIELD_HELP: Record<string, string> = {
     "Timeout in milliseconds for `image_url` URL fetches (default: 10000).",
   "gateway.reload.mode":
     'Controls how config edits are applied: "off" ignores live edits, "restart" always restarts, "hot" applies in-process, and "hybrid" tries hot then restarts if required. Keep "hybrid" for safest routine updates.',
-  "gateway.reload.debounceMs": "Debounce window (ms) before applying config changes.",
+  "gateway.reload.debounceMs": "配置重载防抖延迟（毫秒）。",
   "gateway.reload.deferralTimeoutMs":
     "Maximum time (ms) to wait for in-flight operations to complete before forcing a SIGUSR1 restart. Default: 300000 (5 minutes). Lower values risk aborting active subagent LLM calls.",
   "gateway.nodes.browser.mode":
@@ -435,7 +435,7 @@ export const FIELD_HELP: Record<string, string> = {
   "gateway.nodes.denyCommands":
     "Node command names to block even if present in node claims or default allowlist (exact command-name matching only, e.g. `system.run`; does not inspect shell text inside that command).",
   nodeHost:
-    "Node host controls for features exposed from this gateway node to other nodes or clients. Keep defaults unless you intentionally proxy local capabilities across your node network.",
+    "节点主机配置。",
   "nodeHost.browserProxy":
     "Groups browser-proxy settings for exposing local browser control through node routing. Enable only when remote node workflows need your local browser profiles.",
   "nodeHost.browserProxy.enabled":
@@ -443,11 +443,11 @@ export const FIELD_HELP: Record<string, string> = {
   "nodeHost.browserProxy.allowProfiles":
     "Optional allowlist of browser profile names exposed through node proxy routing. Leave empty to expose all configured profiles, or use a tight list to enforce least-privilege profile access.",
   media:
-    "Top-level media behavior shared across providers and tools that handle inbound files. Keep defaults unless you need stable filenames for external processing pipelines or longer-lived inbound media retention.",
+    "媒体处理配置。",
   "media.preserveFilenames":
-    "When enabled, uploaded media keeps its original filename instead of a generated temp-safe name. Turn this on when downstream automations depend on stable names, and leave off to reduce accidental filename leakage.",
+    "保留上传媒体的原始文件名。",
   "media.ttlHours":
-    "Optional retention window in hours for persisted inbound media cleanup across the full media tree. Leave unset to preserve legacy behavior, or set values like 24 (1 day) or 168 (7 days) when you want automatic cleanup.",
+    "媒体文件生存时间（小时）。",
   audio:
     "Global audio ingestion settings used before higher-level tools process speech or media content. Configure this when you need deterministic transcription behavior for voice notes and clips.",
   "audio.transcription":
@@ -457,7 +457,7 @@ export const FIELD_HELP: Record<string, string> = {
   "audio.transcription.timeoutSeconds":
     "Maximum time allowed for the transcription command to finish before it is aborted. Increase this for longer recordings, and keep it tight in latency-sensitive deployments.",
   bindings:
-    "Top-level binding rules for routing and persistent ACP conversation ownership. Use type=route for normal routing and type=acp for persistent ACP harness bindings.",
+    "绑定配置。",
   "bindings[].type":
     'Binding kind. Use "route" (or omit for legacy route entries) for normal routing, and "acp" for persistent ACP conversation bindings.',
   "bindings[].agentId":
@@ -497,37 +497,37 @@ export const FIELD_HELP: Record<string, string> = {
   "diagnostics.flags":
     'Enable targeted diagnostics logs by flag (e.g. ["telegram.http"]). Supports wildcards like "telegram.*" or "*".',
   "diagnostics.enabled":
-    "Master toggle for diagnostics instrumentation output in logs and telemetry wiring paths. Keep enabled for normal observability, and disable only in tightly constrained environments.",
+    "启用或禁用诊断子系统。",
   "diagnostics.stuckSessionWarnMs":
-    "Age threshold in milliseconds for emitting stuck-session warnings while a session remains in processing state. Increase for long multi-tool turns to reduce false positives; decrease for faster hang detection.",
+    "会话被视为卡住并触发警告之前的毫秒阈值。",
   "diagnostics.otel.enabled":
-    "Enables OpenTelemetry export pipeline for traces, metrics, and logs based on configured endpoint/protocol settings. Keep disabled unless your collector endpoint and auth are fully configured.",
+    "启用 OpenTelemetry 遥测数据的收集和导出。",
   "diagnostics.otel.endpoint":
-    "Collector endpoint URL used for OpenTelemetry export transport, including scheme and port. Use a reachable, trusted collector endpoint and monitor ingestion errors after rollout.",
+    "OpenTelemetry 收集器端点 URL。",
   "diagnostics.otel.protocol":
     'OTel transport protocol for telemetry export: "http/protobuf" or "grpc" depending on collector support. Use the protocol your observability backend expects to avoid dropped telemetry payloads.',
   "diagnostics.otel.headers":
-    "Additional HTTP/gRPC metadata headers sent with OpenTelemetry export requests, often used for tenant auth or routing. Keep secrets in env-backed values and avoid unnecessary header sprawl.",
+    "发送到 OpenTelemetry 收集器的自定义头部。",
   "diagnostics.otel.serviceName":
-    "Service name reported in telemetry resource attributes to identify this gateway instance in observability backends. Use stable names so dashboards and alerts remain consistent over deployments.",
+    "注册到 OpenTelemetry 的服务名称。",
   "diagnostics.otel.traces":
-    "Enable trace signal export to the configured OpenTelemetry collector endpoint. Keep enabled when latency/debug tracing is needed, and disable if you only want metrics/logs.",
+    "启用 OpenTelemetry 跟踪数据导出。",
   "diagnostics.otel.metrics":
-    "Enable metrics signal export to the configured OpenTelemetry collector endpoint. Keep enabled for runtime health dashboards, and disable only if metric volume must be minimized.",
+    "启用 OpenTelemetry 指标数据导出。",
   "diagnostics.otel.logs":
-    "Enable log signal export through OpenTelemetry in addition to local logging sinks. Use this when centralized log correlation is required across services and agents.",
+    "启用 OpenTelemetry 日志数据导出。",
   "diagnostics.otel.sampleRate":
-    "Trace sampling rate (0-1) controlling how much trace traffic is exported to observability backends. Lower rates reduce overhead/cost, while higher rates improve debugging fidelity.",
+    "OpenTelemetry 跟踪采样率（0.0 到 1.0）。",
   "diagnostics.otel.flushIntervalMs":
-    "Interval in milliseconds for periodic telemetry flush from buffers to the collector. Increase to reduce export chatter, or lower for faster visibility during active incident response.",
+    "OpenTelemetry 数据刷新间隔（毫秒）。",
   "diagnostics.cacheTrace.enabled":
-    "Log cache trace snapshots for embedded agent runs (default: false).",
+    "启用缓存跟踪日志记录。",
   "diagnostics.cacheTrace.filePath":
-    "JSONL output path for cache trace logs (default: $OPENCLAW_STATE_DIR/logs/cache-trace.jsonl).",
+    "缓存跟踪日志的输出文件路径。",
   "diagnostics.cacheTrace.includeMessages":
-    "Include full message payloads in trace output (default: true).",
-  "diagnostics.cacheTrace.includePrompt": "Include prompt text in trace output (default: true).",
-  "diagnostics.cacheTrace.includeSystem": "Include system prompt in trace output (default: true).",
+    "在缓存跟踪中包含消息内容。",
+  "diagnostics.cacheTrace.includePrompt": "在缓存跟踪中包含提示内容。",
+  "diagnostics.cacheTrace.includeSystem": "在缓存跟踪中包含系统消息。",
   "tools.exec.applyPatch.enabled":
     "Experimental. Enables apply_patch for OpenAI models when allowed by tool policy.",
   "tools.exec.applyPatch.workspaceOnly":
@@ -560,9 +560,9 @@ export const FIELD_HELP: Record<string, string> = {
   "tools.exec.safeBinProfiles":
     "Optional per-binary safe-bin profiles (positional limits + allowed/denied flags).",
   "tools.profile":
-    "Global tool profile name used to select a predefined tool policy baseline before applying allow/deny overrides. Use this for consistent environment posture across agents and keep profile names stable.",
+    "工具配置文件，预定义一组工具启用/禁用规则。",
   "tools.alsoAllow":
-    "Extra tool allowlist entries merged on top of the selected tool profile and default policy. Keep this list small and explicit so audits can quickly identify intentional policy exceptions.",
+    "在配置文件基础上额外允许的工具。",
   "tools.byProvider":
     "Per-provider tool allow/deny overrides keyed by channel/provider ID to tailor capabilities by surface. Use this when one provider needs stricter controls than global tool policy.",
   "agents.list[].tools.profile":
@@ -663,11 +663,11 @@ export const FIELD_HELP: Record<string, string> = {
   "tools.message.crossContext.marker.suffix":
     'Text suffix for cross-context markers (supports "{channel}").',
   "tools.message.broadcast.enabled": "Enable broadcast action (default: true).",
-  "tools.web.search.enabled": "Enable the web_search tool (requires a provider API key).",
+  "tools.web.search.enabled": "启用网页搜索功能。",
   "tools.web.search.provider":
     'Search provider ("brave", "firecrawl", "gemini", "grok", "kimi", or "perplexity"). Auto-detected from available API keys if omitted.',
-  "tools.web.search.apiKey": "Brave Search API key (fallback: BRAVE_API_KEY env var).",
-  "tools.web.search.maxResults": "Number of results to return (1-10).",
+  "tools.web.search.apiKey": "网页搜索 API 密钥。",
+  "tools.web.search.maxResults": "搜索返回的最大结果数。",
   "tools.web.search.timeoutSeconds": "Timeout in seconds for web_search requests.",
   "tools.web.search.cacheTtlMinutes": "Cache TTL in minutes for web_search results.",
   "tools.web.search.brave.mode":
@@ -712,7 +712,7 @@ export const FIELD_HELP: Record<string, string> = {
     "Firecrawl maxAge (ms) for cached results when supported by the API.",
   "tools.web.fetch.firecrawl.timeoutSeconds": "Timeout in seconds for Firecrawl requests.",
   models:
-    "Model catalog root for provider definitions, merge/replace behavior, and optional Bedrock discovery integration. Keep provider definitions explicit and validated before relying on production failover paths.",
+    "模型配置。",
   "models.mode":
     'Controls provider catalog behavior: "merge" keeps built-ins and overlays your custom providers, while "replace" uses only your configured providers. In "merge", matching provider IDs preserve non-empty agent models.json baseUrl values, while apiKey values are preserved only when the provider is not SecretRef-managed in current config/auth-profile context; SecretRef-managed providers refresh apiKey from current source markers, and matching model contextWindow/maxTokens use the higher value between explicit and implicit entries.',
   "models.providers":
@@ -747,7 +747,7 @@ export const FIELD_HELP: Record<string, string> = {
     "Fallback context-window value applied to discovered models when provider metadata lacks explicit limits. Use realistic defaults to avoid oversized prompts that exceed true provider constraints.",
   "models.bedrockDiscovery.defaultMaxTokens":
     "Fallback max-token value applied to discovered models without explicit output token limits. Use conservative defaults to reduce truncation surprises and unexpected token spend.",
-  auth: "Authentication profile root used for multi-profile provider credentials and cooldown-based failover ordering. Keep profiles minimal and explicit so automatic failover behavior stays auditable.",
+  auth: "认证配置。",
   "channels.slack.allowBots":
     "Allow bot-authored messages to trigger Slack replies (default: false).",
   "channels.slack.thread.historyScope":
@@ -768,7 +768,7 @@ export const FIELD_HELP: Record<string, string> = {
   "auth.profiles": "Named auth profiles (provider + mode + optional email).",
   "auth.order": "Ordered auth profile IDs per provider (used for automatic failover).",
   "auth.cooldowns":
-    "Cooldown/backoff controls for temporary profile suppression after billing-related failures and retry windows. Use these to prevent rapid re-selection of profiles that are still blocked.",
+    "认证尝试冷却配置。",
   "auth.cooldowns.billingBackoffHours":
     "Base backoff (hours) when a profile fails due to billing/insufficient credits (default: 5).",
   "auth.cooldowns.billingBackoffHoursByProvider":
@@ -814,7 +814,7 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.defaults.memorySearch.model":
     "Embedding model override used by the selected memory provider when a non-default model is required. Set this only when you need explicit recall quality/cost tuning beyond provider defaults.",
   "agents.defaults.memorySearch.outputDimensionality":
-    "Gemini embedding-2 only: chooses the output vector size for memory embeddings. Use 768, 1536, or 3072 (default), and expect a full reindex when you change it because stored vector dimensions must stay consistent.",
+    "仅限 Gemini embedding-2：选择内存嵌入的输出向量大小。使用 768、1536 或 3072（默认），更改后需要完全重新索引，因为存储的向量维度必须保持一致。",
   "agents.defaults.memorySearch.remote.baseUrl":
     "Overrides the embedding API endpoint, such as an OpenAI-compatible proxy or custom Gemini base URL. Use this only when routing through your own gateway or vendor endpoint; keep provider defaults otherwise.",
   "agents.defaults.memorySearch.remote.apiKey":
@@ -867,15 +867,15 @@ export const FIELD_HELP: Record<string, string> = {
     "Controls how fast older memory loses rank when temporal decay is enabled (half-life in days, default: 30). Lower values prioritize recent context more aggressively.",
   "agents.defaults.memorySearch.cache.enabled":
     "Caches computed chunk embeddings in SQLite so reindexing and incremental updates run faster (default: true). Keep this enabled unless investigating cache correctness or minimizing disk usage.",
-  memory: "Memory backend configuration (global).",
+  memory: "记忆配置。",
   "memory.backend":
     'Selects the global memory engine: "builtin" uses OpenClaw memory internals, while "qmd" uses the QMD sidecar pipeline. Keep "builtin" unless you intentionally operate QMD.',
   "memory.citations":
     'Controls citation visibility in replies: "auto" shows citations when useful, "on" always shows them, and "off" hides them. Keep "auto" for a balanced signal-to-noise default.',
   "memory.qmd.command":
-    "Sets the executable path for the `qmd` binary used by the QMD backend (default: resolved from PATH). Use an explicit absolute path when multiple qmd installs exist or PATH differs across environments.",
+    "QMD 二进制文件路径。",
   "memory.qmd.mcporter":
-    "Routes QMD work through mcporter (MCP runtime) instead of spawning `qmd` for each call. Use this when cold starts are expensive on large models; keep direct process mode for simpler local setups.",
+    "QMD MCPorter 配置。",
   "memory.qmd.mcporter.enabled":
     "Routes QMD through an mcporter daemon instead of spawning qmd per request, reducing cold-start overhead for larger models. Keep disabled unless mcporter is installed and configured.",
   "memory.qmd.mcporter.serverName":
@@ -887,7 +887,7 @@ export const FIELD_HELP: Record<string, string> = {
   "memory.qmd.includeDefaultMemory":
     "Automatically indexes default memory files (MEMORY.md and memory/**/*.md) into QMD collections. Keep enabled unless you want indexing controlled only through explicit custom paths.",
   "memory.qmd.paths":
-    "Adds custom directories or files to include in QMD indexing, each with an optional name and glob pattern. Use this for project-specific knowledge locations that are outside default memory paths.",
+    "QMD 额外搜索路径。",
   "memory.qmd.paths.path":
     "Defines the root location QMD should scan, using an absolute path or `~`-relative path. Use stable directories so collection identity does not drift across environments.",
   "memory.qmd.paths.pattern":
@@ -942,17 +942,17 @@ export const FIELD_HELP: Record<string, string> = {
     "Requires at least this many appended transcript messages before reindex is triggered (default: 50). Lower this for near-real-time transcript recall, or raise it to reduce indexing churn.",
   "agents.defaults.memorySearch.sync.sessions.postCompactionForce":
     "Forces a session memory-search reindex after compaction-triggered transcript updates (default: true). Keep enabled when compacted summaries must be immediately searchable, or disable to reduce write-time indexing pressure.",
-  ui: "UI presentation settings for accenting and assistant identity shown in control surfaces. Use this for branding and readability customization without changing runtime behavior.",
+  ui: "用户界面配置。",
   "ui.seamColor":
     "Primary accent/seam color used by UI surfaces for emphasis, badges, and visual identity cues. Use high-contrast values that remain readable across light/dark themes.",
   "ui.assistant":
-    "Assistant display identity settings for name and avatar shown in UI surfaces. Keep these values aligned with your operator-facing persona and support expectations.",
+    "助手外观配置。",
   "ui.assistant.name":
     "Display name shown for the assistant in UI views, chat chrome, and status contexts. Keep this stable so operators can reliably identify which assistant persona is active.",
   "ui.assistant.avatar":
     "Assistant avatar image source used in UI surfaces (URL, path, or data URI depending on runtime support). Use trusted assets and consistent branding dimensions for clean rendering.",
   plugins:
-    "Plugin system controls for enabling extensions, constraining load scope, configuring entries, and tracking installs. Keep plugin policy explicit and least-privilege in production environments.",
+    "插件配置。",
   "plugins.enabled":
     "Enable or disable plugin/extension loading globally during startup and config reload (default: true). Keep enabled only when extension capabilities are required by your deployment.",
   "plugins.allow":
@@ -1079,7 +1079,7 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.defaults.humanDelay.minMs": "Minimum delay in ms for custom humanDelay (default: 800).",
   "agents.defaults.humanDelay.maxMs": "Maximum delay in ms for custom humanDelay (default: 2500).",
   commands:
-    "Controls chat command surfaces, owner gating, and elevated command access behavior across providers. Keep defaults unless you need stricter operator controls or broader command availability.",
+    "命令配置。",
   "commands.native":
     "Registers native slash/menu commands with channels that support command registration (Discord, Slack, Telegram). Keep enabled for discoverability unless you intentionally run text-only command workflows.",
   "commands.nativeSkills":
@@ -1097,13 +1097,13 @@ export const FIELD_HELP: Record<string, string> = {
   "commands.ownerAllowFrom":
     "Explicit owner allowlist for owner-only tools/commands. Use channel-native IDs (optionally prefixed like \"whatsapp:+15551234567\"). '*' is ignored.",
   "commands.ownerDisplay":
-    "Controls how owner IDs are rendered in the system prompt. Allowed values: raw, hash. Default: raw.",
+    "所有者 ID 显示方式。",
   "commands.ownerDisplaySecret":
     "Optional secret used to HMAC hash owner IDs when ownerDisplay=hash. Prefer env substitution.",
   "commands.allowFrom":
     "Defines elevated command allow rules by channel and sender for owner-level command surfaces. Use narrow provider-specific identities so privileged commands are not exposed to broad chat audiences.",
   session:
-    "Global session routing, reset, delivery policy, and maintenance controls for conversation history behavior. Keep defaults unless you need stricter isolation, retention, or delivery constraints.",
+    "会话管理配置，控制超时、标签和生命周期。",
   "session.scope":
     'Sets base session grouping strategy: "per-sender" isolates by sender and "global" shares one session per channel context. Keep "per-sender" for safer multi-user behavior unless deliberate shared context is required.',
   "session.dmScope":
@@ -1192,9 +1192,9 @@ export const FIELD_HELP: Record<string, string> = {
     "Optional per-agent sessions-directory disk budget (for example `500mb`). Use this to cap session storage per agent; when exceeded, warn mode reports pressure and enforce mode performs oldest-first cleanup.",
   "session.maintenance.highWaterBytes":
     "Target size after disk-budget cleanup (high-water mark). Defaults to 80% of maxDiskBytes; set explicitly for tighter reclaim behavior on constrained disks.",
-  cron: "Global scheduler settings for stored cron jobs, run concurrency, delivery fallback, and run-session retention. Keep defaults unless you are scaling job volume or integrating external webhook receivers.",
+  cron: "定时任务配置。",
   "cron.enabled":
-    "Enables cron job execution for stored schedules managed by the gateway. Keep enabled for normal reminder/automation flows, and disable only to pause all cron execution without deleting jobs.",
+    "启用定时任务功能。",
   "cron.store":
     "Path to the cron job store file used to persist scheduled jobs across restarts. Set an explicit path only when you need custom storage layout, backups, or mounted volumes.",
   "cron.maxConcurrentRuns":
@@ -1220,9 +1220,9 @@ export const FIELD_HELP: Record<string, string> = {
   "cron.runLog.keepLines":
     "How many trailing run-log lines to retain when a file exceeds maxBytes (default `2000`). Increase for longer forensic history or lower for smaller disks.",
   hooks:
-    "Inbound webhook automation surface for mapping external events into wake or agent actions in OpenClaw. Keep this locked down with explicit token/session/agent controls before exposing it beyond trusted networks.",
+    "钩子配置，在消息处理不同阶段注入自定义行为。",
   "hooks.enabled":
-    "Enables the hooks endpoint and mapping execution pipeline for inbound webhook requests. Keep disabled unless you are actively routing external events into the gateway.",
+    "启用钩子功能。",
   "hooks.path":
     "HTTP path used by the hooks endpoint (for example `/hooks`) on the gateway control server. Use a non-guessable path and combine it with token validation for defense in depth.",
   "hooks.token":
@@ -1348,13 +1348,13 @@ export const FIELD_HELP: Record<string, string> = {
   "hooks.internal.installs":
     "Install metadata for internal hook modules, including source and resolved artifacts for repeatable deployments. Use this as operational provenance and avoid manual drift edits.",
   messages:
-    "Message formatting, acknowledgment, queueing, debounce, and status reaction behavior for inbound/outbound chat flows. Use this section when channel responsiveness or message UX needs adjustment.",
+    "消息处理配置。",
   "messages.messagePrefix":
     "Prefix text prepended to inbound user messages before they are handed to the agent runtime. Use this sparingly for channel context markers and keep it stable across sessions.",
   "messages.responsePrefix":
     "Prefix text prepended to outbound assistant replies before sending to channels. Use for lightweight branding/context tags and avoid long prefixes that reduce content density.",
   "messages.groupChat":
-    "Group-message handling controls including mention triggers and history window sizing. Keep mention patterns narrow so group channels do not trigger on every message.",
+    "群聊规则配置。",
   "messages.groupChat.mentionPatterns":
     "Safe case-insensitive regex patterns used to detect explicit mentions/trigger phrases in group chats. Use precise patterns to reduce false positives in high-volume channels; invalid or unsafe nested-repetition patterns are ignored.",
   "messages.groupChat.historyLimit":
@@ -1380,9 +1380,9 @@ export const FIELD_HELP: Record<string, string> = {
   "messages.removeAckAfterReply":
     "Removes the acknowledgment reaction after final reply delivery when enabled. Keep enabled for cleaner UX in channels where persistent ack reactions create clutter.",
   "messages.tts":
-    "Text-to-speech policy for reading agent replies aloud on supported voice or audio surfaces. Keep disabled unless voice playback is part of your operator/user workflow.",
+    "消息文字转语音设置。",
   channels:
-    "Channel provider configurations plus shared defaults that control access policies, heartbeat visibility, and per-surface behavior. Keep defaults centralized and override per provider only where required.",
+    "消息渠道配置，包括 Discord、Telegram、Slack 等。",
   "channels.telegram":
     "Telegram channel provider configuration including auth tokens, retry behavior, and message rendering controls. Use this section to tune bot behavior for Telegram-specific API semantics.",
   "channels.slack":
@@ -1448,7 +1448,7 @@ export const FIELD_HELP: Record<string, string> = {
   "channels.slack.userTokenReadOnly":
     "When true, treat configured Slack user token usage as read-only helper behavior where possible. Keep enabled if you only need supplemental reads without user-context writes.",
   "channels.slack.capabilities.interactiveReplies":
-    "Enable agent-authored Slack interactive reply directives (`[[slack_buttons: ...]]`, `[[slack_select: ...]]`). Default: false.",
+    "启用代理编写的 Slack 交互式回复指令（`[[slack_buttons: ...]]`、`[[slack_select: ...]]`）。默认：关闭。",
   "channels.mattermost.configWrites":
     "Allow Mattermost to write config in response to channel events/commands (default: true).",
   "channels.discord.configWrites":

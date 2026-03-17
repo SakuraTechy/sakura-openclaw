@@ -27,13 +27,13 @@ const kimiCodingPlugin = {
           optionKey: "kimiCodeApiKey",
           flagName: "--kimi-code-api-key",
           envVar: "KIMI_API_KEY",
-          promptMessage: "Enter Kimi Coding API key",
+          promptMessage: "输入 Kimi Coding API 密钥",
           defaultModel: KIMI_CODING_MODEL_REF,
           expectedProviders: ["kimi-code", "kimi-coding"],
           applyConfig: (cfg) => applyKimiCodeConfig(cfg),
           noteMessage: [
-            "Kimi Coding uses a dedicated endpoint and API key.",
-            "Get your API key at: https://www.kimi.com/code/en",
+            "Kimi Coding 使用专用端点和 API 密钥。",
+            "在此获取 API 密钥: https://www.kimi.com/code/en",
           ].join("\n"),
           noteTitle: "Kimi Coding",
           wizard: {

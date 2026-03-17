@@ -309,70 +309,70 @@ type SectionCategory = {
 const SECTION_CATEGORIES: SectionCategory[] = [
   {
     id: "core",
-    label: "Core",
+    label: "核心",
     sections: [
-      { key: "env", label: "Environment" },
-      { key: "auth", label: "Authentication" },
-      { key: "update", label: "Updates" },
-      { key: "meta", label: "Meta" },
-      { key: "logging", label: "Logging" },
+      { key: "env", label: "环境" },
+      { key: "auth", label: "身份验证" },
+      { key: "update", label: "更新" },
+      { key: "meta", label: "元数据" },
+      { key: "logging", label: "日志" },
     ],
   },
   {
     id: "ai",
-    label: "AI & Agents",
+    label: "AI 与代理",
     sections: [
-      { key: "agents", label: "Agents" },
-      { key: "models", label: "Models" },
-      { key: "skills", label: "Skills" },
-      { key: "tools", label: "Tools" },
-      { key: "memory", label: "Memory" },
-      { key: "session", label: "Session" },
+      { key: "agents", label: "代理" },
+      { key: "models", label: "模型" },
+      { key: "skills", label: "技能" },
+      { key: "tools", label: "工具" },
+      { key: "memory", label: "记忆" },
+      { key: "session", label: "会话" },
     ],
   },
   {
     id: "communication",
-    label: "Communication",
+    label: "通信",
     sections: [
-      { key: "channels", label: "Channels" },
-      { key: "messages", label: "Messages" },
-      { key: "broadcast", label: "Broadcast" },
-      { key: "talk", label: "Talk" },
-      { key: "audio", label: "Audio" },
+      { key: "channels", label: "频道" },
+      { key: "messages", label: "消息" },
+      { key: "broadcast", label: "广播" },
+      { key: "talk", label: "语音" },
+      { key: "audio", label: "音频" },
     ],
   },
   {
     id: "automation",
-    label: "Automation",
+    label: "自动化",
     sections: [
-      { key: "commands", label: "Commands" },
-      { key: "hooks", label: "Hooks" },
-      { key: "bindings", label: "Bindings" },
-      { key: "cron", label: "Cron" },
-      { key: "approvals", label: "Approvals" },
-      { key: "plugins", label: "Plugins" },
+      { key: "commands", label: "命令" },
+      { key: "hooks", label: "钩子" },
+      { key: "bindings", label: "绑定" },
+      { key: "cron", label: "定时任务" },
+      { key: "approvals", label: "审批" },
+      { key: "plugins", label: "插件" },
     ],
   },
   {
     id: "infrastructure",
-    label: "Infrastructure",
+    label: "基础设施",
     sections: [
-      { key: "gateway", label: "Gateway" },
-      { key: "web", label: "Web" },
-      { key: "browser", label: "Browser" },
-      { key: "nodeHost", label: "NodeHost" },
-      { key: "canvasHost", label: "CanvasHost" },
-      { key: "discovery", label: "Discovery" },
-      { key: "media", label: "Media" },
+      { key: "gateway", label: "网关" },
+      { key: "web", label: "网页" },
+      { key: "browser", label: "浏览器" },
+      { key: "nodeHost", label: "节点主机" },
+      { key: "canvasHost", label: "画布主机" },
+      { key: "discovery", label: "发现" },
+      { key: "media", label: "媒体" },
     ],
   },
   {
     id: "appearance",
-    label: "Appearance",
+    label: "外观",
     sections: [
-      { key: "__appearance__", label: "Appearance" },
-      { key: "ui", label: "UI" },
-      { key: "wizard", label: "Setup Wizard" },
+      { key: "__appearance__", label: "外观" },
+      { key: "ui", label: "界面" },
+      { key: "wizard", label: "设置向导" },
     ],
   },
 ];
@@ -520,16 +520,16 @@ function renderAppearanceSection(props: ConfigProps) {
     description: string;
     icon: TemplateResult;
   }> = [
-    { id: "system", label: "System", description: "Follow OS light or dark", icon: icons.monitor },
-    { id: "light", label: "Light", description: "Force light mode", icon: icons.sun },
-    { id: "dark", label: "Dark", description: "Force dark mode", icon: icons.moon },
+    { id: "system", label: "跟随系统", description: "跟随操作系统的亮色或暗色模式", icon: icons.monitor },
+    { id: "light", label: "亮色", description: "强制亮色模式", icon: icons.sun },
+    { id: "dark", label: "暗色", description: "强制暗色模式", icon: icons.moon },
   ];
 
   return html`
     <div class="settings-appearance">
       <div class="settings-appearance__section">
-        <h3 class="settings-appearance__heading">Theme</h3>
-        <p class="settings-appearance__hint">Choose a theme family.</p>
+        <h3 class="settings-appearance__heading">主题</h3>
+        <p class="settings-appearance__hint">选择主题风格。</p>
         <div class="settings-theme-grid">
           ${THEME_OPTIONS.map(
             (opt) => html`
@@ -559,8 +559,8 @@ function renderAppearanceSection(props: ConfigProps) {
       </div>
 
       <div class="settings-appearance__section">
-        <h3 class="settings-appearance__heading">Mode</h3>
-        <p class="settings-appearance__hint">Choose light or dark mode for the selected theme.</p>
+        <h3 class="settings-appearance__heading">模式</h3>
+        <p class="settings-appearance__hint">为所选主题选择亮色或暗色模式。</p>
         <div class="settings-theme-grid">
           ${MODE_OPTIONS.map(
             (opt) => html`
@@ -590,10 +590,10 @@ function renderAppearanceSection(props: ConfigProps) {
       </div>
 
       <div class="settings-appearance__section">
-        <h3 class="settings-appearance__heading">Connection</h3>
+        <h3 class="settings-appearance__heading">连接</h3>
         <div class="settings-info-grid">
           <div class="settings-info-row">
-            <span class="settings-info-row__label">Gateway</span>
+            <span class="settings-info-row__label">网关</span>
             <span class="settings-info-row__value mono">${props.gatewayUrl || "-"}</span>
           </div>
           <div class="settings-info-row">
@@ -607,7 +607,7 @@ function renderAppearanceSection(props: ConfigProps) {
             props.assistantName
               ? html`
                 <div class="settings-info-row">
-                  <span class="settings-info-row__label">Assistant</span>
+                  <span class="settings-info-row__label">助手</span>
                   <span class="settings-info-row__value">${props.assistantName}</span>
                 </div>
               `
@@ -752,13 +752,13 @@ export function renderConfig(props: ConfigProps) {
 	                  <span class="config-changes-badge"
 	                    >${
                         formMode === "raw"
-                          ? "Unsaved changes"
-                          : `${diff.length} unsaved change${diff.length !== 1 ? "s" : ""}`
+                          ? "未保存的更改"
+                          : `${diff.length} 项未保存更改`
                       }</span
 	                  >
 	                `
                 : html`
-                    <span class="config-status muted">No changes</span>
+                    <span class="config-status muted">无更改</span>
                   `
             }
           </div>
@@ -781,28 +781,28 @@ export function renderConfig(props: ConfigProps) {
               ?disabled=${props.loading}
               @click=${props.onReload}
             >
-              ${props.loading ? "Loading…" : "Reload"}
+              ${props.loading ? "加载中…" : "重新加载"}
             </button>
             <button
               class="btn btn--sm primary"
               ?disabled=${!canSave}
               @click=${props.onSave}
             >
-              ${props.saving ? "Saving…" : "Save"}
+              ${props.saving ? "保存中…" : "保存"}
             </button>
             <button
               class="btn btn--sm"
               ?disabled=${!canApply}
               @click=${props.onApply}
             >
-              ${props.applying ? "Applying…" : "Apply"}
+              ${props.applying ? "应用中…" : "应用"}
             </button>
             <button
               class="btn btn--sm"
               ?disabled=${!canUpdate}
               @click=${props.onUpdate}
             >
-              ${props.updating ? "Updating…" : "Update"}
+              ${props.updating ? "更新中…" : "更新"}
             </button>
           </div>
         </div>
@@ -826,7 +826,7 @@ export function renderConfig(props: ConfigProps) {
                       <input
                         type="text"
                         class="config-search__input"
-                        placeholder="Search settings..."
+                        placeholder="搜索设置..."
                         .value=${props.searchQuery}
                         @input=${(e: Event) =>
                           props.onSearchChange((e.target as HTMLInputElement).value)}
@@ -1013,7 +1013,7 @@ export function renderConfig(props: ConfigProps) {
                     ? html`
                         <div class="config-loading">
                           <div class="config-loading__spinner"></div>
-                          <span>Loading schema…</span>
+                          <span>加载架构中…</span>
                         </div>
                       `
                     : renderConfigForm({
@@ -1048,7 +1048,7 @@ export function renderConfig(props: ConfigProps) {
                       formUnsafe
                         ? html`
                             <div class="callout info" style="margin-bottom: 12px">
-                              Your config contains fields the form editor can't safely represent. Use Raw mode to edit those
+                              Your config contains fields 表单编辑器无法安全表示的字段。请使用原始模式编辑这些
                               entries.
                             </div>
                           `
@@ -1056,7 +1056,7 @@ export function renderConfig(props: ConfigProps) {
                     }
                     <label class="field config-raw-field">
                       <span style="display:flex;align-items:center;gap:8px;">
-                        Raw JSON5
+                        原始 JSON5
                         ${
                           sensitiveCount > 0
                             ? html`
@@ -1082,7 +1082,7 @@ export function renderConfig(props: ConfigProps) {
                       </span>
                       <textarea
                         class="${blurred ? "config-raw-redacted" : ""}"
-                        placeholder=${blurred ? REDACTED_PLACEHOLDER : "Raw JSON5 config"}
+                        placeholder=${blurred ? REDACTED_PLACEHOLDER : "原始 JSON5 config"}
                         .value=${blurred ? "" : props.raw}
                         ?readonly=${blurred}
                         @input=${(e: Event) => {

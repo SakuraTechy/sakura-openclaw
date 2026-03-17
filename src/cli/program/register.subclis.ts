@@ -57,7 +57,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "gateway",
-    description: "Run, inspect, and query the WebSocket Gateway",
+    description: "运行、检查和查询 WebSocket 网关",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../gateway-cli.js");
@@ -75,7 +75,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "logs",
-    description: "Tail gateway file logs via RPC",
+    description: "通过 RPC 查看网关日志",
     hasSubcommands: false,
     register: async (program) => {
       const mod = await import("../logs-cli.js");
@@ -93,7 +93,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "models",
-    description: "Discover, scan, and configure models",
+    description: "发现、扫描和配置模型",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../models-cli.js");
@@ -102,7 +102,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "approvals",
-    description: "Manage exec approvals (gateway or node host)",
+    description: "管理执行审批（网关或节点主机）",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../exec-approvals-cli.js");
@@ -111,7 +111,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "nodes",
-    description: "Manage gateway-owned node pairing and node commands",
+    description: "管理网关节点配对和节点命令",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../nodes-cli.js");
@@ -129,7 +129,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "node",
-    description: "Run and manage the headless node host service",
+    description: "运行和管理无头节点主机服务",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../node-cli.js");
@@ -138,7 +138,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "sandbox",
-    description: "Manage sandbox containers for agent isolation",
+    description: "管理沙箱容器以隔离代理",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../sandbox-cli.js");
@@ -147,7 +147,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "tui",
-    description: "Open a terminal UI connected to the Gateway",
+    description: "打开连接到网关的终端界面",
     hasSubcommands: false,
     register: async (program) => {
       const mod = await import("../tui-cli.js");
@@ -156,7 +156,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "cron",
-    description: "Manage cron jobs via the Gateway scheduler",
+    description: "通过网关调度器管理定时任务",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../cron-cli.js");
@@ -165,7 +165,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "dns",
-    description: "DNS helpers for wide-area discovery (Tailscale + CoreDNS)",
+    description: "DNS 工具 - 广域发现（Tailscale + CoreDNS）",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../dns-cli.js");
@@ -174,7 +174,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "docs",
-    description: "Search the live OpenClaw docs",
+    description: "搜索 OpenClaw 在线文档",
     hasSubcommands: false,
     register: async (program) => {
       const mod = await import("../docs-cli.js");
@@ -183,7 +183,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "hooks",
-    description: "Manage internal agent hooks",
+    description: "管理内部代理 Hooks",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../hooks-cli.js");
@@ -192,7 +192,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "webhooks",
-    description: "Webhook helpers and integrations",
+    description: "Webhook 工具与集成",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../webhooks-cli.js");
@@ -201,7 +201,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "qr",
-    description: "Generate iOS pairing QR/setup code",
+    description: "生成 iOS 配对二维码/设置码",
     hasSubcommands: false,
     register: async (program) => {
       const mod = await import("../qr-cli.js");
@@ -210,7 +210,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "clawbot",
-    description: "Legacy clawbot command aliases",
+    description: "旧版 clawbot 命令别名",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../clawbot-cli.js");
@@ -219,7 +219,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "pairing",
-    description: "Secure DM pairing (approve inbound requests)",
+    description: "安全私信配对（审批入站请求）",
     hasSubcommands: true,
     register: async (program) => {
       // Initialize plugins before registering pairing CLI.
@@ -236,7 +236,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "plugins",
-    description: "Manage OpenClaw plugins and extensions",
+    description: "管理 OpenClaw 插件和扩展",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../plugins-cli.js");
@@ -250,7 +250,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "channels",
-    description: "Manage connected chat channels (Telegram, Discord, etc.)",
+    description: "管理已连接的聊天渠道（Telegram、Discord 等）",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../channels-cli.js");
@@ -259,7 +259,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "directory",
-    description: "Lookup contact and group IDs (self, peers, groups) for supported chat channels",
+    description: "查询支持渠道的联系人和群组 ID",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../directory-cli.js");
@@ -268,7 +268,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "security",
-    description: "Security tools and local config audits",
+    description: "安全工具和本地配置审计",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../security-cli.js");
@@ -286,7 +286,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "skills",
-    description: "List and inspect available skills",
+    description: "列出和检查可用技能",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../skills-cli.js");
@@ -295,7 +295,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "update",
-    description: "Update OpenClaw and inspect update channel status",
+    description: "更新 OpenClaw 并检查更新渠道状态",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../update-cli.js");

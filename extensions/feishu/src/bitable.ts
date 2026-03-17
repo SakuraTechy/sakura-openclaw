@@ -98,10 +98,10 @@ async function getAppTokenFromWiki(client: Lark.Client, nodeToken: string): Prom
 
   const node = res.data?.node;
   if (!node) {
-    throw new Error("Node not found");
+    throw new Error("未找到节点");
   }
   if (node.obj_type !== "bitable") {
-    throw new Error(`Node is not a bitable (type: ${node.obj_type})`);
+    throw new Error(`节点不是多维表格 (类型: ${node.obj_type})`);
   }
 
   return node.obj_token!;
@@ -111,7 +111,7 @@ async function getAppTokenFromWiki(client: Lark.Client, nodeToken: string): Prom
 async function getBitableMeta(client: Lark.Client, url: string) {
   const parsed = parseBitableUrl(url);
   if (!parsed) {
-    throw new Error("Invalid URL format. Expected /base/XXX or /wiki/XXX URL");
+    throw new Error("无效的 URL 格式。应为 /base/XXX 或 /wiki/XXX URL");
   }
 
   let appToken: string;
@@ -148,8 +148,8 @@ async function getBitableMeta(client: Lark.Client, url: string) {
     url_type: parsed.isWiki ? "wiki" : "base",
     ...(tables.length > 0 && { tables }),
     hint: parsed.tableId
-      ? `Use app_token="${appToken}" and table_id="${parsed.tableId}" for other bitable tools`
-      : `Use app_token="${appToken}" for other bitable tools. Select a table_id from the tables list.`,
+      ? `对于其他多维表格工具，请使用 app_token="${appToken}" 和 table_id="${parsed.tableId}"`
+      : `对于其他多维表格工具，请使用 app_token="${appToken}"。请从表列表中选择 table_id。`,
   };
 }
 
@@ -442,50 +442,50 @@ async function updateRecord(
 
 const GetMetaSchema = Type.Object({
   url: Type.String({
-    description: "Bitable URL. Supports both formats: /base/XXX?table=YYY or /wiki/XXX?table=YYY",
+    description: "多维表格 URL。支持两种格式: /base/XXX?table=YYY 或 /wiki/XXX?table=YYY",
   }),
 });
 
 const ListFieldsSchema = Type.Object({
   app_token: Type.String({
-    description: "Bitable app token (use feishu_bitable_get_meta to get from URL)",
+    description: "多维表格 app_token (使用 feishu_bitable_get_meta 从 URL 获取)",
   }),
-  table_id: Type.String({ description: "Table ID (from URL: ?table=YYY)" }),
+  table_id: Type.String({ description: "表 ID (来自 URL: ?table=YYY)" }),
 });
 
 const ListRecordsSchema = Type.Object({
   app_token: Type.String({
-    description: "Bitable app token (use feishu_bitable_get_meta to get from URL)",
+    description: "多维表格 app_token (使用 feishu_bitable_get_meta 从 URL 获取)",
   }),
-  table_id: Type.String({ description: "Table ID (from URL: ?table=YYY)" }),
+  table_id: Type.String({ description: "表 ID (来自 URL: ?table=YYY)" }),
   page_size: Type.Optional(
     Type.Number({
-      description: "Number of records per page (1-500, default 100)",
+      description: "每页记录数 (1-500, 默认 100)",
       minimum: 1,
       maximum: 500,
     }),
   ),
   page_token: Type.Optional(
-    Type.String({ description: "Pagination token from previous response" }),
+    Type.String({ description: "来自上一次响应的分页令牌" }),
   ),
 });
 
 const GetRecordSchema = Type.Object({
   app_token: Type.String({
-    description: "Bitable app token (use feishu_bitable_get_meta to get from URL)",
+    description: "多维表格 app_token (使用 feishu_bitable_get_meta 从 URL 获取)",
   }),
-  table_id: Type.String({ description: "Table ID (from URL: ?table=YYY)" }),
-  record_id: Type.String({ description: "Record ID to retrieve" }),
+  table_id: Type.String({ description: "表 ID (来自 URL: ?table=YYY)" }),
+  record_id: Type.String({ description: "要获取的记录 ID" }),
 });
 
 const CreateRecordSchema = Type.Object({
   app_token: Type.String({
-    description: "Bitable app token (use feishu_bitable_get_meta to get from URL)",
+    description: "多维表格 app_token (使用 feishu_bitable_get_meta 从 URL 获取)",
   }),
-  table_id: Type.String({ description: "Table ID (from URL: ?table=YYY)" }),
+  table_id: Type.String({ description: "表 ID (来自 URL: ?table=YYY)" }),
   fields: Type.Record(Type.String(), Type.Any(), {
     description:
-      "Field values keyed by field name. Format by type: Text='string', Number=123, SingleSelect='Option', MultiSelect=['A','B'], DateTime=timestamp_ms, User=[{id:'ou_xxx'}], URL={text:'Display',link:'https://...'}",
+      "以字段名为键的字段值。各类型的格式: Text='string', Number=123, SingleSelect='Option', MultiSelect=['A','B'], DateTime=timestamp_ms, User=[{id:'ou_xxx'}], URL={text:'Display',link:'https://...'}",
   }),
 });
 
@@ -505,7 +505,7 @@ const CreateFieldSchema = Type.Object({
     description:
       "Bitable app token (use feishu_bitable_get_meta to get from URL, or feishu_bitable_create_app to create new)",
   }),
-  table_id: Type.String({ description: "Table ID (from URL: ?table=YYY)" }),
+  table_id: Type.String({ description: "表 ID (来自 URL: ?table=YYY)" }),
   field_name: Type.String({ description: "Name for the new field" }),
   field_type: Type.Number({
     description:
@@ -521,12 +521,12 @@ const CreateFieldSchema = Type.Object({
 
 const UpdateRecordSchema = Type.Object({
   app_token: Type.String({
-    description: "Bitable app token (use feishu_bitable_get_meta to get from URL)",
+    description: "多维表格 app_token (使用 feishu_bitable_get_meta 从 URL 获取)",
   }),
-  table_id: Type.String({ description: "Table ID (from URL: ?table=YYY)" }),
-  record_id: Type.String({ description: "Record ID to update" }),
+  table_id: Type.String({ description: "表 ID (来自 URL: ?table=YYY)" }),
+  record_id: Type.String({ description: "要更新的记录 ID" }),
   fields: Type.Record(Type.String(), Type.Any(), {
-    description: "Field values to update (same format as create_record)",
+    description: "要更新的字段值 (格式同 create_record)",
   }),
 });
 
@@ -583,7 +583,7 @@ export function registerFeishuBitableTools(api: OpenClawPluginApi) {
     name: "feishu_bitable_get_meta",
     label: "Feishu Bitable Get Meta",
     description:
-      "Parse a Bitable URL and get app_token, table_id, and table list. Use this first when given a /wiki/ or /base/ URL.",
+      "解析多维表格 URL 并获取 app_token, table_id 和表列表。当给定 /wiki/ 或 /base/ URL 时首先使用此工具。",
     parameters: GetMetaSchema,
     async execute({ params, defaultAccountId }) {
       return getBitableMeta(getClient(params, defaultAccountId), params.url);
@@ -593,7 +593,7 @@ export function registerFeishuBitableTools(api: OpenClawPluginApi) {
   registerBitableTool<{ app_token: string; table_id: string; accountId?: string }>({
     name: "feishu_bitable_list_fields",
     label: "Feishu Bitable List Fields",
-    description: "List all fields (columns) in a Bitable table with their types and properties",
+    description: "列出多维表格中的所有字段 (列) 及其类型和属性",
     parameters: ListFieldsSchema,
     async execute({ params, defaultAccountId }) {
       return listFields(getClient(params, defaultAccountId), params.app_token, params.table_id);
@@ -609,7 +609,7 @@ export function registerFeishuBitableTools(api: OpenClawPluginApi) {
   }>({
     name: "feishu_bitable_list_records",
     label: "Feishu Bitable List Records",
-    description: "List records (rows) from a Bitable table with pagination support",
+    description: "列出多维表格中的记录 (行)，支持分页",
     parameters: ListRecordsSchema,
     async execute({ params, defaultAccountId }) {
       return listRecords(
@@ -630,7 +630,7 @@ export function registerFeishuBitableTools(api: OpenClawPluginApi) {
   }>({
     name: "feishu_bitable_get_record",
     label: "Feishu Bitable Get Record",
-    description: "Get a single record by ID from a Bitable table",
+    description: "通过 ID 获取多维表格中的单条记录",
     parameters: GetRecordSchema,
     async execute({ params, defaultAccountId }) {
       return getRecord(
@@ -650,7 +650,7 @@ export function registerFeishuBitableTools(api: OpenClawPluginApi) {
   }>({
     name: "feishu_bitable_create_record",
     label: "Feishu Bitable Create Record",
-    description: "Create a new record (row) in a Bitable table",
+    description: "在多维表格中创建新记录 (行)",
     parameters: CreateRecordSchema,
     async execute({ params, defaultAccountId }) {
       return createRecord(
@@ -671,7 +671,7 @@ export function registerFeishuBitableTools(api: OpenClawPluginApi) {
   }>({
     name: "feishu_bitable_update_record",
     label: "Feishu Bitable Update Record",
-    description: "Update an existing record (row) in a Bitable table",
+    description: "更新多维表格中的现有记录 (行)",
     parameters: UpdateRecordSchema,
     async execute({ params, defaultAccountId }) {
       return updateRecord(

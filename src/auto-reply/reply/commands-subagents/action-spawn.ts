@@ -25,7 +25,7 @@ export async function handleSubagentsSpawnAction(
   const task = taskParts.join(" ").trim();
   if (!agentId || !task) {
     return stopWithText(
-      "Usage: /subagents spawn <agentId> <task> [--model <model>] [--thinking <level>]",
+      "用法：/subagents spawn <agentId> <task> [--model <模型>] [--thinking <级别>]",
     );
   }
 

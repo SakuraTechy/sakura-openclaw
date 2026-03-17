@@ -40,11 +40,11 @@ export function renderSkills(props: SkillsProps) {
     <section class="card">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Skills</div>
-          <div class="card-sub">Installed skills and their status.</div>
+          <div class="card-title">技能</div>
+          <div class="card-sub">已安装技能及其状态。</div>
         </div>
         <button class="btn" ?disabled=${props.loading || !props.connected} @click=${props.onRefresh}>
-          ${props.loading ? "Loading…" : "Refresh"}
+          ${props.loading ? "加载中…" : "刷新"}
         </button>
       </div>
 
@@ -55,17 +55,17 @@ export function renderSkills(props: SkillsProps) {
           target="_blank"
           rel="noreferrer"
           title="Browse skills on ClawHub"
-        >Browse Skills Store</a>
+        >浏览技能商店</a>
         <label class="field" style="flex: 1; min-width: 180px;">
           <input
             .value=${props.filter}
             @input=${(e: Event) => props.onFilterChange((e.target as HTMLInputElement).value)}
-            placeholder="Search skills"
+            placeholder="搜索技能"
             autocomplete="off"
             name="skills-filter"
           />
         </label>
-        <div class="muted">${filtered.length} shown</div>
+        <div class="muted">显示 ${filtered.length} 项</div>
       </div>
 
       ${
@@ -80,8 +80,8 @@ export function renderSkills(props: SkillsProps) {
               <div class="muted" style="margin-top: 16px">
                 ${
                   !props.connected && !props.report
-                    ? "Not connected to gateway."
-                    : "No skills found."
+                    ? "未连接到网关。"
+                    : "未找到技能。"
                 }
               </div>
             `
@@ -128,7 +128,7 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
           missing.length > 0
             ? html`
               <div class="muted" style="margin-top: 6px;">
-                Missing: ${missing.join(", ")}
+                缺少：${missing.join(", ")}
               </div>
             `
             : nothing
@@ -137,7 +137,7 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
           reasons.length > 0
             ? html`
               <div class="muted" style="margin-top: 6px;">
-                Reason: ${reasons.join(", ")}
+                原因：${reasons.join(", ")}
               </div>
             `
             : nothing
@@ -150,7 +150,7 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
             ?disabled=${busy}
             @click=${() => props.onToggle(skill.skillKey, skill.disabled)}
           >
-            ${skill.disabled ? "Enable" : "Disable"}
+            ${skill.disabled ? "启用" : "禁用"}
           </button>
           ${
             canInstall
@@ -159,7 +159,7 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
                 ?disabled=${busy}
                 @click=${() => props.onInstall(skill.skillKey, skill.name, skill.install[0].id)}
               >
-                ${busy ? "Installing…" : skill.install[0].label}
+                ${busy ? "安装中…" : skill.install[0].label}
               </button>`
               : nothing
           }
@@ -182,7 +182,7 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
           skill.primaryEnv
             ? html`
               <div class="field" style="margin-top: 10px;">
-                <span>API key</span>
+                <span>API 密钥</span>
                 <input
                   type="password"
                   .value=${apiKey}
@@ -196,7 +196,7 @@ function renderSkill(skill: SkillStatusEntry, props: SkillsProps) {
                 ?disabled=${busy}
                 @click=${() => props.onSaveKey(skill.skillKey)}
               >
-                Save key
+                保存密钥
               </button>
             `
             : nothing

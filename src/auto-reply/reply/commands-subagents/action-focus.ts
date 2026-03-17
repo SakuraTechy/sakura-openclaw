@@ -74,12 +74,12 @@ export async function handleSubagentsFocusAction(
   const { params, runs, restTokens } = ctx;
   const channel = resolveCommandSurfaceChannel(params);
   if (channel !== "discord" && channel !== "telegram") {
-    return stopWithText("⚠️ /focus is only available on Discord and Telegram.");
+    return stopWithText("⚠️ /focus 仅在 Discord 和 Telegram 上可用。");
   }
 
   const token = restTokens.join(" ").trim();
   if (!token) {
-    return stopWithText("Usage: /focus <subagent-label|session-key|session-id|session-label>");
+    return stopWithText("用法：/focus <子代理标签|会话键|会话ID|会话标签>");
   }
 
   const accountId = resolveChannelAccountId(params);
@@ -105,7 +105,7 @@ export async function handleSubagentsFocusAction(
         "⚠️ /focus on Telegram requires a topic context in groups, or a direct-message conversation.",
       );
     }
-    return stopWithText("⚠️ Could not resolve a Discord channel for /focus.");
+    return stopWithText("⚠️ 无法为 /focus 解析 Discord 频道。");
   }
 
   const senderId = params.command.senderId?.trim() || "";

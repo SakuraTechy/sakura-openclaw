@@ -282,7 +282,7 @@ async function assertSchtasksAvailable() {
     return;
   }
   const detail = res.stderr || res.stdout;
-  throw new Error(`schtasks unavailable: ${detail || "unknown error"}`.trim());
+  throw new Error(`schtasks 不可用: ${detail || "未知错误"}. 在 Windows 上请使用 PowerShell/CMD 运行，或跳过守护进程安装。`.trim());
 }
 
 async function isStartupEntryInstalled(env: GatewayServiceEnv): Promise<boolean> {

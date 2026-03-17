@@ -27,15 +27,15 @@ export function renderTelegramCard(params: {
         </div>
         <div class="status-list account-card-status">
           <div>
-            <span class="label">Running</span>
+            <span class="label">运行中</span>
             <span>${account.running ? "Yes" : "No"}</span>
           </div>
           <div>
-            <span class="label">Configured</span>
+            <span class="label">已配置</span>
             <span>${account.configured ? "Yes" : "No"}</span>
           </div>
           <div>
-            <span class="label">Last inbound</span>
+            <span class="label">最后入站</span>
             <span>${account.lastInboundAt ? formatRelativeTimestamp(account.lastInboundAt) : "n/a"}</span>
           </div>
           ${
@@ -55,7 +55,7 @@ export function renderTelegramCard(params: {
   return html`
     <div class="card">
       <div class="card-title">Telegram</div>
-      <div class="card-sub">Bot status and channel configuration.</div>
+      <div class="card-sub">机器人状态和渠道配置。</div>
       ${accountCountLabel}
 
       ${
@@ -68,23 +68,23 @@ export function renderTelegramCard(params: {
           : html`
             <div class="status-list" style="margin-top: 16px;">
               <div>
-                <span class="label">Configured</span>
+                <span class="label">已配置</span>
                 <span>${telegram?.configured ? "Yes" : "No"}</span>
               </div>
               <div>
-                <span class="label">Running</span>
+                <span class="label">运行中</span>
                 <span>${telegram?.running ? "Yes" : "No"}</span>
               </div>
               <div>
-                <span class="label">Mode</span>
+                <span class="label">模式</span>
                 <span>${telegram?.mode ?? "n/a"}</span>
               </div>
               <div>
-                <span class="label">Last start</span>
+                <span class="label">上次启动</span>
                 <span>${telegram?.lastStartAt ? formatRelativeTimestamp(telegram.lastStartAt) : "n/a"}</span>
               </div>
               <div>
-                <span class="label">Last probe</span>
+                <span class="label">上次探测</span>
                 <span>${telegram?.lastProbeAt ? formatRelativeTimestamp(telegram.lastProbeAt) : "n/a"}</span>
               </div>
             </div>
@@ -102,7 +102,7 @@ export function renderTelegramCard(params: {
       ${
         telegram?.probe
           ? html`<div class="callout" style="margin-top: 12px;">
-            Probe ${telegram.probe.ok ? "ok" : "failed"} ·
+            探测 ${telegram.probe.ok ? "成功" : "失败"} ·
             ${telegram.probe.status ?? ""} ${telegram.probe.error ?? ""}
           </div>`
           : nothing
@@ -112,7 +112,7 @@ export function renderTelegramCard(params: {
 
       <div class="row" style="margin-top: 12px;">
         <button class="btn" @click=${() => props.onRefresh(true)}>
-          Probe
+          探测
         </button>
       </div>
     </div>

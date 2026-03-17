@@ -24,23 +24,23 @@ const EXAMPLES = [
   ["openclaw models --help", "Show detailed help for the models command."],
   [
     "openclaw channels login --verbose",
-    "Link personal WhatsApp Web and show QR + connection logs.",
+    "关联个人 WhatsApp Web 并显示二维码和连接日志。",
   ],
   [
     'openclaw message send --target +15555550123 --message "Hi" --json',
-    "Send via your web session and print JSON result.",
+    "通过你的 Web 会话发送并打印 JSON 结果。",
   ],
-  ["openclaw gateway --port 18789", "Run the WebSocket Gateway locally."],
-  ["openclaw --dev gateway", "Run a dev Gateway (isolated state/config) on ws://127.0.0.1:19001."],
-  ["openclaw gateway --force", "Kill anything bound to the default gateway port, then start it."],
-  ["openclaw gateway ...", "Gateway control via WebSocket."],
+  ["openclaw gateway --port 18789", "在本地运行 WebSocket 网关。"],
+  ["openclaw --dev gateway", "在 ws://127.0.0.1:19001 上运行开发网关（隔离状态/配置）。"],
+  ["openclaw gateway --force", "终止占用默认网关端口的进程，然后启动网关。"],
+  ["openclaw gateway ...", "通过 WebSocket 控制网关。"],
   [
     'openclaw agent --to +15555550123 --message "Run summary" --deliver',
-    "Talk directly to the agent using the Gateway; optionally send the WhatsApp reply.",
+    "通过网关直接与 AI 助手对话；可选发送 WhatsApp 回复。",
   ],
   [
     'openclaw message send --channel telegram --target @mychat --message "Hi"',
-    "Send via your Telegram bot.",
+    "通过你的 Telegram 机器人发送。",
   ],
 ] as const;
 
@@ -51,19 +51,19 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     .version(ctx.programVersion)
     .option(
       "--dev",
-      "Dev profile: isolate state under ~/.openclaw-dev, default gateway port 19001, and shift derived ports (browser/canvas)",
+      "开发配置：在 ~/.openclaw-dev 下隔离状态，默认网关端口 19001，并移动派生端口（浏览器/画布）",
     )
     .option(
       "--profile <name>",
-      "Use a named profile (isolates OPENCLAW_STATE_DIR/OPENCLAW_CONFIG_PATH under ~/.openclaw-<name>)",
+      "使用命名配置文件（在 ~/.openclaw-<name> 下隔离状态和配置）",
     )
     .option(
       "--log-level <level>",
-      `Global log level override for file + console (${CLI_LOG_LEVEL_VALUES})`,
+      `全局日志级别覆盖，适用于文件和控制台 (${CLI_LOG_LEVEL_VALUES})`,
       parseCliLogLevelOption,
     );
 
-  program.option("--no-color", "Disable ANSI colors", false);
+  program.option("--no-color", "禁用 ANSI 颜色", false);
   program.helpOption("-h, --help", "Display help for command");
   program.helpCommand("help [command]", "Display help for command");
 
@@ -135,6 +135,6 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
       return "";
     }
     const docs = formatDocsLink("/cli", "docs.openclaw.ai/cli");
-    return `\n${theme.heading("Examples:")}\n${fmtExamples}\n\n${theme.muted("Docs:")} ${docs}\n`;
+    return `\n${theme.heading("示例：")}\n${fmtExamples}\n\n${theme.muted("文档：")} ${docs}\n${theme.muted("汉化版：")} ${theme.info("https://openclaw.qt.cool/")}\n`;
   });
 }

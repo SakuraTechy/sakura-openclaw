@@ -246,7 +246,7 @@ export async function resolveModelsCommandReply(params: {
         count: byProvider.get(p)?.size ?? 0,
       }));
       const buttons = buildProviderKeyboard(providerInfos);
-      const text = "Select a provider:";
+      const text = "选择提供商：";
       return {
         text,
         channelData: { telegram: { buttons } },
@@ -255,13 +255,13 @@ export async function resolveModelsCommandReply(params: {
 
     // Text fallback for non-Telegram surfaces
     const lines: string[] = [
-      "Providers:",
+      "提供商：",
       ...providers.map((p) =>
         formatProviderLine({ provider: p, count: byProvider.get(p)?.size ?? 0 }),
       ),
       "",
-      "Use: /models <provider>",
-      "Switch: /model <provider/model>",
+      "用法：/models <提供商>",
+      "切换：/model <提供商/模型>",
     ];
     return { text: lines.join("\n") };
   }
@@ -270,10 +270,10 @@ export async function resolveModelsCommandReply(params: {
     const lines: string[] = [
       `Unknown provider: ${provider}`,
       "",
-      "Available providers:",
+      "可用提供商：",
       ...providers.map((p) => `- ${p}`),
       "",
-      "Use: /models <provider>",
+      "用法：/models <提供商>",
     ];
     return { text: lines.join("\n") };
   }
@@ -291,8 +291,8 @@ export async function resolveModelsCommandReply(params: {
     const lines: string[] = [
       `Models (${providerLabel}) — none`,
       "",
-      "Browse: /models",
-      "Switch: /model <provider/model>",
+      "浏览：/models",
+      "切换：/model <提供商/模型>",
     ];
     return { text: lines.join("\n") };
   }
@@ -351,7 +351,7 @@ export async function resolveModelsCommandReply(params: {
     lines.push(`- ${provider}/${id}`);
   }
 
-  lines.push("", "Switch: /model <provider/model>");
+  lines.push("", "切换：/model <提供商/模型>");
   if (!all && safePage < pageCount) {
     lines.push(`More: /models ${provider} ${safePage + 1}`);
   }

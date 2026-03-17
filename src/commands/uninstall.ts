@@ -54,7 +54,7 @@ function buildScopeSelection(opts: UninstallOptions): {
 
 async function stopAndUninstallService(runtime: RuntimeEnv): Promise<boolean> {
   if (isNixMode) {
-    runtime.error("Nix mode detected; service uninstall is disabled.");
+    runtime.error("检测到 Nix 模式；服务卸载已禁用。");
     return false;
   }
   const service = resolveGatewayService();
@@ -101,14 +101,14 @@ export async function uninstallCommand(runtime: RuntimeEnv, opts: UninstallOptio
   const { scopes, hadExplicit } = buildScopeSelection(opts);
   const interactive = !opts.nonInteractive;
   if (!interactive && !opts.yes) {
-    runtime.error("Non-interactive mode requires --yes.");
+    runtime.error("非交互模式需要 --yes 参数。");
     runtime.exit(1);
     return;
   }
 
   if (!hadExplicit) {
     if (!interactive) {
-      runtime.error("Non-interactive mode requires explicit scopes (use --all).");
+      runtime.error("非交互模式需要明确指定范围（使用 --all）。");
       runtime.exit(1);
       return;
     }
@@ -141,7 +141,7 @@ export async function uninstallCommand(runtime: RuntimeEnv, opts: UninstallOptio
   }
 
   if (scopes.size === 0) {
-    runtime.log("Nothing selected.");
+    runtime.log("未选择任何内容。");
     return;
   }
 
@@ -188,12 +188,12 @@ export async function uninstallCommand(runtime: RuntimeEnv, opts: UninstallOptio
     await removeMacApp(runtime, dryRun);
   }
 
-  runtime.log("CLI still installed. Remove via npm/pnpm if desired.");
+  runtime.log("CLI 仍已安装。如需删除请使用 npm/pnpm。");
 
   if (scopes.has("state") && !scopes.has("workspace")) {
     const home = resolveHomeDir();
     if (home && workspaceDirs.some((dir) => dir.startsWith(path.resolve(home)))) {
-      runtime.log("Tip: workspaces were preserved. Re-run with --workspace to remove them.");
+      runtime.log("提示：工作区已保留。如需删除请加 --workspace 重新运行。");
     }
   }
 }

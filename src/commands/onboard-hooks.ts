@@ -12,10 +12,10 @@ export async function setupInternalHooks(
 ): Promise<OpenClawConfig> {
   await prompter.note(
     [
-      "Hooks let you automate actions when agent commands are issued.",
-      "Example: Save session context to memory when you issue /new or /reset.",
+      "Hooks 让你在触发 Agent 命令时自动执行操作。",
+      "示例：当你执行 /new 或 /reset 时保存会话上下文到记忆。",
       "",
-      "Learn more: https://docs.openclaw.ai/automation/hooks",
+      "了解更多：https://docs.openclaw.ai/automation/hooks",
     ].join("\n"),
     "Hooks",
   );
@@ -29,16 +29,16 @@ export async function setupInternalHooks(
 
   if (eligibleHooks.length === 0) {
     await prompter.note(
-      "No eligible hooks found. You can configure hooks later in your config.",
+      "未找到符合条件的 Hook。你可以在配置中稍后设置。",
       "No Hooks Available",
     );
     return cfg;
   }
 
   const toEnable = await prompter.multiselect({
-    message: "Enable hooks?",
+    message: "启用 Hooks？",
     options: [
-      { value: "__skip__", label: "Skip for now" },
+      { value: "__skip__", label: "暂时跳过" },
       ...eligibleHooks.map((hook) => ({
         value: hook.name,
         label: `${hook.emoji ?? "🔗"} ${hook.name}`,
@@ -71,9 +71,9 @@ export async function setupInternalHooks(
 
   await prompter.note(
     [
-      `Enabled ${selected.length} hook${selected.length > 1 ? "s" : ""}: ${selected.join(", ")}`,
+      `已启用 ${selected.length} 个 Hook：${selected.join(", ")}`,
       "",
-      "You can manage hooks later with:",
+      "你可以稍后通过以下命令管理 Hooks：",
       `  ${formatCliCommand("openclaw hooks list")}`,
       `  ${formatCliCommand("openclaw hooks enable <name>")}`,
       `  ${formatCliCommand("openclaw hooks disable <name>")}`,

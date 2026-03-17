@@ -47,7 +47,7 @@ type ChannelStatusSummary = {
 };
 
 function formatAccountLabel(accountId: string): string {
-  return accountId === DEFAULT_ACCOUNT_ID ? "default (primary)" : accountId;
+  return accountId === DEFAULT_ACCOUNT_ID ? "默认 (主账户)" : accountId;
 }
 
 async function promptConfiguredAction(params: {
@@ -59,19 +59,19 @@ async function promptConfiguredAction(params: {
   const { prompter, label, supportsDisable, supportsDelete } = params;
   const updateOption: WizardSelectOption<ConfiguredChannelAction> = {
     value: "update",
-    label: "Modify settings",
+    label: "修改设置",
   };
   const disableOption: WizardSelectOption<ConfiguredChannelAction> = {
     value: "disable",
-    label: "Disable (keeps config)",
+    label: "禁用 (保留配置)",
   };
   const deleteOption: WizardSelectOption<ConfiguredChannelAction> = {
     value: "delete",
-    label: "Delete config",
+    label: "删除配置",
   };
   const skipOption: WizardSelectOption<ConfiguredChannelAction> = {
     value: "skip",
-    label: "Skip (leave as-is)",
+    label: "跳过 (保持原样)",
   };
   const options: Array<WizardSelectOption<ConfiguredChannelAction>> = [
     updateOption,
@@ -80,7 +80,7 @@ async function promptConfiguredAction(params: {
     skipOption,
   ];
   return await prompter.select({
-    message: `${label} already configured. What do you want to do?`,
+    message: `${label} 已配置。你想做什么？`,
     options,
     initialValue: "update",
   });
@@ -104,7 +104,7 @@ async function promptRemovalAccountId(params: {
     return defaultAccountId;
   }
   const selected = await prompter.select({
-    message: `${label} account`,
+    message: `${label} 账户`,
     options: accountIds.map((accountId) => ({
       value: accountId,
       label: formatAccountLabel(accountId),
@@ -152,12 +152,12 @@ async function collectChannelStatus(params: {
     .filter((meta) => !statusByChannel.has(meta.id))
     .map((meta) => {
       const configured = isChannelConfigured(params.cfg, meta.id);
-      const statusLabel = configured ? "configured (plugin disabled)" : "not configured";
+      const statusLabel = configured ? "已配置 (插件已禁用)" : "未配置";
       return {
         channel: meta.id,
         configured,
         statusLines: [`${meta.label}: ${statusLabel}`],
-        selectionHint: configured ? "configured · plugin disabled" : "not configured",
+        selectionHint: configured ? "已配置 · 插件已禁用" : "未配置",
         quickstartScore: 0,
       };
     });
@@ -170,7 +170,7 @@ async function collectChannelStatus(params: {
       const statusLabel = configured
         ? pluginEnabled
           ? "configured"
-          : "configured (plugin disabled)"
+          : "已配置 (插件已禁用)"
         : pluginEnabled
           ? "installed"
           : "installed (plugin disabled)";
@@ -185,8 +185,8 @@ async function collectChannelStatus(params: {
   const catalogStatuses = installableCatalogEntries.map((entry) => ({
     channel: entry.id,
     configured: false,
-    statusLines: [`${entry.meta.label}: install plugin to enable`],
-    selectionHint: "plugin · install",
+    statusLines: [`${entry.meta.label}: 安装插件以启用`],
+    selectionHint: "插件 · 安装",
     quickstartScore: 0,
   }));
   const combinedStatuses = [
@@ -218,7 +218,7 @@ export async function noteChannelStatus(params: {
     accountOverrides: params.accountOverrides ?? {},
   });
   if (statusLines.length > 0) {
-    await params.prompter.note(statusLines.join("\n"), "Channel status");
+    await params.prompter.note(statusLines.join("\n"), "渠道状态");
   }
 }
 
@@ -237,9 +237,9 @@ async function noteChannelPrimer(
   );
   await prompter.note(
     [
-      "DM security: default is pairing; unknown DMs get a pairing code.",
-      `Approve with: ${formatCliCommand("openclaw pairing approve <channel> <code>")}`,
-      'Public DMs require dmPolicy="open" + allowFrom=["*"].',
+      "私信安全: 默认配对；未知私信将获得配对码。",
+      `批准命令: ${formatCliCommand("openclaw pairing approve <channel> <code>")}`,
+      '公开私信需要 dmPolicy="open" + allowFrom=["*"].',
       "Multi-user DMs: run: " +
         formatCliCommand('openclaw config set session.dmScope "per-channel-peer"') +
         ' (or "per-account-channel-peer" for multi-account channels) to isolate sessions.',
@@ -247,7 +247,7 @@ async function noteChannelPrimer(
       "",
       ...channelLines,
     ].join("\n"),
-    "How channels work",
+    "渠道工作原理",
   );
 }
 
@@ -283,7 +283,7 @@ async function maybeConfigureDmPolicies(params: {
   }
 
   const wants = await prompter.confirm({
-    message: "Configure DM access policies now? (default: pairing)",
+    message: "现在配置私信访问策略吗？(默认: 配对)",
     initialValue: false,
   });
   if (!wants) {
@@ -294,10 +294,10 @@ async function maybeConfigureDmPolicies(params: {
   const selectPolicy = async (policy: ChannelSetupDmPolicy) => {
     await prompter.note(
       [
-        "Default: pairing (unknown DMs get a pairing code).",
-        `Approve: ${formatCliCommand(`openclaw pairing approve ${policy.channel} <code>`)}`,
-        `Allowlist DMs: ${policy.policyKey}="allowlist" + ${policy.allowFromKey} entries.`,
-        `Public DMs: ${policy.policyKey}="open" + ${policy.allowFromKey} includes "*".`,
+        "默认: 配对 (未知私信将获得配对码)。",
+        `批准: ${formatCliCommand(`openclaw pairing approve ${policy.channel} <code>`)}`,
+        `白名单私信: ${policy.policyKey}="allowlist" + ${policy.allowFromKey} 条目。`,
+        `公开私信: ${policy.policyKey}="open" + ${policy.allowFromKey} 包含 "*"。`,
         "Multi-user DMs: run: " +
           formatCliCommand('openclaw config set session.dmScope "per-channel-peer"') +
           ' (or "per-account-channel-peer" for multi-account channels) to isolate sessions.',
@@ -306,12 +306,12 @@ async function maybeConfigureDmPolicies(params: {
       `${policy.label} DM access`,
     );
     return (await prompter.select({
-      message: `${policy.label} DM policy`,
+      message: `${policy.label} 私信策略`,
       options: [
-        { value: "pairing", label: "Pairing (recommended)" },
-        { value: "allowlist", label: "Allowlist (specific users only)" },
-        { value: "open", label: "Open (public inbound DMs)" },
-        { value: "disabled", label: "Disabled (ignore DMs)" },
+        { value: "pairing", label: "配对 (推荐)" },
+        { value: "allowlist", label: "白名单 (仅特定用户)" },
+        { value: "open", label: "开放 (公开入站私信)" },
+        { value: "已禁用", label: "禁用 (忽略私信)" },
       ],
     })) as DmPolicy;
   };
@@ -432,13 +432,13 @@ export async function setupChannels(
     resolveAdapter: getVisibleSetupFlowAdapter,
   });
   if (!options?.skipStatusNote && statusLines.length > 0) {
-    await prompter.note(statusLines.join("\n"), "Channel status");
+    await prompter.note(statusLines.join("\n"), "渠道状态");
   }
 
   const shouldConfigure = options?.skipConfirm
     ? true
     : await prompter.confirm({
-        message: "Configure chat channels now?",
+        message: "现在配置聊天渠道吗？",
         initialValue: true,
       });
   if (!shouldConfigure) {
@@ -502,13 +502,13 @@ export async function setupChannels(
         ?.enabled === "boolean"
     ) {
       return (next.channels as Record<string, { enabled?: boolean }>)[channel]?.enabled === false
-        ? "disabled"
+        ? "已禁用"
         : undefined;
     }
     const plugin = getVisibleChannelPlugin(channel);
     if (!plugin) {
       if (next.plugins?.entries?.[channel]?.enabled === false) {
-        return "plugin disabled";
+        return "插件已禁用";
       }
       if (next.plugins?.enabled === false) {
         return "plugins disabled";
@@ -523,7 +523,7 @@ export async function setupChannels(
     } else if (typeof (account as { enabled?: boolean })?.enabled === "boolean") {
       enabled = (account as { enabled?: boolean }).enabled;
     }
-    return enabled === false ? "disabled" : undefined;
+    return enabled === false ? "已禁用" : undefined;
   };
 
   const buildSelectionOptions = (
@@ -574,7 +574,7 @@ export async function setupChannels(
     next = result.config;
     if (!result.enabled) {
       await prompter.note(
-        `Cannot enable ${channel}: ${result.reason ?? "plugin disabled"}.`,
+        `无法启用 ${channel}：${result.reason ?? "插件已禁用"}.`,
         "Channel setup",
       );
       return false;
@@ -584,15 +584,15 @@ export async function setupChannels(
     if (!plugin) {
       if (adapter) {
         await prompter.note(
-          `${channel} plugin not available (continuing with setup). If the channel still doesn't work after setup, run \`${formatCliCommand(
+          `${channel} 插件不可用（继续初始化向导）。如果设置完成后渠道仍无法工作，请运行 \`${formatCliCommand(
             "openclaw plugins list",
-          )}\` and \`${formatCliCommand("openclaw plugins enable " + channel)}\`, then restart the gateway.`,
+          )}\` and \`${formatCliCommand("openclaw plugins enable " + channel)}\`, 然后重启网关。`,
           "Channel setup",
         );
         await refreshStatus(channel);
         return true;
       }
-      await prompter.note(`${channel} plugin not available.`, "Channel setup");
+      await prompter.note(`${channel} 插件不可用。`, "Channel setup");
       return false;
     }
     await refreshStatus(channel);
@@ -622,7 +622,7 @@ export async function setupChannels(
   const configureChannel = async (channel: ChannelChoice) => {
     const adapter = getVisibleSetupFlowAdapter(channel);
     if (!adapter) {
-      await prompter.note(`${channel} does not support guided setup yet.`, "Channel setup");
+      await prompter.note(`${channel} 暂不支持引导式设置。`, "Channel setup");
       return;
     }
     const result = await adapter.configure({
@@ -680,7 +680,7 @@ export async function setupChannels(
     }
 
     if (action === "delete" && !supportsDelete) {
-      await prompter.note(`${label} does not support deleting config entries.`, "Remove channel");
+      await prompter.note(`${label} 不支持删除配置条目。`, "Remove channel");
       return;
     }
 
@@ -704,7 +704,7 @@ export async function setupChannels(
 
     if (action === "delete") {
       const confirmed = await prompter.confirm({
-        message: `Delete ${label} account "${accountLabel}"?`,
+        message: `删除 ${label} 账户 "${accountLabel}"?`,
         initialValue: false,
       });
       if (!confirmed) {
@@ -730,6 +730,26 @@ export async function setupChannels(
   };
 
   const handleChannelChoice = async (channel: ChannelChoice) => {
+    if (channel === "__clawapp__" as ChannelChoice) {
+      await prompter.note(
+        [
+          "ClawApp 是 OpenClaw 汉化版配套的移动端 H5 聊天客户端。",
+          "支持 PWA / Android APK / Electron 桌面端，WebSocket 实时通信。",
+          "",
+          "安装方式:",
+          "  git clone https://github.com/qingchencloud/clawapp.git",
+          "  cd clawapp && npm install && npm start",
+          "",
+          "Docker 一键部署:",
+          "  docker run -d -p 3210:3210 -e GATEWAY_URL=http://localhost:18789 ghcr.io/qingchencloud/clawapp",
+          "",
+          "详细文档: https://github.com/qingchencloud/clawapp",
+          "社区支持: QQ群 https://qt.cool/c/OpenClaw | 微信群 https://qt.cool/c/OpenClawWx",
+        ].join("\n"),
+        "ClawApp 移动端聊天",
+      );
+      return;
+    }
     const { catalogById, installedCatalogById } = getChannelEntries();
     const catalogEntry = catalogById.get(channel);
     const installedCatalogEntry = installedCatalogById.get(channel);
@@ -751,7 +771,7 @@ export async function setupChannels(
     } else if (installedCatalogEntry) {
       const plugin = await loadScopedChannelPlugin(channel, installedCatalogEntry.pluginId);
       if (!plugin) {
-        await prompter.note(`${channel} plugin not available.`, "Channel setup");
+        await prompter.note(`${channel} 插件不可用。`, "Channel setup");
         return;
       }
       await refreshStatus(channel);
@@ -794,13 +814,18 @@ export async function setupChannels(
   if (options?.quickstartDefaults) {
     const { entries } = getChannelEntries();
     const choice = (await prompter.select({
-      message: "Select channel (QuickStart)",
+      message: "选择渠道 (快速开始)",
       options: [
         ...buildSelectionOptions(entries),
         {
+          value: "__clawapp__",
+          label: "ClawApp (移动端聊天)",
+          hint: "H5/PWA/APK · 汉化版配套",
+        },
+        {
           value: "__skip__",
-          label: "Skip for now",
-          hint: `You can add channels later via \`${formatCliCommand("openclaw channels add")}\``,
+          label: "暂时跳过",
+          hint: `你可以稍后通过 \`${formatCliCommand("openclaw channels add")}\` 添加渠道`,
         },
       ],
       initialValue: quickstartDefault,
@@ -814,13 +839,18 @@ export async function setupChannels(
     while (true) {
       const { entries } = getChannelEntries();
       const choice = (await prompter.select({
-        message: "Select a channel",
+        message: "选择一个渠道",
         options: [
           ...buildSelectionOptions(entries),
           {
+            value: "__clawapp__" as typeof doneValue,
+            label: "ClawApp (移动端聊天)",
+            hint: "H5/PWA/APK · 汉化版配套",
+          },
+          {
             value: doneValue,
-            label: "Finished",
-            hint: selection.length > 0 ? "Done" : "Skip for now",
+            label: "完成",
+            hint: selection.length > 0 ? "完成" : "暂时跳过",
           },
         ],
         initialValue,
@@ -843,7 +873,7 @@ export async function setupChannels(
     .map((channel) => selectionNotes.get(channel))
     .filter((line): line is string => Boolean(line));
   if (selectedLines.length > 0) {
-    await prompter.note(selectedLines.join("\n"), "Selected channels");
+    await prompter.note(selectedLines.join("\n"), "已选渠道");
   }
 
   if (!options?.skipDmPolicyPrompt) {

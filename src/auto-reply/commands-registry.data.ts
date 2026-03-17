@@ -273,7 +273,7 @@ function buildChatCommands(): ChatCommandDefinition[] {
     defineChatCommand({
       key: "session",
       nativeName: "session",
-      description: "Manage session-level settings (for example /session idle).",
+      description: "管理会话级设置（例如 /session idle）。",
       textAlias: "/session",
       category: "session",
       args: [
@@ -285,7 +285,7 @@ function buildChatCommands(): ChatCommandDefinition[] {
         },
         {
           name: "value",
-          description: "Duration (24h, 90m) or off",
+          description: "时长（24h、90m）或 off",
           type: "string",
           captureRemaining: true,
         },
@@ -363,7 +363,7 @@ function buildChatCommands(): ChatCommandDefinition[] {
       key: "focus",
       nativeName: "focus",
       description:
-        "Bind this thread (Discord) or topic/conversation (Telegram) to a session target.",
+        "将此线程（Discord）或话题/对话（Telegram）绑定到会话目标。",
       textAlias: "/focus",
       category: "management",
       args: [
@@ -378,14 +378,14 @@ function buildChatCommands(): ChatCommandDefinition[] {
     defineChatCommand({
       key: "unfocus",
       nativeName: "unfocus",
-      description: "Remove the current thread (Discord) or topic/conversation (Telegram) binding.",
+      description: "移除当前线程（Discord）或话题/对话（Telegram）绑定。",
       textAlias: "/unfocus",
       category: "management",
     }),
     defineChatCommand({
       key: "agents",
       nativeName: "agents",
-      description: "List thread-bound agents for this session.",
+      description: "列出此会话的线程绑定代理。",
       textAlias: "/agents",
       category: "management",
     }),

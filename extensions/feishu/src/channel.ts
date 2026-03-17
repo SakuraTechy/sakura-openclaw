@@ -34,11 +34,11 @@ import type { ResolvedFeishuAccount, FeishuConfig } from "./types.js";
 
 const meta: ChannelMeta = {
   id: "feishu",
-  label: "Feishu",
-  selectionLabel: "Feishu/Lark (飞书)",
+  label: "飞书",
+  selectionLabel: "飞书/Lark (Feishu)",
   docsPath: "/channels/feishu",
   docsLabel: "feishu",
-  blurb: "飞书/Lark enterprise messaging.",
+  blurb: "飞书/Lark 企业消息集成。",
   aliases: ["lark"],
   order: 70,
 };

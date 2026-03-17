@@ -24,7 +24,7 @@ const mistralPlugin = {
           optionKey: "mistralApiKey",
           flagName: "--mistral-api-key",
           envVar: "MISTRAL_API_KEY",
-          promptMessage: "Enter Mistral API key",
+          promptMessage: "输入 Mistral API 密钥",
           defaultModel: MISTRAL_DEFAULT_MODEL_REF,
           expectedProviders: ["mistral"],
           applyConfig: (cfg) => applyMistralConfig(cfg),

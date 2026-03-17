@@ -28,8 +28,8 @@ export async function checkGatewayHealth(params: {
   } catch (err) {
     const message = String(err);
     if (message.includes("gateway closed")) {
-      note("Gateway not running.", "Gateway");
-      note(gatewayDetails.message, "Gateway connection");
+      note("网关未运行。", "网关");
+      note(gatewayDetails.message, "网关连接");
     } else {
       params.runtime.error(formatHealthCheckFailure(err));
     }
@@ -53,7 +53,7 @@ export async function checkGatewayHealth(params: {
                 }`,
             )
             .join("\n"),
-          "Channel warnings",
+          "频道警告",
         );
       }
     } catch {

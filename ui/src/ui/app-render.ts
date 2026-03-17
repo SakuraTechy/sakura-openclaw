@@ -460,7 +460,7 @@ export function renderApp(state: AppViewState) {
                         <img class="sidebar-brand__logo" src="${agentLogoUrl(basePath)}" alt="OpenClaw" />
                         <span class="sidebar-brand__copy">
                           <span class="sidebar-brand__eyebrow">${t("nav.control")}</span>
-                          <span class="sidebar-brand__title">OpenClaw</span>
+                          <span class="sidebar-brand__title">OpenClaw 中文版</span>
                         </span>
                       `
                 }
@@ -560,8 +560,15 @@ export function renderApp(state: AppViewState) {
                 })()}
               </div>
             </div>
+          ${/* zh-links: disabled for now */ false ? html`
+          <div class="sidebar-footer__zh-links" style="display:flex;gap:6px;padding:6px 12px;flex-wrap:wrap;border-top:1px solid var(--border);margin-top:4px;">
+            <a href="https://gpt.qt.cool/" target="_blank" rel="noreferrer" title="免费AI接口" style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;color:#f59e0b;background:rgba(245,158,11,0.08);text-decoration:none;white-space:nowrap;">⚡ 免费AI</a>
+            <a href="https://openclaw.qt.cool" target="_blank" rel="noreferrer" title="汉化官网" style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:var(--radius-sm);font-size:12px;color:#ef4444;background:rgba(239,68,68,0.08);text-decoration:none;white-space:nowrap;">🇨🇳 官网</a>
+            <a href="https://github.com/1186258278/OpenClawChineseTranslation" target="_blank" rel="noreferrer" title="GitHub 仓库" style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:var(--radius-sm);font-size:12px;color:var(--muted);background:var(--surface-hover);text-decoration:none;white-space:nowrap;">${icons.link} GitHub</a>
           </div>
-        </aside>
+          ` : nothing}
+        </div>
+      </aside>
       </div>
       <main class="content ${isChat ? "content--chat" : ""}">
         ${

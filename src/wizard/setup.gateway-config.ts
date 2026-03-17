@@ -61,9 +61,9 @@ export async function configureGatewayForSetup(
       : Number.parseInt(
           String(
             await prompter.text({
-              message: "Gateway port",
+              message: "网关端口",
               initialValue: String(localPort),
-              validate: (value) => (Number.isFinite(Number(value)) ? undefined : "Invalid port"),
+              validate: (value) => (Number.isFinite(Number(value)) ? undefined : "无效端口"),
             }),
           ),
           10,
@@ -73,13 +73,13 @@ export async function configureGatewayForSetup(
     flow === "quickstart"
       ? quickstartGateway.bind
       : await prompter.select<GatewayWizardSettings["bind"]>({
-          message: "Gateway bind",
+          message: "网关绑定",
           options: [
-            { value: "loopback", label: "Loopback (127.0.0.1)" },
-            { value: "lan", label: "LAN (0.0.0.0)" },
+            { value: "loopback", label: "回环 (127.0.0.1)" },
+            { value: "lan", label: "局域网 (0.0.0.0)" },
             { value: "tailnet", label: "Tailnet (Tailscale IP)" },
-            { value: "auto", label: "Auto (Loopback → LAN)" },
-            { value: "custom", label: "Custom IP" },
+            { value: "auto", label: "自动 (回环 → 局域网)" },
+            { value: "custom", label: "自定义 IP" },
           ],
         });
 
@@ -88,7 +88,7 @@ export async function configureGatewayForSetup(
     const needsPrompt = flow !== "quickstart" || !customBindHost;
     if (needsPrompt) {
       const input = await prompter.text({
-        message: "Custom IP address",
+        message: "自定义 IP 地址",
         placeholder: "192.168.1.100",
         initialValue: customBindHost ?? "",
         validate: validateIPv4AddressInput,
@@ -101,14 +101,14 @@ export async function configureGatewayForSetup(
     flow === "quickstart"
       ? quickstartGateway.authMode
       : ((await prompter.select({
-          message: "Gateway auth",
+          message: "网关认证",
           options: [
             {
               value: "token",
-              label: "Token",
-              hint: "Recommended default (local + remote)",
+              label: "令牌",
+              hint: "推荐默认 (本地 + 远程)",
             },
-            { value: "password", label: "Password" },
+            { value: "password", label: "密码" },
           ],
           initialValue: "token",
         })) as GatewayAuthChoice);
@@ -117,7 +117,7 @@ export async function configureGatewayForSetup(
     flow === "quickstart"
       ? quickstartGateway.tailscaleMode
       : await prompter.select<GatewayWizardSettings["tailscaleMode"]>({
-          message: "Tailscale exposure",
+          message: "Tailscale 暴露",
           options: [...TAILSCALE_EXPOSURE_OPTIONS],
         });
 
@@ -136,7 +136,7 @@ export async function configureGatewayForSetup(
     await prompter.note(TAILSCALE_DOCS_LINES.join("\n"), "Tailscale");
     tailscaleResetOnExit = Boolean(
       await prompter.confirm({
-        message: "Reset Tailscale serve/funnel on exit?",
+        message: "退出时重置 Tailscale serve/funnel？",
         initialValue: false,
       }),
     );
@@ -146,13 +146,13 @@ export async function configureGatewayForSetup(
   // - Tailscale wants bind=loopback so we never expose a non-loopback server + tailscale serve/funnel at once.
   // - Funnel requires password auth.
   if (tailscaleMode !== "off" && bind !== "loopback") {
-    await prompter.note("Tailscale requires bind=loopback. Adjusting bind to loopback.", "Note");
+    await prompter.note("Tailscale 需要 bind=loopback。正在调整为 loopback。", "Note");
     bind = "loopback";
     customBindHost = undefined;
   }
 
   if (tailscaleMode === "funnel" && authMode !== "password") {
-    await prompter.note("Tailscale funnel requires password auth.", "Note");
+    await prompter.note("Tailscale funnel 需要密码认证。", "Note");
     authMode = "password";
   }
 
@@ -210,8 +210,8 @@ export async function configureGatewayForSetup(
       gatewayTokenInput = gatewayToken;
     } else {
       const tokenInput = await prompter.text({
-        message: "Gateway token (blank to generate)",
-        placeholder: "Needed for multi-machine or non-loopback access",
+        message: "网关令牌 (留空生成)",
+        placeholder: "多机或非回环访问需要",
         initialValue:
           quickstartTokenString ??
           normalizeGatewayTokenInput(process.env.OPENCLAW_GATEWAY_TOKEN) ??
@@ -250,7 +250,7 @@ export async function configureGatewayForSetup(
       } else {
         password = String(
           (await prompter.text({
-            message: "Gateway password",
+            message: "网关密码",
             validate: validateGatewayPasswordInput,
           })) ?? "",
         ).trim();

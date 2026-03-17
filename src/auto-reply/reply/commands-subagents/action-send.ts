@@ -23,9 +23,9 @@ export async function handleSubagentsSendAction(
     return stopWithText(
       steerRequested
         ? handledPrefix === COMMAND
-          ? "Usage: /subagents steer <id|#> <message>"
+          ? "用法：/subagents steer <id|#> <消息>"
           : `Usage: ${handledPrefix} <id|#> <message>`
-        : "Usage: /subagents send <id|#> <message>",
+        : "用法：/subagents send <id|#> <消息>",
     );
   }
 

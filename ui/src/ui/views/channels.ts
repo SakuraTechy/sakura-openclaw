@@ -70,8 +70,8 @@ export function renderChannels(props: ChannelsProps) {
     <section class="card" style="margin-top: 18px;">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Channel health</div>
-          <div class="card-sub">Channel status snapshots from the gateway.</div>
+          <div class="card-title">渠道健康</div>
+          <div class="card-sub">来自网关的渠道状态快照。</div>
         </div>
         <div class="muted">${props.lastSuccessAt ? formatRelativeTimestamp(props.lastSuccessAt) : "n/a"}</div>
       </div>
@@ -83,7 +83,7 @@ export function renderChannels(props: ChannelsProps) {
           : nothing
       }
       <pre class="code-block" style="margin-top: 12px;">
-${props.snapshot ? JSON.stringify(props.snapshot, null, 2) : "No snapshot yet."}
+${props.snapshot ? JSON.stringify(props.snapshot, null, 2) : "暂无快照。"}
       </pre>
     </section>
   `;
@@ -194,7 +194,7 @@ function renderGenericChannelCard(
   return html`
     <div class="card">
       <div class="card-title">${label}</div>
-      <div class="card-sub">Channel status and configuration.</div>
+      <div class="card-sub">渠道状态和配置。</div>
       ${accountCountLabel}
 
       ${
@@ -207,15 +207,15 @@ function renderGenericChannelCard(
           : html`
             <div class="status-list" style="margin-top: 16px;">
               <div>
-                <span class="label">Configured</span>
+                <span class="label">已配置</span>
                 <span>${configured == null ? "n/a" : configured ? "Yes" : "No"}</span>
               </div>
               <div>
-                <span class="label">Running</span>
+                <span class="label">运行中</span>
                 <span>${running == null ? "n/a" : running ? "Yes" : "No"}</span>
               </div>
               <div>
-                <span class="label">Connected</span>
+                <span class="label">已连接</span>
                 <span>${connected == null ? "n/a" : connected ? "Yes" : "No"}</span>
               </div>
             </div>
@@ -295,19 +295,19 @@ function renderGenericAccount(account: ChannelAccountSnapshot) {
       </div>
       <div class="status-list account-card-status">
         <div>
-          <span class="label">Running</span>
+          <span class="label">运行中</span>
           <span>${runningStatus}</span>
         </div>
         <div>
-          <span class="label">Configured</span>
+          <span class="label">已配置</span>
           <span>${account.configured ? "Yes" : "No"}</span>
         </div>
         <div>
-          <span class="label">Connected</span>
+          <span class="label">已连接</span>
           <span>${connectedStatus}</span>
         </div>
         <div>
-          <span class="label">Last inbound</span>
+          <span class="label">最后入站</span>
           <span>${account.lastInboundAt ? formatRelativeTimestamp(account.lastInboundAt) : "n/a"}</span>
         </div>
         ${

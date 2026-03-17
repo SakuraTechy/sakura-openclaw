@@ -11,6 +11,7 @@ import {
   QIANFAN_DEFAULT_MODEL_ID,
   XIAOMI_DEFAULT_MODEL_ID,
 } from "./models-config.providers.static.js";
+import { getShengSuanYunModels, SHENGSUANYUN_BASE_URL } from "./shengsuanyun-models.js";
 export {
   buildKimiCodingProvider,
   buildKilocodeProvider,

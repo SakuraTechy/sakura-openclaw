@@ -59,20 +59,20 @@ export function getSlashCommands(options: SlashCommandOptions = {}): SlashComman
   const elevatedCompletions = createLevelCompletion(ELEVATED_LEVELS);
   const activationCompletions = createLevelCompletion(ACTIVATION_LEVELS);
   const commands: SlashCommand[] = [
-    { name: "help", description: "Show slash command help" },
-    { name: "status", description: "Show gateway status summary" },
-    { name: "agent", description: "Switch agent (or open picker)" },
-    { name: "agents", description: "Open agent picker" },
-    { name: "session", description: "Switch session (or open picker)" },
-    { name: "sessions", description: "Open session picker" },
+    { name: "help", description: "显示斜杠命令帮助" },
+    { name: "status", description: "显示网关状态摘要" },
+    { name: "agent", description: "切换 Agent（或打开选择器）" },
+    { name: "agents", description: "打开 Agent 选择器" },
+    { name: "session", description: "切换会话（或打开选择器）" },
+    { name: "sessions", description: "打开会话选择器" },
     {
       name: "model",
-      description: "Set model (or open picker)",
+      description: "设置模型（或打开选择器）",
     },
-    { name: "models", description: "Open model picker" },
+    { name: "models", description: "打开模型选择器" },
     {
       name: "think",
-      description: "Set thinking level",
+      description: "设置思考等级",
       getArgumentCompletions: (prefix) =>
         thinkLevels
           .filter((v) => v.startsWith(prefix.toLowerCase()))
@@ -85,40 +85,40 @@ export function getSlashCommands(options: SlashCommandOptions = {}): SlashComman
     },
     {
       name: "verbose",
-      description: "Set verbose on/off",
+      description: "开关详细模式",
       getArgumentCompletions: verboseCompletions,
     },
     {
       name: "reasoning",
-      description: "Set reasoning on/off",
+      description: "开关思维链显示",
       getArgumentCompletions: reasoningCompletions,
     },
     {
       name: "usage",
-      description: "Toggle per-response usage line",
+      description: "切换每条回复的用量显示",
       getArgumentCompletions: usageCompletions,
     },
     {
       name: "elevated",
-      description: "Set elevated on/off/ask/full",
+      description: "设置提权级别 on/off/ask/full",
       getArgumentCompletions: elevatedCompletions,
     },
     {
       name: "elev",
-      description: "Alias for /elevated",
+      description: "/elevated 的别名",
       getArgumentCompletions: elevatedCompletions,
     },
     {
       name: "activation",
-      description: "Set group activation",
+      description: "设置群组激活模式",
       getArgumentCompletions: activationCompletions,
     },
-    { name: "abort", description: "Abort active run" },
-    { name: "new", description: "Reset the session" },
-    { name: "reset", description: "Reset the session" },
-    { name: "settings", description: "Open settings" },
-    { name: "exit", description: "Exit the TUI" },
-    { name: "quit", description: "Exit the TUI" },
+    { name: "abort", description: "中止当前运行" },
+    { name: "new", description: "重置会话" },
+    { name: "reset", description: "重置会话" },
+    { name: "settings", description: "打开设置" },
+    { name: "exit", description: "退出 TUI" },
+    { name: "quit", description: "退出 TUI" },
   ];
 
   const seen = new Set(commands.map((command) => command.name));
@@ -141,7 +141,7 @@ export function getSlashCommands(options: SlashCommandOptions = {}): SlashComman
 export function helpText(options: SlashCommandOptions = {}): string {
   const thinkLevels = formatThinkingLevels(options.provider, options.model, "|");
   return [
-    "Slash commands:",
+    "斜杠命令列表：",
     "/help",
     "/commands",
     "/status",

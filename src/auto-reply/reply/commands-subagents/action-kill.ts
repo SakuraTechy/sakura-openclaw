@@ -19,7 +19,7 @@ export async function handleSubagentsKillAction(
   const target = restTokens[0];
   if (!target) {
     return stopWithText(
-      handledPrefix === COMMAND ? "Usage: /subagents kill <id|#|all>" : "Usage: /kill <id|#|all>",
+      handledPrefix === COMMAND ? "用法：/subagents kill <id|#|all>" : "用法：/kill <id|#|all>",
     );
   }
 

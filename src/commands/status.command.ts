@@ -233,7 +233,7 @@ export async function statusCommand(
 
   if (opts.verbose) {
     const details = buildGatewayConnectionDetails({ config: scan.cfg });
-    runtime.log(info("Gateway connection:"));
+    runtime.log(info("网关连接："));
     for (const line of details.message.split("\n")) {
       runtime.log(`  ${line}`);
     }
@@ -453,9 +453,9 @@ export async function statusCommand(
     },
   ];
 
-  runtime.log(theme.heading("OpenClaw status"));
+  runtime.log(theme.heading("OpenClaw 状态"));
   runtime.log("");
-  runtime.log(theme.heading("Overview"));
+  runtime.log(theme.heading("概览"));
   runtime.log(
     renderTable({
       width: tableWidth,
@@ -482,7 +482,7 @@ export async function statusCommand(
   }
 
   runtime.log("");
-  runtime.log(theme.heading("Security audit"));
+  runtime.log(theme.heading("安全审计"));
   const fmtSummary = (value: { critical: number; warn: number; info: number }) => {
     const parts = [
       theme.error(`${value.critical} critical`),
@@ -496,7 +496,7 @@ export async function statusCommand(
     (f) => f.severity === "critical" || f.severity === "warn",
   );
   if (importantFindings.length === 0) {
-    runtime.log(theme.muted("No critical or warn findings detected."));
+    runtime.log(theme.muted("未检测到严重或警告级别问题。"));
   } else {
     const severityLabel = (sev: "critical" | "warn" | "info") => {
       if (sev === "critical") {
@@ -528,7 +528,7 @@ export async function statusCommand(
   runtime.log(theme.muted(`Deep probe: ${formatCliCommand("openclaw security audit --deep")}`));
 
   runtime.log("");
-  runtime.log(theme.heading("Channels"));
+  runtime.log(theme.heading("通道"));
   const channelIssuesByChannel = groupChannelIssuesByChannel(channelIssues);
   runtime.log(
     renderTable({
@@ -564,7 +564,7 @@ export async function statusCommand(
   );
 
   runtime.log("");
-  runtime.log(theme.heading("Sessions"));
+  runtime.log(theme.heading("会话"));
   runtime.log(
     renderTable({
       width: tableWidth,
@@ -598,7 +598,7 @@ export async function statusCommand(
 
   if (summary.queuedSystemEvents.length > 0) {
     runtime.log("");
-    runtime.log(theme.heading("System events"));
+    runtime.log(theme.heading("系统事件"));
     runtime.log(
       renderTable({
         width: tableWidth,
@@ -615,7 +615,7 @@ export async function statusCommand(
 
   if (health) {
     runtime.log("");
-    runtime.log(theme.heading("Health"));
+    runtime.log(theme.heading("健康状态"));
     const rows: Array<Record<string, string>> = [];
     rows.push({
       Item: "Gateway",
@@ -671,7 +671,7 @@ export async function statusCommand(
   if (usage) {
     const { formatUsageReportLines } = await loadProviderUsage();
     runtime.log("");
-    runtime.log(theme.heading("Usage"));
+    runtime.log(theme.heading("用量统计"));
     for (const line of formatUsageReportLines(usage)) {
       runtime.log(line);
     }

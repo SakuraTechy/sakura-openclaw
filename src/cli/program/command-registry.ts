@@ -43,7 +43,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "setup",
-        description: "Initialize local config and agent workspace",
+        description: "初始化本地配置和代理工作区",
         hasSubcommands: false,
       },
     ],
@@ -56,7 +56,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "onboard",
-        description: "Interactive setup wizard for gateway, workspace, and skills",
+        description: "网关、工作区和技能的交互式引导向导",
         hasSubcommands: false,
       },
     ],
@@ -151,7 +151,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "memory",
-        description: "Search and reindex memory files",
+        description: "搜索和重建记忆文件索引",
         hasSubcommands: true,
       },
     ],
@@ -164,12 +164,12 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "agent",
-        description: "Run one agent turn via the Gateway",
+        description: "通过网关运行一次代理",
         hasSubcommands: false,
       },
       {
         name: "agents",
-        description: "Manage isolated agents (workspaces, auth, routing)",
+        description: "管理隔离的代理（工作区、认证、路由）",
         hasSubcommands: true,
       },
     ],
@@ -184,17 +184,17 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "status",
-        description: "Show channel health and recent session recipients",
+        description: "显示渠道健康状态和最近会话接收者",
         hasSubcommands: false,
       },
       {
         name: "health",
-        description: "Fetch health from the running gateway",
+        description: "从运行中的网关获取健康状态",
         hasSubcommands: false,
       },
       {
         name: "sessions",
-        description: "List stored conversation sessions",
+        description: "列出已存储的对话会话",
         hasSubcommands: true,
       },
     ],
@@ -207,7 +207,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "browser",
-        description: "Manage OpenClaw's dedicated browser (Chrome/Chromium)",
+        description: "管理 OpenClaw 专用浏览器（Chrome/Chromium）",
         hasSubcommands: true,
       },
     ],

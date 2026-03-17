@@ -1,4 +1,4 @@
-const DEFAULT_TAGLINE = "All your chats, one OpenClaw.";
+const DEFAULT_TAGLINE = "所有聊天，一个 OpenClaw 搞定。";
 export type TaglineMode = "random" | "default" | "off";
 
 const HOLIDAY_TAGLINES = {
@@ -24,11 +24,11 @@ const HOLIDAY_TAGLINES = {
 } as const;
 
 const TAGLINES: string[] = [
-  "Your terminal just grew claws—type something and let the bot pinch the busywork.",
-  "Welcome to the command line: where dreams compile and confidence segfaults.",
+  "你的终端长出了爪子——输入命令，让机器人帮你搞定繁琐工作。",
+  "欢迎来到命令行：梦想在这里编译，信心在这里崩溃。",
   'I run on caffeine, JSON5, and the audacity of "it worked on my machine."',
-  "Gateway online—please keep hands, feet, and appendages inside the shell at all times.",
-  "I speak fluent bash, mild sarcasm, and aggressive tab-completion energy.",
+  "网关已上线——请将手脚和附肢始终保持在 Shell 内。",
+  "我精通 bash、轻度讽刺和激进的 Tab 补全能量。",
   "One CLI to rule them all, and one more restart because you changed the port.",
   "If it works, it's automation; if it breaks, it's a \"learning opportunity.\"",
   "Pairing codes exist because even bots believe in consent—and good security hygiene.",
@@ -38,12 +38,12 @@ const TAGLINES: string[] = [
   "Type the command with confidence—nature will provide the stack trace if needed.",
   "I don't judge, but your missing API keys are absolutely judging you.",
   "I can grep it, git blame it, and gently roast it—pick your coping mechanism.",
-  "Hot reload for config, cold sweat for deploys.",
+  "配置热重载，部署冷汗直冒。",
   "I'm the assistant your terminal demanded, not the one your sleep schedule requested.",
   "I keep secrets like a vault... unless you print them in debug logs again.",
-  "Automation with claws: minimal fuss, maximal pinch.",
+  "带爪子的自动化：最少麻烦，最大效果。",
   "I'm basically a Swiss Army knife, but with more opinions and fewer sharp edges.",
-  "If you're lost, run doctor; if you're brave, run prod; if you're wise, run tests.",
+  "迷路就跑 doctor；勇敢就跑 prod；聪明就跑 tests。",
   "Your task has been queued; your dignity has been deprecated.",
   "I can't fix your code taste, but I can fix your build and your backlog.",
   "I'm not magic—I'm just extremely persistent with retries and coping strategies.",

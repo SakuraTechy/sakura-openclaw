@@ -14,24 +14,24 @@ export function renderIMessageCard(params: {
   return html`
     <div class="card">
       <div class="card-title">iMessage</div>
-      <div class="card-sub">macOS bridge status and channel configuration.</div>
+      <div class="card-sub">macOS 桥接状态和渠道配置。</div>
       ${accountCountLabel}
 
       <div class="status-list" style="margin-top: 16px;">
         <div>
-          <span class="label">Configured</span>
+          <span class="label">已配置</span>
           <span>${imessage?.configured ? "Yes" : "No"}</span>
         </div>
         <div>
-          <span class="label">Running</span>
+          <span class="label">运行中</span>
           <span>${imessage?.running ? "Yes" : "No"}</span>
         </div>
         <div>
-          <span class="label">Last start</span>
+          <span class="label">上次启动</span>
           <span>${imessage?.lastStartAt ? formatRelativeTimestamp(imessage.lastStartAt) : "n/a"}</span>
         </div>
         <div>
-          <span class="label">Last probe</span>
+          <span class="label">上次探测</span>
           <span>${imessage?.lastProbeAt ? formatRelativeTimestamp(imessage.lastProbeAt) : "n/a"}</span>
         </div>
       </div>
@@ -47,7 +47,7 @@ export function renderIMessageCard(params: {
       ${
         imessage?.probe
           ? html`<div class="callout" style="margin-top: 12px;">
-            Probe ${imessage.probe.ok ? "ok" : "failed"} ·
+            探测 ${imessage.probe.ok ? "成功" : "失败"} ·
             ${imessage.probe.error ?? ""}
           </div>`
           : nothing
@@ -57,7 +57,7 @@ export function renderIMessageCard(params: {
 
       <div class="row" style="margin-top: 12px;">
         <button class="btn" @click=${() => props.onRefresh(true)}>
-          Probe
+          探测
         </button>
       </div>
     </div>

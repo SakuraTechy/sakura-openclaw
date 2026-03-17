@@ -28,7 +28,7 @@ const togetherPlugin = {
           optionKey: "togetherApiKey",
           flagName: "--together-api-key",
           envVar: "TOGETHER_API_KEY",
-          promptMessage: "Enter Together AI API key",
+          promptMessage: "输入 Together AI API 密钥",
           defaultModel: TOGETHER_DEFAULT_MODEL_REF,
           expectedProviders: ["together"],
           applyConfig: (cfg) => applyTogetherConfig(cfg),

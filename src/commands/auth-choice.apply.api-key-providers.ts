@@ -69,7 +69,7 @@ export async function applyLiteLlmApiKeyProvider({
       expectedProviders: ["litellm"],
       provider: "litellm",
       envLabel: "LITELLM_API_KEY",
-      promptMessage: "Enter LiteLLM API key",
+      promptMessage: "输入 LiteLLM API 密钥",
       normalize: normalizeApiKeyInput,
       validate: validateApiKeyInput,
       prompter: params.prompter,

@@ -93,20 +93,20 @@ async function promptInstallChoice(params: {
     ? [
         {
           value: "local",
-          label: "Use local plugin path",
+          label: "使用本地插件路径",
           hint: localPath,
         },
       ]
     : [];
   const options: Array<{ value: InstallChoice; label: string; hint?: string }> = [
-    { value: "npm", label: `Download from npm (${entry.install.npmSpec})` },
+    { value: "npm", label: `从 npm 下载 (${entry.install.npmSpec})` },
     ...localOptions,
-    { value: "skip", label: "Skip for now" },
+    { value: "skip", label: "暂时跳过" },
   ];
   const initialValue: InstallChoice =
     defaultChoice === "local" && !localPath ? "npm" : defaultChoice;
   return await prompter.select<InstallChoice>({
-    message: `Install ${entry.meta.label} plugin?`,
+    message: `安装 ${entry.meta.label} 插件？`,
     options,
     initialValue,
   });
@@ -204,13 +204,13 @@ export async function ensureChannelSetupPluginInstalled(params: {
   }
 
   await prompter.note(
-    `Failed to install ${entry.install.npmSpec}: ${result.error}`,
-    "Plugin install",
+    `安装 ${entry.install.npmSpec} 失败: ${result.error}`,
+    "插件安装",
   );
 
   if (localPath) {
     const fallback = await prompter.confirm({
-      message: `Use local plugin path instead? (${localPath})`,
+      message: `使用本地插件路径代替？ (${localPath})`,
       initialValue: true,
     });
     if (fallback) {
@@ -221,7 +221,7 @@ export async function ensureChannelSetupPluginInstalled(params: {
     }
   }
 
-  runtime.error?.(`Plugin install failed: ${result.error}`);
+  runtime.error?.(`插件安装失败: ${result.error}`);
   return { cfg: next, installed: false };
 }
 

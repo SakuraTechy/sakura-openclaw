@@ -65,16 +65,16 @@ export async function setupSkills(
 
   await prompter.note(
     [
-      `Eligible: ${eligible.length}`,
-      `Missing requirements: ${missing.length}`,
+      `可用: ${eligible.length}`,
+      `缺少依赖: ${missing.length}`,
       `Unsupported on this OS: ${unsupportedOs.length}`,
-      `Blocked by allowlist: ${blocked.length}`,
+      `被白名单阻止: ${blocked.length}`,
     ].join("\n"),
-    "Skills status",
+    "技能状态",
   );
 
   const shouldConfigure = await prompter.confirm({
-    message: "Configure skills now? (recommended)",
+    message: "现在配置技能？（推荐）",
     initialValue: true,
   });
   if (!shouldConfigure) {
@@ -87,12 +87,12 @@ export async function setupSkills(
   let next: OpenClawConfig = cfg;
   if (installable.length > 0) {
     const toInstall = await prompter.multiselect({
-      message: "Install missing skill dependencies",
+      message: "安装缺失的技能依赖",
       options: [
         {
           value: "__skip__",
-          label: "Skip for now",
-          hint: "Continue without installing dependencies",
+          label: "暂时跳过",
+          hint: "不安装依赖继续",
         },
         ...installable.map((skill) => ({
           value: skill.name,
@@ -116,22 +116,22 @@ export async function setupSkills(
     if (needsBrewPrompt) {
       await prompter.note(
         [
-          "Many skill dependencies are shipped via Homebrew.",
-          "Without brew, you'll need to build from source or download releases manually.",
+          "许多技能依赖通过 Homebrew 分发。",
+          "没有 brew，你需要从源码构建或手动下载。",
         ].join("\n"),
-        "Homebrew recommended",
+        "建议安装 Homebrew",
       );
       const showBrewInstall = await prompter.confirm({
-        message: "Show Homebrew install command?",
+        message: "显示 Homebrew 安装命令？",
         initialValue: true,
       });
       if (showBrewInstall) {
         await prompter.note(
           [
-            "Run:",
+            "运行:",
             '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
           ].join("\n"),
-          "Homebrew install",
+          "Homebrew 安装",
         );
       }
     }
@@ -141,7 +141,7 @@ export async function setupSkills(
     );
     if (needsNodeManagerPrompt) {
       const nodeManager = (await prompter.select({
-        message: "Preferred node manager for skill installs",
+        message: "技能安装使用的 Node 包管理器",
         options: resolveNodeManagerOptions(),
       })) as "npm" | "pnpm" | "bun";
       next = {
@@ -165,7 +165,7 @@ export async function setupSkills(
       if (!installId) {
         continue;
       }
-      const spin = prompter.progress(`Installing ${name}…`);
+      const spin = prompter.progress(`正在安装 ${name}…`);
       const result = await installSkill({
         workspaceDir,
         skillName: target.name,
@@ -174,15 +174,15 @@ export async function setupSkills(
       });
       const warnings = result.warnings ?? [];
       if (result.ok) {
-        spin.stop(warnings.length > 0 ? `Installed ${name} (with warnings)` : `Installed ${name}`);
+        spin.stop(warnings.length > 0 ? `Installed ${name} (with warnings)` : `已安装 ${name}`);
         for (const warning of warnings) {
           runtime.log(warning);
         }
         continue;
       }
-      const code = result.code == null ? "" : ` (exit ${result.code})`;
+      const code = result.code == null ? "" : ` (退出码 ${result.code})`;
       const detail = summarizeInstallFailure(result.message);
-      spin.stop(`Install failed: ${name}${code}${detail ? ` — ${detail}` : ""}`);
+      spin.stop(`安装失败: ${name}${code}${detail ? ` — ${detail}` : ""}`);
       for (const warning of warnings) {
         runtime.log(warning);
       }
@@ -192,9 +192,9 @@ export async function setupSkills(
         runtime.log(result.stdout.trim());
       }
       runtime.log(
-        `Tip: run \`${formatCliCommand("openclaw doctor")}\` to review skills + requirements.`,
+        `提示: 运行 \`${formatCliCommand("openclaw doctor")}\` 查看技能和依赖状态。`,
       );
-      runtime.log("Docs: https://docs.openclaw.ai/skills");
+      runtime.log("文档: https://docs.openclaw.ai/skills");
     }
   }
 
@@ -203,7 +203,7 @@ export async function setupSkills(
       continue;
     }
     const wantsKey = await prompter.confirm({
-      message: `Set ${skill.primaryEnv} for ${skill.name}?`,
+      message: `设置 ${skill.primaryEnv} 用于 ${skill.name}？`,
       initialValue: false,
     });
     if (!wantsKey) {
@@ -211,7 +211,7 @@ export async function setupSkills(
     }
     const apiKey = String(
       await prompter.text({
-        message: `Enter ${skill.primaryEnv}`,
+        message: `输入 ${skill.primaryEnv}`,
         validate: (value) => (value?.trim() ? undefined : "Required"),
       }),
     );

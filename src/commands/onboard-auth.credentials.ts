@@ -459,6 +459,20 @@ async function setSharedOpencodeApiKey(
   }
 }
 
+// 胜算云 API Key 存储 (OpenClaw 汉化版内置)
+export const SHENGSUANYUN_DEFAULT_MODEL_REF = "shengsuanyun/openai/gpt-4.1-nano";
+export async function setShengSuanYunApiKey(
+  key: SecretInput,
+  agentDir?: string,
+  options?: ApiKeyStorageOptions,
+) {
+  upsertAuthProfile({
+    profileId: "shengsuanyun:default",
+    credential: buildApiKeyCredential("shengsuanyun", key, undefined, options),
+    agentDir: resolveAuthAgentDir(agentDir),
+  });
+}
+
 export async function setTogetherApiKey(
   key: SecretInput,
   agentDir?: string,

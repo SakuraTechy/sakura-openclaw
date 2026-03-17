@@ -135,7 +135,7 @@ export function renderAgents(props: AgentsProps) {
     <div class="agents-layout">
       <section class="agents-toolbar">
         <div class="agents-toolbar-row">
-          <span class="agents-toolbar-label">Agent</span>
+          <span class="agents-toolbar-label">代理</span>
           <div class="agents-control-row">
             <div class="agents-control-select">
               <select
@@ -147,7 +147,7 @@ export function renderAgents(props: AgentsProps) {
                 ${
                   agents.length === 0
                     ? html`
-                        <option value="">No agents</option>
+                        <option value="">暂无代理</option>
                       `
                     : agents.map(
                         (agent) => html`
@@ -178,7 +178,7 @@ export function renderAgents(props: AgentsProps) {
                                   <button type="button" @click=${() => {
                                     void navigator.clipboard.writeText(selectedAgent.id);
                                     actionsMenuOpen = false;
-                                  }}>Copy agent ID</button>
+                                  }}>复制代理 ID</button>
                                   <button
                                     type="button"
                                     ?disabled=${Boolean(defaultId && selectedAgent.id === defaultId)}
@@ -187,7 +187,7 @@ export function renderAgents(props: AgentsProps) {
                                       actionsMenuOpen = false;
                                     }}
                                   >
-                                    ${defaultId && selectedAgent.id === defaultId ? "Already default" : "Set as default"}
+                                    ${defaultId && selectedAgent.id === defaultId ? "已是默认" : "设为默认"}
                                   </button>
                                 </div>
                               `
@@ -198,7 +198,7 @@ export function renderAgents(props: AgentsProps) {
                   : nothing
               }
               <button class="btn btn--sm agents-refresh-btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-                ${props.loading ? "Loading…" : "Refresh"}
+                ${props.loading ? "加载中…" : "刷新"}
               </button>
             </div>
           </div>
@@ -214,8 +214,8 @@ export function renderAgents(props: AgentsProps) {
           !selectedAgent
             ? html`
                 <div class="card">
-                  <div class="card-title">Select an agent</div>
-                  <div class="card-sub">Pick an agent to inspect its workspace and tools.</div>
+                  <div class="card-title">选择代理</div>
+                  <div class="card-sub">选择一个代理以查看其工作区和工具。</div>
                 </div>
               `
             : html`
@@ -356,12 +356,12 @@ function renderAgentTabs(
   counts: Record<string, number | null>,
 ) {
   const tabs: Array<{ id: AgentsPanel; label: string }> = [
-    { id: "overview", label: "Overview" },
-    { id: "files", label: "Files" },
-    { id: "tools", label: "Tools" },
-    { id: "skills", label: "Skills" },
-    { id: "channels", label: "Channels" },
-    { id: "cron", label: "Cron Jobs" },
+    { id: "overview", label: "概览" },
+    { id: "files", label: "文件" },
+    { id: "tools", label: "工具" },
+    { id: "skills", label: "技能" },
+    { id: "channels", label: "渠道" },
+    { id: "cron", label: "定时任务" },
   ];
   return html`
     <div class="agent-tabs">

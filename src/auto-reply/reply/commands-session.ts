@@ -30,7 +30,7 @@ function getChannelRuntime() {
 }
 
 function resolveSessionCommandUsage() {
-  return "Usage: /session idle <duration|off> | /session max-age <duration|off> (example: /session idle 24h)";
+  return "用法：/session idle <时长|off> | /session max-age <时长|off>（示例：/session idle 24h）";
 }
 
 function parseSessionDurationMs(raw: string): number {
@@ -132,7 +132,7 @@ export const handleActivationCommand: CommandHandler = async (params, allowTextC
   if (!params.isGroup) {
     return {
       shouldContinue: false,
-      reply: { text: "⚙️ Group activation only applies to group chats." },
+      reply: { text: "⚙️ 群组激活仅适用于群聊。" },
     };
   }
   if (!params.command.isAuthorizedSender) {
@@ -144,7 +144,7 @@ export const handleActivationCommand: CommandHandler = async (params, allowTextC
   if (!activationCommand.mode) {
     return {
       shouldContinue: false,
-      reply: { text: "⚙️ Usage: /activation mention|always" },
+      reply: { text: "⚙️ 用法：/activation mention|always" },
     };
   }
   if (params.sessionEntry && params.sessionStore && params.sessionKey) {
@@ -177,7 +177,7 @@ export const handleSendPolicyCommand: CommandHandler = async (params, allowTextC
   if (!sendPolicyCommand.mode) {
     return {
       shouldContinue: false,
-      reply: { text: "⚙️ Usage: /send on|off|inherit" },
+      reply: { text: "⚙️ 用法：/send on|off|inherit" },
     };
   }
   if (params.sessionEntry && params.sessionStore && params.sessionKey) {
@@ -259,7 +259,7 @@ export const handleUsageCommand: CommandHandler = async (params, allowTextComman
   if (rawArgs && !requested) {
     return {
       shouldContinue: false,
-      reply: { text: "⚙️ Usage: /usage off|tokens|full|cost" },
+      reply: { text: "⚙️ 用法：/usage off|tokens|full|cost" },
     };
   }
 
@@ -368,7 +368,7 @@ export const handleSessionCommand: CommandHandler = async (params, allowTextComm
     return {
       shouldContinue: false,
       reply: {
-        text: "⚠️ /session idle and /session max-age are currently available for Discord and Telegram bound sessions.",
+        text: "⚠️ /session idle 和 /session max-age 目前仅适用于 Discord 和 Telegram 绑定会话。",
       },
     };
   }
@@ -386,7 +386,7 @@ export const handleSessionCommand: CommandHandler = async (params, allowTextComm
   if (onDiscord && !discordManager) {
     return {
       shouldContinue: false,
-      reply: { text: "⚠️ Discord thread bindings are unavailable for this account." },
+      reply: { text: "⚠️ 此账户的 Discord 线程绑定不可用。" },
     };
   }
 
@@ -405,13 +405,13 @@ export const handleSessionCommand: CommandHandler = async (params, allowTextComm
       return {
         shouldContinue: false,
         reply: {
-          text: "⚠️ /session idle and /session max-age must be run inside a focused Discord thread.",
+          text: "⚠️ /session idle 和 /session max-age 必须在已聚焦的 Discord 线程中运行。",
         },
       };
     }
     return {
       shouldContinue: false,
-      reply: { text: "ℹ️ This thread is not currently focused." },
+      reply: { text: "ℹ️ 此线程当前未聚焦。" },
     };
   }
   if (onTelegram && !telegramBinding) {
@@ -475,7 +475,7 @@ export const handleSessionCommand: CommandHandler = async (params, allowTextComm
       }
       return {
         shouldContinue: false,
-        reply: { text: "ℹ️ Idle timeout is currently disabled for this focused session." },
+        reply: { text: "ℹ️ 此聚焦会话的空闲超时当前已禁用。" },
       };
     }
 
@@ -493,7 +493,7 @@ export const handleSessionCommand: CommandHandler = async (params, allowTextComm
     }
     return {
       shouldContinue: false,
-      reply: { text: "ℹ️ Max age is currently disabled for this focused session." },
+      reply: { text: "ℹ️ 此聚焦会话的最大存活时间当前已禁用。" },
     };
   }
 
@@ -554,8 +554,8 @@ export const handleSessionCommand: CommandHandler = async (params, allowTextComm
       reply: {
         text:
           action === SESSION_ACTION_IDLE
-            ? "⚠️ Failed to update idle timeout for the current binding."
-            : "⚠️ Failed to update max age for the current binding.",
+            ? "⚠️ 更新当前绑定的空闲超时失败。"
+            : "⚠️ 更新当前绑定的最大存活时间失败。",
       },
     };
   }
@@ -608,7 +608,7 @@ export const handleRestartCommand: CommandHandler = async (params, allowTextComm
     return {
       shouldContinue: false,
       reply: {
-        text: "⚠️ /restart is disabled (commands.restart=false).",
+        text: "⚠️ /restart 已禁用（commands.restart=false）。",
       },
     };
   }
@@ -618,7 +618,7 @@ export const handleRestartCommand: CommandHandler = async (params, allowTextComm
     return {
       shouldContinue: false,
       reply: {
-        text: "⚙️ Restarting OpenClaw in-process (SIGUSR1); back in a few seconds.",
+        text: "⚙️ 正在进程内重启 OpenClaw（SIGUSR1），几秒后恢复。",
       },
     };
   }

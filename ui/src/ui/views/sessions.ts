@@ -48,14 +48,14 @@ export type SessionsProps = {
 const THINK_LEVELS = ["", "off", "minimal", "low", "medium", "high", "xhigh"] as const;
 const BINARY_THINK_LEVELS = ["", "off", "on"] as const;
 const VERBOSE_LEVELS = [
-  { value: "", label: "inherit" },
-  { value: "off", label: "off (explicit)" },
-  { value: "on", label: "on" },
+  { value: "", label: "继承" },
+  { value: "off", label: "关闭（显式）" },
+  { value: "on", label: "开启" },
   { value: "full", label: "full" },
 ] as const;
 const FAST_LEVELS = [
-  { value: "", label: "inherit" },
-  { value: "on", label: "on" },
+  { value: "", label: "继承" },
+  { value: "on", label: "开启" },
   { value: "off", label: "off" },
 ] as const;
 const REASONING_LEVELS = ["", "off", "on", "stream"] as const;
@@ -216,17 +216,17 @@ export function renderSessions(props: SessionsProps) {
     <section class="card" style=${props.actionsOpenKey ? "position: relative; z-index: 41;" : ""}>
       <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
         <div>
-          <div class="card-title">Sessions</div>
-          <div class="card-sub">${props.result ? `Store: ${props.result.path}` : "Active session keys and per-session overrides."}</div>
+          <div class="card-title">会话</div>
+          <div class="card-sub">${props.result ? `存储路径：${props.result.path}` : "活动会话密钥和单会话设置覆盖。"}</div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-          ${props.loading ? "Loading…" : "Refresh"}
+          ${props.loading ? "加载中…" : "刷新"}
         </button>
       </div>
 
       <div class="filters" style="margin-bottom: 12px;">
         <label class="field-inline">
-          <span>Active</span>
+          <span>活动</span>
           <input
             style="width: 72px;"
             placeholder="min"
@@ -241,7 +241,7 @@ export function renderSessions(props: SessionsProps) {
           />
         </label>
         <label class="field-inline">
-          <span>Limit</span>
+          <span>限制</span>
           <input
             style="width: 64px;"
             .value=${props.limit}
@@ -266,7 +266,7 @@ export function renderSessions(props: SessionsProps) {
                 includeUnknown: props.includeUnknown,
               })}
           />
-          <span>Global</span>
+          <span>全局</span>
         </label>
         <label class="field-inline checkbox">
           <input
@@ -280,7 +280,7 @@ export function renderSessions(props: SessionsProps) {
                 includeUnknown: (e.target as HTMLInputElement).checked,
               })}
           />
-          <span>Unknown</span>
+          <span>未知</span>
         </label>
       </div>
 
@@ -295,7 +295,7 @@ export function renderSessions(props: SessionsProps) {
           <div class="data-table-search">
             <input
               type="text"
-              placeholder="Filter by key, label, kind…"
+              placeholder="按密钥、标签、类型筛选…"
               .value=${props.searchQuery}
               @input=${(e: Event) => props.onSearchChange((e.target as HTMLInputElement).value)}
             />
@@ -306,15 +306,15 @@ export function renderSessions(props: SessionsProps) {
           <table class="data-table">
             <thead>
               <tr>
-                ${sortHeader("key", "Key")}
-                <th>Label</th>
-                ${sortHeader("kind", "Kind")}
-                ${sortHeader("updated", "Updated")}
-                ${sortHeader("tokens", "Tokens")}
-                <th>Thinking</th>
-                <th>Fast</th>
-                <th>Verbose</th>
-                <th>Reasoning</th>
+                ${sortHeader("key", "密钥")}
+                <th>标签</th>
+                ${sortHeader("kind", "类型")}
+                ${sortHeader("updated", "更新时间")}
+                ${sortHeader("tokens", "令牌数")}
+                <th>思考</th>
+                <th>快速</th>
+                <th>详细</th>
+                <th>推理</th>
                 <th style="width: 60px;"></th>
               </tr>
             </thead>
@@ -324,7 +324,7 @@ export function renderSessions(props: SessionsProps) {
                   ? html`
                       <tr>
                         <td colspan="10" style="text-align: center; padding: 48px 16px; color: var(--muted)">
-                          No sessions found.
+                          未找到会话。
                         </td>
                       </tr>
                     `
@@ -442,7 +442,7 @@ function renderRow(
         <input
           .value=${row.label ?? ""}
           ?disabled=${disabled}
-          placeholder="(optional)"
+          placeholder="（可选）"
           style="width: 100%; max-width: 140px; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-sm);"
           @change=${(e: Event) => {
             const value = (e.target as HTMLInputElement).value.trim();
@@ -469,7 +469,7 @@ function renderRow(
           ${thinkLevels.map(
             (level) =>
               html`<option value=${level} ?selected=${thinking === level}>
-                ${level || "inherit"}
+                ${level || "继承"}
               </option>`,
           )}
         </select>
@@ -520,7 +520,7 @@ function renderRow(
           ${reasoningLevels.map(
             (level) =>
               html`<option value=${level} ?selected=${reasoning === level}>
-                ${level || "inherit"}
+                ${level || "继承"}
               </option>`,
           )}
         </select>
@@ -550,7 +550,7 @@ function renderRow(
                               style="display: block; padding: 8px 12px; font-size: 13px; text-decoration: none; color: var(--text); border-radius: var(--radius-sm);"
                               @click=${() => onActionsOpenChange(null)}
                             >
-                              Open in Chat
+                              在对话中打开
                             </a>
                           `
                         : nothing
@@ -563,7 +563,7 @@ function renderRow(
                         onDelete(row.key);
                       }}
                     >
-                      Delete
+                      删除
                     </button>
                   </div>
                 `

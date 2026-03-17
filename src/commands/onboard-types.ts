@@ -49,6 +49,7 @@ export type BuiltInAuthChoice =
   | "qianfan-api-key"
   | "modelstudio-api-key-cn"
   | "modelstudio-api-key"
+  | "shengsuanyun-api-key"
   | "custom-api-key"
   | "skip";
 export type AuthChoice = BuiltInAuthChoice | (string & {});
@@ -80,6 +81,7 @@ export type BuiltInAuthChoiceGroupId =
   | "xai"
   | "volcengine"
   | "byteplus"
+  | "shengsuanyun"
   | "custom";
 export type AuthChoiceGroupId = BuiltInAuthChoiceGroupId | (string & {});
 export type GatewayAuthChoice = "token" | "password";
@@ -132,6 +134,7 @@ export type OnboardOptions = {
   syntheticApiKey?: string;
   veniceApiKey?: string;
   togetherApiKey?: string;
+  shengsuanyunApiKey?: string;
   huggingfaceApiKey?: string;
   opencodeZenApiKey?: string;
   opencodeGoApiKey?: string;

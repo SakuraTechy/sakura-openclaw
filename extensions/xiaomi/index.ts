@@ -26,7 +26,7 @@ const xiaomiPlugin = {
           optionKey: "xiaomiApiKey",
           flagName: "--xiaomi-api-key",
           envVar: "XIAOMI_API_KEY",
-          promptMessage: "Enter Xiaomi API key",
+          promptMessage: "输入小米 API 密钥",
           defaultModel: XIAOMI_DEFAULT_MODEL_REF,
           expectedProviders: ["xiaomi"],
           applyConfig: (cfg) => applyXiaomiConfig(cfg),

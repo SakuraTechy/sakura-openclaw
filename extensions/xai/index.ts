@@ -37,7 +37,7 @@ const xaiPlugin = {
           optionKey: "xaiApiKey",
           flagName: "--xai-api-key",
           envVar: "XAI_API_KEY",
-          promptMessage: "Enter xAI API key",
+          promptMessage: "输入 xAI API 密钥",
           defaultModel: XAI_DEFAULT_MODEL_REF,
           expectedProviders: ["xai"],
           applyConfig: (cfg) => applyXaiConfig(cfg),

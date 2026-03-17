@@ -30,43 +30,45 @@ async function requireRiskAcknowledgement(params: {
 
   await params.prompter.note(
     [
-      "Security warning — please read.",
+      "安全警告 — 请仔细阅读。",
       "",
-      "OpenClaw is a hobby project and still in beta. Expect sharp edges.",
-      "By default, OpenClaw is a personal agent: one trusted operator boundary.",
-      "This bot can read files and run actions if tools are enabled.",
-      "A bad prompt can trick it into doing unsafe things.",
+      "OpenClaw 是一个业余项目，仍处于测试阶段。请注意可能存在的问题。",
+      "默认情况下，OpenClaw 是个人代理：单一可信操作者边界。",
+      "如果启用了工具，这个机器人可以读取文件并执行操作。",
+      "恶意提示可能诱使它做出不安全的事情。",
       "",
-      "OpenClaw is not a hostile multi-tenant boundary by default.",
-      "If multiple users can message one tool-enabled agent, they share that delegated tool authority.",
+      "OpenClaw 默认不是对抗性多租户边界。",
+      "如果多个用户可以向同一个启用工具的代理发消息，他们将共享该代理的工具权限。",
       "",
-      "If you’re not comfortable with security hardening and access control, don’t run OpenClaw.",
-      "Ask someone experienced to help before enabling tools or exposing it to the internet.",
+      "如果你不熟悉安全加固和访问控制，请不要运行 OpenClaw。",
+      "在启用工具或将其暴露到互联网之前，请寻求有经验的人帮助。",
       "",
-      "Recommended baseline:",
-      "- Pairing/allowlists + mention gating.",
-      "- Multi-user/shared inbox: split trust boundaries (separate gateway/credentials, ideally separate OS users/hosts).",
-      "- Sandbox + least-privilege tools.",
-      "- Shared inboxes: isolate DM sessions (`session.dmScope: per-channel-peer`) and keep tool access minimal.",
-      "- Keep secrets out of the agent’s reachable filesystem.",
-      "- Use the strongest available model for any bot with tools or untrusted inboxes.",
+      "建议的基线配置：",
+      "- 配对/白名单 + 提及控制。",
+      "- 多用户/共享信箱：拆分信任边界（独立网关/凭证，最好使用独立的系统用户/主机）。",
+      "- 沙箱 + 最小权限工具。",
+      "- 共享信箱：隔离私信会话 (`session.dmScope: per-channel-peer`) 并保持最小工具访问权限。",
+      "- 将密钥保存在代理无法访问的文件系统之外。",
+      "- 对于任何带有工具或不受信任收件箱的机器人，使用最强大的可用模型。",
       "",
-      "Run regularly:",
+      "定期运行：",
       "openclaw security audit --deep",
       "openclaw security audit --fix",
       "",
-      "Must read: https://docs.openclaw.ai/gateway/security",
+      "必读文档：https://docs.openclaw.ai/gateway/security",
+      "",
+      "汉化版社区：QQ群 https://qt.cool/c/OpenClaw | 微信群 https://qt.cool/c/OpenClawWx",
     ].join("\n"),
-    "Security",
+    "安全",
   );
 
   const ok = await params.prompter.confirm({
     message:
-      "I understand this is personal-by-default and shared/multi-user use requires lock-down. Continue?",
+      "我理解这默认是个人使用的，共享/多用户使用需要安全加固。是否继续？",
     initialValue: false,
   });
   if (!ok) {
-    throw new WizardCancelledError("risk not accepted");
+    throw new WizardCancelledError("风险未被接受");
   }
 }
 
@@ -77,7 +79,7 @@ export async function runSetupWizard(
 ) {
   const onboardHelpers = await import("../commands/onboard-helpers.js");
   onboardHelpers.printWizardHeader(runtime);
-  await prompter.intro("OpenClaw setup");
+  await prompter.intro("OpenClaw 初始化向导");
   await requireRiskAcknowledgement({ opts, prompter });
 
   const snapshot = await readConfigFileSnapshot();
@@ -122,17 +124,17 @@ export async function runSetupWizard(
   let flow: WizardFlow =
     explicitFlow ??
     (await prompter.select({
-      message: "Setup mode",
+      message: "初始化模式",
       options: [
-        { value: "quickstart", label: "QuickStart", hint: quickstartHint },
-        { value: "advanced", label: "Manual", hint: manualHint },
+        { value: "quickstart", label: "快速开始", hint: quickstartHint },
+        { value: "advanced", label: "手动配置", hint: manualHint },
       ],
       initialValue: "quickstart",
     }));
 
   if (opts.mode === "remote" && flow === "quickstart") {
     await prompter.note(
-      "QuickStart only supports local gateways. Switching to Manual mode.",
+      "快速开始仅支持本地网关。正在切换到手动配置模式。",
       "QuickStart",
     );
     flow = "advanced";
@@ -141,15 +143,15 @@ export async function runSetupWizard(
   if (snapshot.exists) {
     await prompter.note(
       onboardHelpers.summarizeExistingConfig(baseConfig),
-      "Existing config detected",
+      "检测到现有配置",
     );
 
     const action = await prompter.select({
-      message: "Config handling",
+      message: "配置处理方式",
       options: [
-        { value: "keep", label: "Use existing values" },
-        { value: "modify", label: "Update values" },
-        { value: "reset", label: "Reset" },
+        { value: "keep", label: "使用现有值" },
+        { value: "modify", label: "更新配置" },
+        { value: "reset", label: "重置" },
       ],
     });
 
@@ -157,16 +159,16 @@ export async function runSetupWizard(
       const workspaceDefault =
         baseConfig.agents?.defaults?.workspace ?? onboardHelpers.DEFAULT_WORKSPACE;
       const resetScope = (await prompter.select({
-        message: "Reset scope",
+        message: "重置范围",
         options: [
-          { value: "config", label: "Config only" },
+          { value: "config", label: "仅配置文件" },
           {
             value: "config+creds+sessions",
-            label: "Config + creds + sessions",
+            label: "配置 + 凭证 + 会话",
           },
           {
             value: "full",
-            label: "Full reset (config + creds + sessions + workspace)",
+            label: "完全重置 (配置 + 凭证 + 会话 + 工作区)",
           },
         ],
       })) as ResetScope;
@@ -259,22 +261,22 @@ export async function runSetupWizard(
     };
     const quickstartLines = quickstartGateway.hasExisting
       ? [
-          "Keeping your current gateway settings:",
-          `Gateway port: ${quickstartGateway.port}`,
-          `Gateway bind: ${formatBind(quickstartGateway.bind)}`,
+          "保留当前网关设置：",
+          `网关端口: ${quickstartGateway.port}`,
+          `网关绑定: ${formatBind(quickstartGateway.bind)}`,
           ...(quickstartGateway.bind === "custom" && quickstartGateway.customBindHost
             ? [`Gateway custom IP: ${quickstartGateway.customBindHost}`]
             : []),
-          `Gateway auth: ${formatAuth(quickstartGateway.authMode)}`,
-          `Tailscale exposure: ${formatTailscale(quickstartGateway.tailscaleMode)}`,
-          "Direct to chat channels.",
+          `网关认证: ${formatAuth(quickstartGateway.authMode)}`,
+          `Tailscale 暴露: ${formatTailscale(quickstartGateway.tailscaleMode)}`,
+          "直接连接聊天频道。",
         ]
       : [
-          `Gateway port: ${DEFAULT_GATEWAY_PORT}`,
-          "Gateway bind: Loopback (127.0.0.1)",
-          "Gateway auth: Token (default)",
-          "Tailscale exposure: Off",
-          "Direct to chat channels.",
+          `网关端口: ${DEFAULT_GATEWAY_PORT}`,
+          "网关绑定: 回环地址 (127.0.0.1)",
+          "网关认证: 令牌 (默认)",
+          "Tailscale 暴露: 关闭",
+          "直接连接聊天频道。",
         ];
     await prompter.note(quickstartLines.join("\n"), "QuickStart");
   }
@@ -361,23 +363,23 @@ export async function runSetupWizard(
     (flow === "quickstart"
       ? "local"
       : ((await prompter.select({
-          message: "What do you want to set up?",
+          message: "你想设置什么？",
           options: [
             {
               value: "local",
-              label: "Local gateway (this machine)",
+              label: "本地网关 (本机)",
               hint: localProbe.ok
-                ? `Gateway reachable (${localUrl})`
-                : `No gateway detected (${localUrl})`,
+                ? `网关可达 (${localUrl})`
+                : `未检测到网关 (${localUrl})`,
             },
             {
               value: "remote",
-              label: "Remote gateway (info-only)",
+              label: "远程网关 (仅信息)",
               hint: !remoteUrl
-                ? "No remote URL configured yet"
+                ? "尚未配置远程 URL"
                 : remoteProbe?.ok
-                  ? `Gateway reachable (${remoteUrl})`
-                  : `Configured but unreachable (${remoteUrl})`,
+                  ? `网关可达 (${remoteUrl})`
+                  : `已配置但无法访问 (${remoteUrl})`,
             },
           ],
         })) as OnboardMode));
@@ -391,7 +393,7 @@ export async function runSetupWizard(
     nextConfig = onboardHelpers.applyWizardMetadata(nextConfig, { command: "onboard", mode });
     await writeConfigFile(nextConfig);
     logConfigUpdated(runtime);
-    await prompter.outro("Remote gateway configured.");
+    await prompter.outro("远程网关已配置。");
     return;
   }
 
@@ -400,7 +402,7 @@ export async function runSetupWizard(
     (flow === "quickstart"
       ? (baseConfig.agents?.defaults?.workspace ?? onboardHelpers.DEFAULT_WORKSPACE)
       : await prompter.text({
-          message: "Workspace directory",
+          message: "工作区目录",
           initialValue: baseConfig.agents?.defaults?.workspace ?? onboardHelpers.DEFAULT_WORKSPACE,
         }));
 
@@ -497,7 +499,7 @@ export async function runSetupWizard(
   const settings = gateway.settings;
 
   if (opts.skipChannels ?? opts.skipProviders) {
-    await prompter.note("Skipping channel setup.", "Channels");
+    await prompter.note("跳过频道设置。", "频道");
   } else {
     const { listChannelPlugins } = await import("../channels/plugins/index.js");
     const { setupChannels } = await import("../commands/onboard-channels.js");
@@ -535,7 +537,7 @@ export async function runSetupWizard(
   }
 
   if (opts.skipSkills) {
-    await prompter.note("Skipping skills setup.", "Skills");
+    await prompter.note("跳过技能设置。", "技能");
   } else {
     const { setupSkills } = await import("../commands/onboard-skills.js");
     nextConfig = await setupSkills(nextConfig, workspaceDir, runtime, prompter);

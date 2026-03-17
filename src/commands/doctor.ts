@@ -77,7 +77,7 @@ export async function doctorCommand(
 ) {
   const prompter = createDoctorPrompter({ runtime, options });
   printWizardHeader(runtime);
-  intro("OpenClaw doctor");
+  intro("OpenClaw 诊断");
 
   const root = await resolveOpenClawPackageRoot({
     moduleUrl: import.meta.url,
@@ -112,20 +112,20 @@ export async function doctorCommand(
   const configPath = configResult.path ?? CONFIG_PATH;
   if (!cfg.gateway?.mode) {
     const lines = [
-      "gateway.mode is unset; gateway start will be blocked.",
-      `Fix: run ${formatCliCommand("openclaw configure")} and set Gateway mode (local/remote).`,
-      `Or set directly: ${formatCliCommand("openclaw config set gateway.mode local")}`,
+      "gateway.mode 未设置；网关启动将被阻止。",
+      `修复：运行 ${formatCliCommand("openclaw configure")} 并设置网关模式（local/remote）。`,
+      `或直接设置：${formatCliCommand("openclaw config set gateway.mode local")}`,
     ];
     if (!fs.existsSync(configPath)) {
-      lines.push(`Missing config: run ${formatCliCommand("openclaw setup")} first.`);
+      lines.push(`缺少配置：请先运行 ${formatCliCommand("openclaw setup")}。`);
     }
-    note(lines.join("\n"), "Gateway");
+    note(lines.join("\n"), "网关");
   }
   if (resolveMode(cfg) === "local" && hasAmbiguousGatewayAuthModeConfig(cfg)) {
     note(
       [
-        "gateway.auth.token and gateway.auth.password are both configured while gateway.auth.mode is unset.",
-        "Set an explicit mode to avoid ambiguous auth selection and startup/runtime failures.",
+        "gateway.auth.token 和 gateway.auth.password 同时配置但 gateway.auth.mode 未设置。",
+        "请设置明确的模式以避免认证选择歧义和启动/运行时故障。",
         `Set token mode: ${formatCliCommand("openclaw config set gateway.auth.mode token")}`,
         `Set password mode: ${formatCliCommand("openclaw config set gateway.auth.mode password")}`,
       ].join("\n"),
@@ -142,7 +142,7 @@ export async function doctorCommand(
   });
   const gatewayDetails = buildGatewayConnectionDetails({ config: cfg });
   if (gatewayDetails.remoteFallbackNote) {
-    note(gatewayDetails.remoteFallbackNote, "Gateway");
+    note(gatewayDetails.remoteFallbackNote, "网关");
   }
   if (resolveMode(cfg) === "local" && sourceConfigValid) {
     const gatewayTokenRef = resolveSecretInputRef({
@@ -158,16 +158,16 @@ export async function doctorCommand(
       if (gatewayTokenRef) {
         note(
           [
-            "Gateway token is managed via SecretRef and is currently unavailable.",
-            "Doctor will not overwrite gateway.auth.token with a plaintext value.",
-            "Resolve/rotate the external secret source, then rerun doctor.",
+            "网关令牌由 SecretRef 管理，当前不可用。",
+            "诊断不会用明文值覆盖 gateway.auth.token。",
+            "请解决/轮换外部密钥源，然后重新运行诊断。",
           ].join("\n"),
           "Gateway auth",
         );
       } else {
         note(
-          "Gateway auth is off or missing a token. Token auth is now the recommended default (including loopback).",
-          "Gateway auth",
+          "网关认证已关闭或缺少令牌。令牌认证现在是推荐的默认方式（包括本地回环）。",
+          "网关认证",
         );
         const shouldSetToken =
           options.generateGatewayToken === true
@@ -191,7 +191,7 @@ export async function doctorCommand(
               },
             },
           };
-          note("Gateway token configured.", "Gateway auth");
+          note("网关令牌已配置。", "网关认证");
         }
       }
     }
@@ -199,7 +199,7 @@ export async function doctorCommand(
 
   const legacyState = await detectLegacyStateMigrations({ cfg });
   if (legacyState.preview.length > 0) {
-    note(legacyState.preview.join("\n"), "Legacy state detected");
+    note(legacyState.preview.join("\n"), "检测到旧版状态");
     const migrate =
       options.nonInteractive === true
         ? true
@@ -212,10 +212,10 @@ export async function doctorCommand(
         detected: legacyState,
       });
       if (migrated.changes.length > 0) {
-        note(migrated.changes.join("\n"), "Doctor changes");
+        note(migrated.changes.join("\n"), "诊断更改");
       }
       if (migrated.warnings.length > 0) {
-        note(migrated.warnings.join("\n"), "Doctor warnings");
+        note(migrated.warnings.join("\n"), "诊断警告");
       }
     }
   }
@@ -276,7 +276,7 @@ export async function doctorCommand(
         );
       }
       if (warnings.length > 0) {
-        note(warnings.join("\n"), "Hooks");
+        note(warnings.join("\n"), "钩子");
       }
     }
   }
@@ -367,5 +367,5 @@ export async function doctorCommand(
     }
   }
 
-  outro("Doctor complete.");
+  outro("诊断完成。");
 }

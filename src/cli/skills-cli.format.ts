@@ -150,7 +150,7 @@ export function formatSkillsList(report: SkillStatusReport, opts: SkillsListOpti
 
   const lines: string[] = [];
   lines.push(
-    `${theme.heading("Skills")} ${theme.muted(`(${eligible.length}/${skills.length} ready)`)}`,
+    `${theme.heading("技能")} ${theme.muted(`(${eligible.length}/${skills.length} ready)`)}`,
   );
   lines.push(
     renderTable({
@@ -199,7 +199,7 @@ export function formatSkillInfo(
   lines.push(skill.description);
   lines.push("");
 
-  lines.push(theme.heading("Details:"));
+  lines.push(theme.heading("详情："));
   lines.push(`${theme.muted("  Source:")} ${skill.source}`);
   lines.push(`${theme.muted("  Path:")} ${shortenHomePath(skill.filePath)}`);
   if (skill.homepage) {
@@ -218,7 +218,7 @@ export function formatSkillInfo(
 
   if (hasRequirements) {
     lines.push("");
-    lines.push(theme.heading("Requirements:"));
+    lines.push(theme.heading("依赖条件："));
     if (skill.requirements.bins.length > 0) {
       const binsStatus = skill.requirements.bins.map((bin) => {
         const missing = skill.missing.bins.includes(bin);
@@ -259,7 +259,7 @@ export function formatSkillInfo(
 
   if (skill.install.length > 0 && !skill.eligible) {
     lines.push("");
-    lines.push(theme.heading("Install options:"));
+    lines.push(theme.heading("安装选项："));
     for (const inst of skill.install) {
       lines.push(`  ${theme.warn("→")} ${inst.label}`);
     }
@@ -301,7 +301,7 @@ export function formatSkillsCheck(report: SkillStatusReport, opts: SkillsCheckOp
   }
 
   const lines: string[] = [];
-  lines.push(theme.heading("Skills Status Check"));
+  lines.push(theme.heading("技能状态检查"));
   lines.push("");
   lines.push(`${theme.muted("Total:")} ${report.skills.length}`);
   lines.push(`${theme.success("✓")} ${theme.muted("Eligible:")} ${eligible.length}`);
@@ -311,7 +311,7 @@ export function formatSkillsCheck(report: SkillStatusReport, opts: SkillsCheckOp
 
   if (eligible.length > 0) {
     lines.push("");
-    lines.push(theme.heading("Ready to use:"));
+    lines.push(theme.heading("可以使用："));
     for (const skill of eligible) {
       const emoji = normalizeSkillEmoji(skill.emoji);
       lines.push(`  ${emoji} ${skill.name}`);
@@ -320,7 +320,7 @@ export function formatSkillsCheck(report: SkillStatusReport, opts: SkillsCheckOp
 
   if (missingReqs.length > 0) {
     lines.push("");
-    lines.push(theme.heading("Missing requirements:"));
+    lines.push(theme.heading("缺少依赖："));
     for (const skill of missingReqs) {
       const emoji = normalizeSkillEmoji(skill.emoji);
       const missing = formatSkillMissingSummary(skill);
