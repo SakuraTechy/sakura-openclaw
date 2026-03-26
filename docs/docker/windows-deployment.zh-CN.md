@@ -179,6 +179,22 @@ docker compose run --rm openclaw-cli channels add --channel discord --token "<yo
 - [Telegram 配置](/channels/telegram)
 - [Discord 配置](/channels/discord)
 
+### 构建Docker镜像并推送阿里云
+
+```bash
+# 1. 登录阿里云镜像仓库
+docker login --username=你的用户名 crpi-f4c88g7tayj7jwle.cn-hangzhou.personal.cr.aliyuncs.com
+
+# 2. 构建镜像
+docker build -t openclaw:local -f Dockerfile .
+
+# 3. 标记镜像
+docker tag 6b194546a340 crpi-f4c88g7tayj7jwle.cn-hangzhou.personal.cr.aliyuncs.com/sakura-ai/sakura-openclaw-zh:latest
+
+# 4. 推送到阿里云
+docker push crpi-f4c88g7tayj7jwle.cn-hangzhou.personal.cr.aliyuncs.com/sakura-ai/sakura-openclaw-zh:latest
+```
+
 ## 常用管理命令
 
 ### Windows PowerShell 命令

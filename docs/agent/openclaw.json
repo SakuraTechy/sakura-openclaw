@@ -1,0 +1,114 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.14",
+    "lastTouchedAt": "2026-03-21T06:22:03.277Z"
+  },
+  "models": {
+    "providers": {
+      "zcheap": {
+        "baseUrl": "https://zcheap.ai/v1",
+        "apiKey": "YOUR_ZCHEAP_API_KEY",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "glm-4-7-251222",
+            "name": "GLM-4.7",
+            "api": "openai-completions",
+            "reasoning": false,
+            "input": ["text"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaultAgent": "main",
+    "defaults": {
+      "workspace": "/root/.openclaw/workspace",
+      "compaction": { "mode": "safeguard" }
+    },
+    "list": [
+      {
+        "id": "main",
+        "model": "zcheap/glm-4-7-251222",
+        "workspace": "/root/.openclaw/workspace-main",
+        "dmScope": "agent"
+      },
+      {
+        "id": "writer",
+        "model": "zcheap/glm-4-7-251222",
+        "workspace": "/root/.openclaw/workspace-writer",
+        "dmScope": "agent"
+      },
+      {
+        "id": "coder",
+        "model": "zcheap/glm-4-7-251222",
+        "workspace": "/root/.openclaw/workspace-coder",
+        "dmScope": "agent"
+      }
+    ]
+  },
+  "tools": {
+    "agentToAgent": {
+      "enabled": true,
+      "allow": ["main", "writer", "coder"]
+    }
+  },
+  "bindings": [
+    {
+      "agentId": "writer",
+      "match": {
+        "channel": "wecom",
+        "peer": { "kind": "group", "id": "YOUR_WRITER_GROUP_CHATID" }
+      }
+    },
+    {
+      "agentId": "coder",
+      "match": {
+        "channel": "wecom",
+        "peer": { "kind": "group", "id": "YOUR_CODER_GROUP_CHATID" }
+      }
+    }
+  ],
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "channels": {
+    "wecom": {
+      "botId": "YOUR_WECOM_BOT_ID",
+      "secret": "YOUR_WECOM_SECRET",
+      "enabled": true,
+      "dmPolicy": "open",
+      "groupPolicy": "open"
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "lan",
+    "controlUi": {
+      "allowedOrigins": ["*"],
+      "dangerouslyAllowHostHeaderOriginFallback": true,
+      "allowInsecureAuth": true,
+      "dangerouslyDisableDeviceAuth": true
+    }
+  },
+  "plugins": {
+    "allow": ["wecom-openclaw-plugin"],
+    "load": { "paths": ["/root/.openclaw/extensions"] },
+    "entries": { "wecom-openclaw-plugin": { "enabled": true } },
+    "installs": {
+      "wecom-openclaw-plugin": {
+        "source": "npm",
+        "spec": "@wecom/wecom-openclaw-plugin",
+        "installPath": "/root/.openclaw/extensions/wecom-openclaw-plugin",
+        "version": "1.0.13"
+      }
+    }
+  }
+}

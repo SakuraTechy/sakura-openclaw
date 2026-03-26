@@ -48,7 +48,11 @@ function which(cmd) {
 function resolveRunner() {
   const pnpm = which("pnpm");
   if (pnpm) {
-    return { cmd: pnpm, kind: "pnpm" };
+    // On Windows, if the resolved path contains spaces (e.g. "C:\Program Files\..."),
+    // use the bare command name with shell:true so cmd.exe resolves it via PATH,
+    // avoiding unquoted-path issues with spawn.
+    const cmd = process.platform === "win32" && pnpm.includes(" ") ? "pnpm" : pnpm;
+    return { cmd, kind: "pnpm" };
   }
   return null;
 }
@@ -77,7 +81,11 @@ export function assertSafeWindowsShellArgs(args, platform = process.platform) {
 }
 
 function createSpawnOptions(cmd, args, envOverride) {
-  const useShell = shouldUseShellForCommand(cmd);
+  // On Windows, use shell:true for .cmd/.bat files or bare command names (no path separator)
+  // so cmd.exe can resolve them via PATH.
+  const useShell =
+    shouldUseShellForCommand(cmd) ||
+    (process.platform === "win32" && !cmd.includes(path.sep));
   if (useShell) {
     assertSafeWindowsShellArgs(args);
   }

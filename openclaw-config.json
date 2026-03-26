@@ -22,7 +22,7 @@
     "providers": {
       "zcheap": {
         "baseUrl": "https://zcheap.ai/v1",
-        "apiKey": "sk-bggqRWY2Y2dOqncIslkd7JaRhT4rHm5s8Gnw1Tsr5cVdUcEk",
+        "apiKey": "xxxx",
         "api": "openai-completions",
         "models": [
           {
