@@ -595,3 +595,11 @@ echo ""
 echo "Commands:"
 echo "  ${COMPOSE_HINT} logs -f openclaw-gateway"
 echo "  ${COMPOSE_HINT} exec openclaw-gateway node dist/index.js health --token \"$OPENCLAW_GATEWAY_TOKEN\""
+SCRIPT_PATH="$ROOT_DIR/scripts/docker/setup.sh"
+
+if [[ ! -f "$SCRIPT_PATH" ]]; then
+  echo "Docker setup script not found at $SCRIPT_PATH" >&2
+  exit 1
+fi
+
+exec "$SCRIPT_PATH" "$@"

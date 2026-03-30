@@ -3,7 +3,6 @@
  * Calls gateway RPC methods and returns formatted results.
  */
 
-import type { ModelCatalogEntry } from "../../../../src/agents/model-catalog.js";
 import {
   formatThinkingLevels,
   normalizeThinkLevel,
@@ -16,12 +15,13 @@ import {
   isSubagentSessionKey,
   parseAgentSessionKey,
 } from "../../../../src/routing/session-key.js";
-import { createChatModelOverride, resolveServerChatModelValue } from "../chat-model-ref.ts";
+import { createChatModelOverride, resolvePreferredServerChatModel } from "../chat-model-ref.ts";
 import type { GatewayBrowserClient } from "../gateway.ts";
 import type {
   AgentsListResult,
   ChatModelOverride,
   GatewaySessionRow,
+  ModelCatalogEntry,
   SessionsListResult,
   SessionsPatchResult,
 } from "../types.ts";
@@ -46,37 +46,42 @@ export type SlashCommandResult = {
   };
 };
 
+export type SlashCommandContext = {
+  chatModelCatalog?: ModelCatalogEntry[];
+  modelCatalog?: ModelCatalogEntry[];
+};
 export async function executeSlashCommand(
   client: GatewayBrowserClient,
   sessionKey: string,
   commandName: string,
   args: string,
+  context: SlashCommandContext = {},
 ): Promise<SlashCommandResult> {
   switch (commandName) {
     case "help":
       return executeHelp();
     case "new":
-      return { content: "Starting new session...", action: "new-session" };
+      return { content: "正在开始新会话...", action: "new-session" };
     case "reset":
-      return { content: "Resetting session...", action: "reset" };
+      return { content: "正在重置会话...", action: "reset" };
     case "stop":
-      return { content: "Stopping current run...", action: "stop" };
+      return { content: "正在停止当前运行...", action: "stop" };
     case "clear":
-      return { content: "Chat history cleared.", action: "clear" };
+      return { content: "聊天记录已清除。", action: "clear" };
     case "focus":
-      return { content: "Toggled focus mode.", action: "toggle-focus" };
+      return { content: "已切换专注模式。", action: "toggle-focus" };
     case "compact":
       return await executeCompact(client, sessionKey);
     case "model":
-      return await executeModel(client, sessionKey, args);
+      return await executeModel(client, sessionKey, args, context);
     case "think":
       return await executeThink(client, sessionKey, args);
     case "fast":
       return await executeFast(client, sessionKey, args);
     case "verbose":
       return await executeVerbose(client, sessionKey, args);
-    case "export":
-      return { content: "Exporting session...", action: "export" };
+    case "export-session":
+      return { content: "正在导出会话...", action: "export" };
     case "usage":
       return await executeUsage(client, sessionKey);
     case "agents":
@@ -115,7 +120,7 @@ async function executeCompact(
 ): Promise<SlashCommandResult> {
   try {
     await client.request("sessions.compact", { key: sessionKey });
-    return { content: "Context compacted successfully.", action: "refresh" };
+    return { content: "上下文压缩成功。", action: "refresh" };
   } catch (err) {
     return { content: `Compaction failed: ${String(err)}` };
   }
@@ -125,16 +130,18 @@ async function executeModel(
   client: GatewayBrowserClient,
   sessionKey: string,
   args: string,
+  context: SlashCommandContext,
 ): Promise<SlashCommandResult> {
+  const modelCatalog = context.chatModelCatalog ?? context.modelCatalog;
   if (!args) {
     try {
       const [sessions, models] = await Promise.all([
         client.request<SessionsListResult>("sessions.list", {}),
-        client.request<{ models: ModelCatalogEntry[] }>("models.list", {}),
+        modelCatalog ? Promise.resolve(modelCatalog) : loadModelCatalog(client),
       ]);
       const session = resolveCurrentSession(sessions, sessionKey);
       const model = session?.model || sessions?.defaults?.model || "default";
-      const available = models?.models?.map((m: ModelCatalogEntry) => m.id) ?? [];
+      const available = models.map((m: ModelCatalogEntry) => m.id);
       const lines = [`**Current model:** \`${model}\``];
       if (available.length > 0) {
         lines.push(
@@ -151,14 +158,20 @@ async function executeModel(
   }
 
   try {
-    const patched = await client.request<SessionsPatchResult>("sessions.patch", {
-      key: sessionKey,
-      model: args.trim(),
-    });
-    const resolvedValue = resolveServerChatModelValue(
+    const [patched, resolvedModelCatalog] = await Promise.all([
+      client.request<SessionsPatchResult>("sessions.patch", {
+        key: sessionKey,
+        model: args.trim(),
+      }),
+      modelCatalog
+        ? Promise.resolve(modelCatalog)
+        : loadModelCatalog(client, { allowFailure: true }),
+    ]);
+    const resolvedValue = resolvePreferredServerChatModel(
       patched.resolved?.model ?? args.trim(),
       patched.resolved?.modelProvider,
-    );
+      resolvedModelCatalog,
+    ).value;
     return {
       content: `Model set to \`${args.trim()}\`.`,
       action: "refresh",
@@ -298,7 +311,7 @@ async function executeUsage(
     const sessions = await client.request<SessionsListResult>("sessions.list", {});
     const session = resolveCurrentSession(sessions, sessionKey);
     if (!session) {
-      return { content: "No active session." };
+      return { content: "没有活跃会话。" };
     }
     const input = session.inputTokens ?? 0;
     const output = session.outputTokens ?? 0;
@@ -329,7 +342,7 @@ async function executeAgents(client: GatewayBrowserClient): Promise<SlashCommand
     const result = await client.request<AgentsListResult>("agents.list", {});
     const agents = result?.agents ?? [];
     if (agents.length === 0) {
-      return { content: "No agents configured." };
+      return { content: "未配置代理。" };
     }
     const lines = [`**Agents** (${agents.length})\n`];
     for (const agent of agents) {
@@ -360,7 +373,7 @@ async function executeKill(
       return {
         content:
           target.toLowerCase() === "all"
-            ? "No active sub-agent sessions found."
+            ? "未找到活跃的子代理会话。"
             : `No matching sub-agent sessions found for \`${target}\`.`,
       };
     }
@@ -380,7 +393,7 @@ async function executeKill(
         return {
           content:
             target.toLowerCase() === "all"
-              ? "No active sub-agent runs to abort."
+              ? "没有可终止的活跃子代理运行。"
               : `No active runs matched \`${target}\`.`,
         };
       }
@@ -546,12 +559,27 @@ function resolveCurrentSession(
 async function loadThinkingCommandState(client: GatewayBrowserClient, sessionKey: string) {
   const [sessions, models] = await Promise.all([
     client.request<SessionsListResult>("sessions.list", {}),
-    client.request<{ models: ModelCatalogEntry[] }>("models.list", {}),
+    loadModelCatalog(client),
   ]);
   return {
     session: resolveCurrentSession(sessions, sessionKey),
-    models: models?.models ?? [],
+    models,
   };
+}
+
+async function loadModelCatalog(
+  client: GatewayBrowserClient,
+  opts?: { allowFailure?: boolean },
+): Promise<ModelCatalogEntry[]> {
+  try {
+    const result = await client.request<{ models: ModelCatalogEntry[] }>("models.list", {});
+    return result?.models ?? [];
+  } catch (err) {
+    if (opts?.allowFailure) {
+      return [];
+    }
+    throw err;
+  }
 }
 
 function resolveCurrentThinkingLevel(

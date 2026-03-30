@@ -1,3 +1,12 @@
+# Sakura OpenClaw - Docker Compose（容器化部署配置）
+
+# 1. 构建镜像
+# docker build -t openclaw:local -f Dockerfile .
+# 2. 运行引导配置
+# docker compose run --rm openclaw-cli onboard
+# 3. 启动网关服务
+# docker compose up -d openclaw-gatewa
+
 networks:
   openclaw-network:
     # 使用默认的 bridge 网络
@@ -31,7 +40,7 @@ services:
       ## Uncomment the lines below to enable sandbox isolation
       ## (agents.defaults.sandbox). Requires Docker CLI in the image
       ## (build with --build-arg OPENCLAW_INSTALL_DOCKER_CLI=1) or use
-      ## docker-setup.sh with OPENCLAW_SANDBOX=1 for automated setup.
+      ## scripts/docker/setup.sh with OPENCLAW_SANDBOX=1 for automated setup.
       ## Set DOCKER_GID to the host's docker group GID (run: stat -c '%g' /var/run/docker.sock).
       # - /var/run/docker.sock:/var/run/docker.sock
     # group_add:

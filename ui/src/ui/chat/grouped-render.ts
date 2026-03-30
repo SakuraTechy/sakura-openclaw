@@ -334,8 +334,8 @@ function renderDeleteButton(onDelete: () => void, side: DeleteConfirmSide) {
     <span class="chat-delete-wrap">
       <button
         class="chat-group-delete"
-        title="Delete"
-        aria-label="Delete message"
+        title="删除"
+        aria-label="删除消息"
         @click=${(e: Event) => {
           if (shouldSkipDeleteConfirm()) {
             onDelete();
@@ -395,16 +395,16 @@ function renderDeleteButton(onDelete: () => void, side: DeleteConfirmSide) {
 function renderTtsButton(group: MessageGroup) {
   return html`
     <button
-      class="chat-tts-btn"
+      class="btn btn--xs chat-tts-btn"
       type="button"
-      title=${isTtsSpeaking() ? "Stop speaking" : "Read aloud"}
-      aria-label=${isTtsSpeaking() ? "Stop speaking" : "Read aloud"}
+      title=${isTtsSpeaking() ? "停止朗读" : "朗读"}
+      aria-label=${isTtsSpeaking() ? "停止朗读" : "朗读"}
       @click=${(e: Event) => {
         const btn = e.currentTarget as HTMLButtonElement;
         if (isTtsSpeaking()) {
           stopTts();
           btn.classList.remove("chat-tts-btn--active");
-          btn.title = "Read aloud";
+          btn.title = "朗读";
           return;
         }
         const text = extractGroupText(group);
@@ -412,18 +412,18 @@ function renderTtsButton(group: MessageGroup) {
           return;
         }
         btn.classList.add("chat-tts-btn--active");
-        btn.title = "Stop speaking";
+        btn.title = "停止朗读";
         speakText(text, {
           onEnd: () => {
             if (btn.isConnected) {
               btn.classList.remove("chat-tts-btn--active");
-              btn.title = "Read aloud";
+              btn.title = "朗读";
             }
           },
           onError: () => {
             if (btn.isConnected) {
               btn.classList.remove("chat-tts-btn--active");
-              btn.title = "Read aloud";
+              btn.title = "朗读";
             }
           },
         });
@@ -537,7 +537,7 @@ function renderMessageImages(images: ImageBlock[]) {
         (img) => html`
           <img
             src=${img.url}
-            alt=${img.alt ?? "Attached image"}
+            alt=${img.alt ?? "附件图片"}
             class="chat-message-image"
             @click=${() => openImage(img.url)}
           />
@@ -620,6 +620,20 @@ function jsonSummaryLabel(parsed: unknown): string {
   return "JSON";
 }
 
+function renderExpandButton(markdown: string, onOpenSidebar: (content: string) => void) {
+  return html`
+    <button
+      class="btn btn--xs chat-expand-btn"
+      type="button"
+      title="在画布中打开"
+      aria-label="在画布中打开"
+      @click=${() => onOpenSidebar(markdown)}
+    >
+      <span class="chat-expand-btn__icon" aria-hidden="true">${icons.panelRightOpen}</span>
+    </button>
+  `;
+}
+
 function renderGroupedMessage(
   message: unknown,
   opts: { isStreaming: boolean; showReasoning: boolean; showToolCalls?: boolean },
@@ -647,6 +661,7 @@ function renderGroupedMessage(
   const reasoningMarkdown = extractedThinking ? formatReasoningMarkdown(extractedThinking) : null;
   const markdown = markdownBase;
   const canCopyMarkdown = role === "assistant" && Boolean(markdown?.trim());
+  const canExpand = role === "assistant" && Boolean(onOpenSidebar && markdown?.trim());
 
   // Detect pure-JSON messages and render as collapsible block
   const jsonResult = markdown && !opts.isStreaming ? detectJson(markdown) : null;
@@ -674,9 +689,18 @@ function renderGroupedMessage(
   const toolPreview =
     markdown && !toolSummaryLabel ? markdown.trim().replace(/\s+/g, " ").slice(0, 120) : "";
 
+  const hasActions = canCopyMarkdown || canExpand;
+
   return html`
     <div class="${bubbleClasses}">
-      ${canCopyMarkdown ? html`<div class="chat-bubble-actions">${renderCopyAsMarkdownButton(markdown!)}</div>` : nothing}
+      ${
+        hasActions
+          ? html`<div class="chat-bubble-actions">
+              ${canExpand ? renderExpandButton(markdown!, onOpenSidebar!) : nothing}
+              ${canCopyMarkdown ? renderCopyAsMarkdownButton(markdown!) : nothing}
+            </div>`
+          : nothing
+      }
       ${
         isToolMessage
           ? html`

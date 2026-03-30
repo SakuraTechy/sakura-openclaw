@@ -2,6 +2,11 @@ import { html, nothing } from "lit";
 import { formatRelativeTimestamp } from "../format.ts";
 import type { SlackStatus } from "../types.ts";
 import { renderChannelConfigSection } from "./channels.config.ts";
+import {
+  formatNullableBoolean,
+  renderSingleAccountChannelCard,
+  resolveChannelConfigured,
+} from "./channels.shared.ts";
 import type { ChannelsProps } from "./channels.types.ts";
 
 export function renderSlackCard(params: {
@@ -10,56 +15,36 @@ export function renderSlackCard(params: {
   accountCountLabel: unknown;
 }) {
   const { props, slack, accountCountLabel } = params;
+  const configured = resolveChannelConfigured("slack", props);
 
-  return html`
-    <div class="card">
-      <div class="card-title">Slack</div>
-      <div class="card-sub">Socket 模式状态和渠道配置。</div>
-      ${accountCountLabel}
-
-      <div class="status-list" style="margin-top: 16px;">
-        <div>
-          <span class="label">已配置</span>
-          <span>${slack?.configured ? "Yes" : "No"}</span>
-        </div>
-        <div>
-          <span class="label">运行中</span>
-          <span>${slack?.running ? "Yes" : "No"}</span>
-        </div>
-        <div>
-          <span class="label">上次启动</span>
-          <span>${slack?.lastStartAt ? formatRelativeTimestamp(slack.lastStartAt) : "n/a"}</span>
-        </div>
-        <div>
-          <span class="label">上次探测</span>
-          <span>${slack?.lastProbeAt ? formatRelativeTimestamp(slack.lastProbeAt) : "n/a"}</span>
-        </div>
-      </div>
-
-      ${
-        slack?.lastError
-          ? html`<div class="callout danger" style="margin-top: 12px;">
-            ${slack.lastError}
-          </div>`
-          : nothing
-      }
-
-      ${
-        slack?.probe
-          ? html`<div class="callout" style="margin-top: 12px;">
-            探测 ${slack.probe.ok ? "成功" : "失败"} ·
-            ${slack.probe.status ?? ""} ${slack.probe.error ?? ""}
-          </div>`
-          : nothing
-      }
-
-      ${renderChannelConfigSection({ channelId: "slack", props })}
-
-      <div class="row" style="margin-top: 12px;">
-        <button class="btn" @click=${() => props.onRefresh(true)}>
-          探测
-        </button>
-      </div>
-    </div>
-  `;
+  return renderSingleAccountChannelCard({
+    title: "Slack",
+    subtitle: "Socket 模式状态和渠道配置。",
+    accountCountLabel,
+    statusRows: [
+      { label: "已配置", value: formatNullableBoolean(configured) },
+      { label: "运行中", value: slack?.running ? "Yes" : "No" },
+      {
+        label: "上次启动",
+        value: slack?.lastStartAt ? formatRelativeTimestamp(slack.lastStartAt) : "n/a",
+      },
+      {
+        label: "上次探测",
+        value: slack?.lastProbeAt ? formatRelativeTimestamp(slack.lastProbeAt) : "n/a",
+      },
+    ],
+    lastError: slack?.lastError,
+    secondaryCallout: slack?.probe
+      ? html`<div class="callout" style="margin-top: 12px;">
+          探测 ${slack.probe.ok ? "成功" : "失败"} ·
+          ${slack.probe.status ?? ""} ${slack.probe.error ?? ""}
+        </div>`
+      : nothing,
+    configSection: renderChannelConfigSection({ channelId: "slack", props }),
+    footer: html`<div class="row" style="margin-top: 12px;">
+      <button class="btn" @click=${() => props.onRefresh(true)}>
+        Probe
+      </button>
+    </div>`,
+  });
 }

@@ -1,8 +1,9 @@
 import { Type } from "@sinclair/typebox";
-import type {
-  GatewayRequestHandlerOptions,
-  OpenClawPluginApi,
-} from "openclaw/plugin-sdk/voice-call";
+import {
+  definePluginEntry,
+  type GatewayRequestHandlerOptions,
+  type OpenClawPluginApi,
+} from "./api.js";
 import { registerVoiceCallCli } from "./src/cli.js";
 import {
   VoiceCallConfigSchema,
@@ -80,7 +81,7 @@ const voiceCallConfigSchema = {
     "streaming.streamPath": { label: "媒体流路径", advanced: true },
     "tts.provider": {
       label: "TTS 提供商覆盖",
-      help: "与 messages.tts 深度合并 (通话忽略 Edge)。",
+      help: "与 messages.tts 深度合并 (通话忽略 Microsoft)。",
       advanced: true,
     },
     "tts.openai.model": { label: "OpenAI TTS 模型", advanced: true },
@@ -143,7 +144,7 @@ const VoiceCallToolSchema = Type.Union([
   }),
 ]);
 
-const voiceCallPlugin = {
+export default definePluginEntry({
   id: "voice-call",
   name: "语音通话",
   description: "支持 Telnyx/Twilio/Plivo 的语音通话插件",
@@ -180,6 +181,7 @@ const voiceCallPlugin = {
         runtimePromise = createVoiceCallRuntime({
           config,
           coreConfig: api.config as CoreConfig,
+          agentRuntime: api.runtime.agent,
           ttsRuntime: api.runtime.tts,
           logger: api.logger,
         });
@@ -559,6 +561,4 @@ const voiceCallPlugin = {
       },
     });
   },
-};
-
-export default voiceCallPlugin;
+});

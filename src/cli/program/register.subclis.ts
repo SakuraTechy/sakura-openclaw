@@ -48,7 +48,7 @@ export const loadValidatedConfigForPluginRegistration =
 const entries: SubCliEntry[] = [
   {
     name: "acp",
-    description: "Agent Control Protocol tools",
+    description: "Agent Control Protocol 工具",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../acp-cli.js");
@@ -66,7 +66,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "daemon",
-    description: "Gateway service (legacy alias)",
+    description: "网关服务（旧版别名）",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../daemon-cli.js");
@@ -84,7 +84,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "system",
-    description: "System events, heartbeat, and presence",
+    description: "系统事件、心跳和在线状态",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../system-cli.js");
@@ -120,7 +120,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "devices",
-    description: "Device pairing + token management",
+    description: "设备配对和令牌管理",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../devices-cli.js");
@@ -277,7 +277,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "secrets",
-    description: "Secrets runtime reload controls",
+    description: "密钥运行时重载控制",
     hasSubcommands: true,
     register: async (program) => {
       const mod = await import("../secrets-cli.js");
@@ -304,7 +304,7 @@ const entries: SubCliEntry[] = [
   },
   {
     name: "completion",
-    description: "Generate shell completion script",
+    description: "生成 Shell 补全脚本",
     hasSubcommands: false,
     register: async (program) => {
       const mod = await import("../completion-cli.js");

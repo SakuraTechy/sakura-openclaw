@@ -7,88 +7,88 @@ export type CoreCliCommandDescriptor = {
 export const CORE_CLI_COMMAND_DESCRIPTORS = [
   {
     name: "setup",
-    description: "Initialize local config and agent workspace",
+    description: "初始化本地配置和代理工作区",
     hasSubcommands: false,
   },
   {
     name: "onboard",
-    description: "Interactive setup wizard for gateway, workspace, and skills",
+    description: "交互式引导配置网关、工作区和技能",
     hasSubcommands: false,
   },
   {
     name: "configure",
-    description: "Interactive setup wizard for credentials, channels, gateway, and agent defaults",
+    description: "交互式配置凭证、渠道、网关和代理默认设置",
     hasSubcommands: false,
   },
   {
     name: "config",
     description:
-      "Non-interactive config helpers (get/set/unset/file/validate). Default: starts setup wizard.",
+      "非交互式配置工具（get/set/unset/file/validate）。默认：启动引导式设置。",
     hasSubcommands: true,
   },
   {
     name: "backup",
-    description: "Create and verify local backup archives for OpenClaw state",
+    description: "创建和验证 OpenClaw 状态的本地备份归档",
     hasSubcommands: true,
   },
   {
     name: "doctor",
-    description: "Health checks + quick fixes for the gateway and channels",
+    description: "网关和渠道的健康检查与快速修复",
     hasSubcommands: false,
   },
   {
     name: "dashboard",
-    description: "Open the Control UI with your current token",
+    description: "使用当前令牌打开控制面板",
     hasSubcommands: false,
   },
   {
     name: "reset",
-    description: "Reset local config/state (keeps the CLI installed)",
+    description: "重置本地配置/状态（保留 CLI）",
     hasSubcommands: false,
   },
   {
     name: "uninstall",
-    description: "Uninstall the gateway service + local data (CLI remains)",
+    description: "卸载网关服务和本地数据（保留 CLI）",
     hasSubcommands: false,
   },
   {
     name: "message",
-    description: "Send, read, and manage messages",
+    description: "发送、读取和管理消息",
     hasSubcommands: true,
   },
   {
     name: "memory",
-    description: "Search and reindex memory files",
+    description: "搜索和重建记忆文件索引",
     hasSubcommands: true,
   },
   {
     name: "agent",
-    description: "Run one agent turn via the Gateway",
+    description: "通过网关运行一次代理",
     hasSubcommands: false,
   },
   {
     name: "agents",
-    description: "Manage isolated agents (workspaces, auth, routing)",
+    description: "管理隔离的代理（工作区、认证、路由）",
     hasSubcommands: true,
   },
   {
     name: "status",
-    description: "Show channel health and recent session recipients",
+    description: "显示渠道健康状态和最近会话接收者",
     hasSubcommands: false,
   },
   {
     name: "health",
-    description: "Fetch health from the running gateway",
+    description: "从运行中的网关获取健康状态",
     hasSubcommands: false,
   },
   {
     name: "sessions",
-    description: "List stored conversation sessions",
+    description: "列出已存储的对话会话",
     hasSubcommands: true,
   },
   {
     name: "browser",
-    description: "Manage OpenClaw's dedicated browser (Chrome/Chromium)",
+    description: "管理 OpenClaw 专用浏览器（Chrome/Chromium）",
     hasSubcommands: true,
   },
 ] as const satisfies ReadonlyArray<CoreCliCommandDescriptor>;

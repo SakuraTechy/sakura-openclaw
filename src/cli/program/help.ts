@@ -21,7 +21,7 @@ const ROOT_COMMANDS_HINT =
   "Hint: commands suffixed with * have subcommands. Run <command> --help for details.";
 
 const EXAMPLES = [
-  ["openclaw models --help", "Show detailed help for the models command."],
+  ["openclaw models --help", "显示 models 命令的详细帮助。"],
   [
     "openclaw channels login --verbose",
     "关联个人 WhatsApp Web 并显示二维码和连接日志。",
@@ -49,6 +49,10 @@ export function configureProgramHelp(program: Command, ctx: ProgramContext) {
     .name(CLI_NAME)
     .description("")
     .version(ctx.programVersion)
+    .option(
+      "--container <name>",
+      "Run the CLI inside a running Podman/Docker container named <name> (default: env OPENCLAW_CONTAINER)",
+    )
     .option(
       "--dev",
       "开发配置：在 ~/.openclaw-dev 下隔离状态，默认网关端口 19001，并移动派生端口（浏览器/画布）",

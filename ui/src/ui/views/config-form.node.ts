@@ -154,16 +154,16 @@ function renderSensitiveToggleButton(params: {
       title=${
         state.canReveal
           ? state.isRevealed
-            ? "Hide value"
-            : "Reveal value"
-          : "Disable stream mode to reveal value"
+            ? "隐藏值"
+            : "显示值"
+          : "禁用流模式以显示值"
       }
       aria-label=${
         state.canReveal
           ? state.isRevealed
-            ? "Hide value"
-            : "Reveal value"
-          : "Disable stream mode to reveal value"
+            ? "隐藏值"
+            : "显示值"
+          : "禁用流模式以显示值"
       }
       aria-pressed=${state.isRevealed}
       ?disabled=${params.disabled || !state.canReveal}
@@ -415,7 +415,7 @@ export function renderNode(params: {
   if (unsupported.has(key)) {
     return html`<div class="cfg-field cfg-field--error">
       <div class="cfg-field__label">${label}</div>
-      <div class="cfg-field__error">Unsupported schema node. Use Raw mode.</div>
+      <div class="cfg-field__error">不支持的 schema 节点。请使用原始模式。</div>
     </div>`;
   }
   if (
@@ -646,7 +646,6 @@ function renderTextInput(params: {
       // oxlint-disable typescript/no-base-to-string
       (schema.default !== undefined ? `Default: ${String(schema.default)}` : ""));
   const displayValue = sensitiveState.isRedacted ? "" : (value ?? "");
-  const effectiveDisabled = disabled || sensitiveState.isRedacted;
   const effectiveInputType =
     sensitiveState.isSensitive && !sensitiveState.isRedacted ? "text" : inputType;
 
@@ -658,11 +657,16 @@ function renderTextInput(params: {
       <div class="cfg-input-wrap">
         <input
           type=${effectiveInputType}
-          class="cfg-input"
+          class="cfg-input${sensitiveState.isRedacted ? " cfg-input--redacted" : ""}"
           placeholder=${placeholder}
           .value=${displayValue == null ? "" : String(displayValue)}
-          ?disabled=${effectiveDisabled}
+          ?disabled=${disabled}
           ?readonly=${sensitiveState.isRedacted}
+          @click=${() => {
+            if (sensitiveState.isRedacted && params.onToggleSensitivePath) {
+              params.onToggleSensitivePath(path);
+            }
+          }}
           @input=${(e: Event) => {
             if (sensitiveState.isRedacted) {
               return;
@@ -699,8 +703,8 @@ function renderTextInput(params: {
           <button
             type="button"
             class="cfg-input__reset"
-            title="Reset to default"
-            ?disabled=${effectiveDisabled}
+            title="重置为默认值"
+            ?disabled=${disabled || sensitiveState.isRedacted}
             @click=${() => onPatch(path, schema.default)}
           >↺</button>
         `
@@ -830,7 +834,6 @@ function renderJsonTextarea(params: {
     isSensitivePathRevealed: params.isSensitivePathRevealed,
   });
   const displayValue = sensitiveState.isRedacted ? "" : fallback;
-  const effectiveDisabled = disabled || sensitiveState.isRedacted;
 
   return html`
     <div class="cfg-field">
@@ -839,12 +842,17 @@ function renderJsonTextarea(params: {
       ${renderTags(tags)}
       <div class="cfg-input-wrap">
         <textarea
-          class="cfg-textarea"
-          placeholder=${sensitiveState.isRedacted ? REDACTED_PLACEHOLDER : "JSON value"}
+          class="cfg-textarea${sensitiveState.isRedacted ? " cfg-textarea--redacted" : ""}"
+          placeholder=${sensitiveState.isRedacted ? REDACTED_PLACEHOLDER : "JSON 值"}
           rows="3"
           .value=${displayValue}
-          ?disabled=${effectiveDisabled}
+          ?disabled=${disabled}
           ?readonly=${sensitiveState.isRedacted}
+          @click=${() => {
+            if (sensitiveState.isRedacted && params.onToggleSensitivePath) {
+              params.onToggleSensitivePath(path);
+            }
+          }}
           @change=${(e: Event) => {
             if (sensitiveState.isRedacted) {
               return;
@@ -1086,7 +1094,7 @@ function renderArray(params: {
                 <button
                   type="button"
                   class="cfg-array__item-remove"
-                  title="Remove item"
+                  title="删除项"
                   ?disabled=${disabled}
                   @click=${() => {
                     const next = [...arr];
@@ -1215,7 +1223,7 @@ function renderMapField(params: {
                     <input
                       type="text"
                       class="cfg-input cfg-input--sm"
-                      placeholder="Key"
+                      placeholder="键"
                       .value=${key}
                       ?disabled=${disabled}
                       @change=${(e: Event) => {
@@ -1236,7 +1244,7 @@ function renderMapField(params: {
                   <button
                     type="button"
                     class="cfg-map__item-remove"
-                    title="Remove entry"
+                    title="删除条目"
                     ?disabled=${disabled}
                     @click=${() => {
                       const next = { ...value };
@@ -1253,14 +1261,19 @@ function renderMapField(params: {
                       ? html`
                         <div class="cfg-input-wrap">
                           <textarea
-                            class="cfg-textarea cfg-textarea--sm"
+                            class="cfg-textarea cfg-textarea--sm${sensitiveState.isRedacted ? " cfg-textarea--redacted" : ""}"
                             placeholder=${
-                              sensitiveState.isRedacted ? REDACTED_PLACEHOLDER : "JSON value"
+                              sensitiveState.isRedacted ? REDACTED_PLACEHOLDER : "JSON 值"
                             }
                             rows="2"
                             .value=${sensitiveState.isRedacted ? "" : fallback}
-                            ?disabled=${disabled || sensitiveState.isRedacted}
+                            ?disabled=${disabled}
                             ?readonly=${sensitiveState.isRedacted}
+                            @click=${() => {
+                              if (sensitiveState.isRedacted && onToggleSensitivePath) {
+                                onToggleSensitivePath(valuePath);
+                              }
+                            }}
                             @change=${(e: Event) => {
                               if (sensitiveState.isRedacted) {
                                 return;

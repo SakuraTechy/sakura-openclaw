@@ -22,14 +22,14 @@ export type AuthChoiceGroup = {
 export const CORE_AUTH_CHOICE_OPTIONS: ReadonlyArray<AuthChoiceOption> = [
   {
     value: "chutes",
-    label: "Chutes (OAuth)",
+    label: "Chutes（OAuth）",
     groupId: "chutes",
     groupLabel: "Chutes",
     groupHint: "OAuth",
   },
   {
     value: "litellm-api-key",
-    label: "LiteLLM API key",
+    label: "LiteLLM API 密钥",
     hint: "统一 LLM 网关（100+ 提供商）",
     groupId: "litellm",
     groupLabel: "LiteLLM",

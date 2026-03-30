@@ -59,7 +59,7 @@ async function maybeRepairLaunchAgentBootstrap(params: {
 
   note("LaunchAgent 已列出但未在 launchd 中加载。", `${params.title} LaunchAgent`);
 
-  const shouldFix = await params.prompter.confirmSkipInNonInteractive({
+  const shouldFix = await params.prompter.confirmRuntimeRepair({
     message: `Repair ${params.title} LaunchAgent bootstrap now?`,
     initialValue: true,
   });
@@ -153,13 +153,16 @@ export async function maybeRepairGatewayDaemon(params: {
       const systemdAvailable = await isSystemdUserServiceAvailable().catch(() => false);
       if (!systemdAvailable) {
         const wsl = await isWSL();
-        note(renderSystemdUnavailableHints({ wsl }).join("\n"), "网关");
+        note(
+          renderSystemdUnavailableHints({ wsl, kind: "generic_unavailable" }).join("\n"),
+          "网关",
+        );
         return;
       }
     }
     note("网关服务未安装。", "网关");
     if (params.cfg.gateway?.mode !== "remote") {
-      const install = await params.prompter.confirmSkipInNonInteractive({
+      const install = await params.prompter.confirmRuntimeRepair({
         message: "现在安装网关服务？",
         initialValue: true,
       });
@@ -230,7 +233,7 @@ export async function maybeRepairGatewayDaemon(params: {
   }
 
   if (serviceRuntime?.status !== "running") {
-    const start = await params.prompter.confirmSkipInNonInteractive({
+    const start = await params.prompter.confirmRuntimeRepair({
       message: "Start gateway service now?",
       initialValue: true,
     });
@@ -257,7 +260,7 @@ export async function maybeRepairGatewayDaemon(params: {
   }
 
   if (serviceRuntime?.status === "running") {
-    const restart = await params.prompter.confirmSkipInNonInteractive({
+    const restart = await params.prompter.confirmRuntimeRepair({
       message: "现在重启网关服务？",
       initialValue: true,
     });

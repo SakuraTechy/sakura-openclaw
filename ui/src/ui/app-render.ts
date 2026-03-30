@@ -2,6 +2,7 @@ import { html, nothing } from "lit";
 import {
   buildAgentMainSessionKey,
   parseAgentSessionKey,
+  resolveAgentIdFromSessionKey,
 } from "../../../src/routing/session-key.js";
 import { t } from "../i18n/index.ts";
 import { getSafeLocalStorage } from "../local-storage.ts";
@@ -14,12 +15,20 @@ import {
   renderTab,
   renderSidebarConnectionStatus,
   renderTopbarThemeModeToggle,
+  switchChatSession,
 } from "./app-render.helpers.ts";
 import type { AppViewState } from "./app-view-state.ts";
 import { loadAgentFileContent, loadAgentFiles, saveAgentFile } from "./controllers/agent-files.ts";
 import { loadAgentIdentities, loadAgentIdentity } from "./controllers/agent-identity.ts";
 import { loadAgentSkills } from "./controllers/agent-skills.ts";
-import { loadAgents, loadToolsCatalog, saveAgentsConfig } from "./controllers/agents.ts";
+import {
+  buildToolsEffectiveRequestKey,
+  loadAgents,
+  loadToolsCatalog,
+  loadToolsEffective,
+  refreshVisibleToolsEffectiveForCurrentSession,
+  saveAgentsConfig,
+} from "./controllers/agents.ts";
 import { loadChannels } from "./controllers/channels.ts";
 import { loadChatHistory } from "./controllers/chat.ts";
 import {
@@ -69,7 +78,7 @@ import {
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
 import { loadPresence } from "./controllers/presence.ts";
-import { deleteSessionAndRefresh, loadSessions, patchSession } from "./controllers/sessions.ts";
+import { deleteSessionsAndRefresh, loadSessions, patchSession } from "./controllers/sessions.ts";
 import {
   installSkill,
   loadSkills,
@@ -252,6 +261,8 @@ const INFRASTRUCTURE_SECTION_KEYS = [
   "canvasHost",
   "discovery",
   "media",
+  "acp",
+  "mcp",
 ] as const;
 const AI_AGENTS_SECTION_KEYS = [
   "agents",
@@ -320,6 +331,10 @@ export function renderApp(state: AppViewState) {
     state.agentsList?.defaultId ??
     state.agentsList?.agents?.[0]?.id ??
     null;
+  const activeSessionAgentId = resolveAgentIdFromSessionKey(state.sessionKey);
+  const toolsPanelUsesActiveSession = Boolean(
+    resolvedAgentId && activeSessionAgentId && resolvedAgentId === activeSessionAgentId,
+  );
   const getCurrentConfigValue = () =>
     state.configForm ?? (state.configSnapshot?.config as Record<string, unknown> | null);
   const findAgentIndex = (agentId: string) =>
@@ -476,7 +491,7 @@ export function renderApp(state: AppViewState) {
                 title="${navCollapsed ? t("nav.expand") : t("nav.collapse")}"
                 aria-label="${navCollapsed ? t("nav.expand") : t("nav.collapse")}"
               >
-                <span class="nav-collapse-toggle__icon" aria-hidden="true">${icons.menu}</span>
+                <span class="nav-collapse-toggle__icon" aria-hidden="true">${navCollapsed ? icons.panelLeftOpen : icons.panelLeftClose}</span>
               </button>
             </div>
             <div class="sidebar-shell__body">
@@ -505,7 +520,7 @@ export function renderApp(state: AppViewState) {
                               >
                                 <span class="nav-section__label-text">${t(`nav.${group.label}`)}</span>
                                 <span class="nav-section__chevron">
-                                  ${showItems ? icons.chevronDown : icons.chevronRight}
+                                  ${icons.chevronDown}
                                 </span>
                               </button>
                             `
@@ -538,6 +553,9 @@ export function renderApp(state: AppViewState) {
                       : nothing
                   }
                 </a>
+                <div class="sidebar-mode-switch">
+                  ${renderTopbarThemeModeToggle(state)}
+                </div>
                 ${(() => {
                   const version = state.hello?.server?.version ?? "";
                   return version
@@ -740,7 +758,7 @@ export function renderApp(state: AppViewState) {
                   sortDir: state.sessionsSortDir,
                   page: state.sessionsPage,
                   pageSize: state.sessionsPageSize,
-                  actionsOpenKey: state.sessionsActionsOpenKey,
+                  selectedKeys: state.sessionsSelectedKeys,
                   onFiltersChange: (next) => {
                     state.sessionsFilterActive = next.activeMinutes;
                     state.sessionsFilterLimit = next.limit;
@@ -763,12 +781,49 @@ export function renderApp(state: AppViewState) {
                     state.sessionsPageSize = s;
                     state.sessionsPage = 0;
                   },
-                  onActionsOpenChange: (key) => {
-                    state.sessionsActionsOpenKey = key;
-                  },
                   onRefresh: () => loadSessions(state),
                   onPatch: (key, patch) => patchSession(state, key, patch),
-                  onDelete: (key) => deleteSessionAndRefresh(state, key),
+                  onToggleSelect: (key) => {
+                    const next = new Set(state.sessionsSelectedKeys);
+                    if (next.has(key)) {
+                      next.delete(key);
+                    } else {
+                      next.add(key);
+                    }
+                    state.sessionsSelectedKeys = next;
+                  },
+                  onSelectPage: (keys) => {
+                    const next = new Set(state.sessionsSelectedKeys);
+                    for (const k of keys) {
+                      next.add(k);
+                    }
+                    state.sessionsSelectedKeys = next;
+                  },
+                  onDeselectPage: (keys) => {
+                    const next = new Set(state.sessionsSelectedKeys);
+                    for (const k of keys) {
+                      next.delete(k);
+                    }
+                    state.sessionsSelectedKeys = next;
+                  },
+                  onDeselectAll: () => {
+                    state.sessionsSelectedKeys = new Set();
+                  },
+                  onDeleteSelected: async () => {
+                    const keys = [...state.sessionsSelectedKeys];
+                    const deleted = await deleteSessionsAndRefresh(state, keys);
+                    if (deleted.length > 0) {
+                      const next = new Set(state.sessionsSelectedKeys);
+                      for (const k of deleted) {
+                        next.delete(k);
+                      }
+                      state.sessionsSelectedKeys = next;
+                    }
+                  },
+                  onNavigateToChat: (sessionKey) => {
+                    switchChatSession(state, sessionKey);
+                    state.setTab("chat" as import("./navigation.ts").Tab);
+                  },
                 }),
               )
             : nothing
@@ -869,6 +924,10 @@ export function renderApp(state: AppViewState) {
                     }
                     await loadCronRuns(state, state.cronRunsJobId);
                   },
+                  onNavigateToChat: (sessionKey) => {
+                    switchChatSession(state, sessionKey);
+                    state.setTab("chat" as import("./navigation.ts").Tab);
+                  },
                 }),
               )
             : nothing
@@ -926,6 +985,14 @@ export function renderApp(state: AppViewState) {
                     error: state.toolsCatalogError,
                     result: state.toolsCatalogResult,
                   },
+                  toolsEffective: {
+                    loading: state.toolsEffectiveLoading,
+                    error: state.toolsEffectiveError,
+                    result: state.toolsEffectiveResult,
+                  },
+                  runtimeSessionKey: state.sessionKey,
+                  runtimeSessionMatchesSelectedAgent: toolsPanelUsesActiveSession,
+                  modelCatalog: state.chatModelCatalog ?? [],
                   onRefresh: async () => {
                     await loadAgents(state);
                     const agentIds = state.agentsList?.agents?.map((entry) => entry.id) ?? [];
@@ -945,6 +1012,12 @@ export function renderApp(state: AppViewState) {
                     }
                     if (state.agentsPanel === "tools" && refreshedAgentId) {
                       void loadToolsCatalog(state, refreshedAgentId);
+                      if (refreshedAgentId === resolveAgentIdFromSessionKey(state.sessionKey)) {
+                        void loadToolsEffective(state, {
+                          agentId: refreshedAgentId,
+                          sessionKey: state.sessionKey,
+                        });
+                      }
                     }
                     if (state.agentsPanel === "channels") {
                       void loadChannels(state, false);
@@ -970,12 +1043,23 @@ export function renderApp(state: AppViewState) {
                     state.toolsCatalogResult = null;
                     state.toolsCatalogError = null;
                     state.toolsCatalogLoading = false;
+                    state.toolsEffectiveResult = null;
+                    state.toolsEffectiveResultKey = null;
+                    state.toolsEffectiveError = null;
+                    state.toolsEffectiveLoading = false;
+                    state.toolsEffectiveLoadingKey = null;
                     void loadAgentIdentity(state, agentId);
                     if (state.agentsPanel === "files") {
                       void loadAgentFiles(state, agentId);
                     }
                     if (state.agentsPanel === "tools") {
                       void loadToolsCatalog(state, agentId);
+                      if (agentId === resolveAgentIdFromSessionKey(state.sessionKey)) {
+                        void loadToolsEffective(state, {
+                          agentId,
+                          sessionKey: state.sessionKey,
+                        });
+                      }
                     }
                     if (state.agentsPanel === "skills") {
                       void loadAgentSkills(state, agentId);
@@ -1004,6 +1088,27 @@ export function renderApp(state: AppViewState) {
                         state.toolsCatalogError
                       ) {
                         void loadToolsCatalog(state, resolvedAgentId);
+                      }
+                      if (resolvedAgentId === resolveAgentIdFromSessionKey(state.sessionKey)) {
+                        const toolsRequestKey = buildToolsEffectiveRequestKey(state, {
+                          agentId: resolvedAgentId,
+                          sessionKey: state.sessionKey,
+                        });
+                        if (
+                          state.toolsEffectiveResultKey !== toolsRequestKey ||
+                          state.toolsEffectiveError
+                        ) {
+                          void loadToolsEffective(state, {
+                            agentId: resolvedAgentId,
+                            sessionKey: state.sessionKey,
+                          });
+                        }
+                      } else {
+                        state.toolsEffectiveResult = null;
+                        state.toolsEffectiveResultKey = null;
+                        state.toolsEffectiveError = null;
+                        state.toolsEffectiveLoading = false;
+                        state.toolsEffectiveLoadingKey = null;
                       }
                     }
                     if (panel === "channels") {
@@ -1144,22 +1249,23 @@ export function renderApp(state: AppViewState) {
                     const basePath = ["agents", "list", index, "model"];
                     if (!modelId) {
                       removeConfigFormValue(state, basePath);
-                      return;
-                    }
-                    const entry = Array.isArray(list)
-                      ? (list[index] as { model?: unknown })
-                      : undefined;
-                    const existing = entry?.model;
-                    if (existing && typeof existing === "object" && !Array.isArray(existing)) {
-                      const fallbacks = (existing as { fallbacks?: unknown }).fallbacks;
-                      const next = {
-                        primary: modelId,
-                        ...(Array.isArray(fallbacks) ? { fallbacks } : {}),
-                      };
-                      updateConfigFormValue(state, basePath, next);
                     } else {
-                      updateConfigFormValue(state, basePath, modelId);
+                      const entry = Array.isArray(list)
+                        ? (list[index] as { model?: unknown })
+                        : undefined;
+                      const existing = entry?.model;
+                      if (existing && typeof existing === "object" && !Array.isArray(existing)) {
+                        const fallbacks = (existing as { fallbacks?: unknown }).fallbacks;
+                        const next = {
+                          primary: modelId,
+                          ...(Array.isArray(fallbacks) ? { fallbacks } : {}),
+                        };
+                        updateConfigFormValue(state, basePath, next);
+                      } else {
+                        updateConfigFormValue(state, basePath, modelId);
+                      }
                     }
+                    void refreshVisibleToolsEffectiveForCurrentSession(state);
                   },
                   onModelFallbacksChange: (agentId, fallbacks) => {
                     const normalized = fallbacks.map((name) => name.trim()).filter(Boolean);
@@ -1238,16 +1344,21 @@ export function renderApp(state: AppViewState) {
                   report: state.skillsReport,
                   error: state.skillsError,
                   filter: state.skillsFilter,
+                  statusFilter: state.skillsStatusFilter,
                   edits: state.skillEdits,
                   messages: state.skillMessages,
                   busyKey: state.skillsBusyKey,
+                  detailKey: state.skillsDetailKey,
                   onFilterChange: (next) => (state.skillsFilter = next),
+                  onStatusFilterChange: (next) => (state.skillsStatusFilter = next),
                   onRefresh: () => loadSkills(state, { clearMessages: true }),
                   onToggle: (key, enabled) => updateSkillEnabled(state, key, enabled),
                   onEdit: (key, value) => updateSkillEdit(state, key, value),
                   onSaveKey: (key) => saveSkillApiKey(state, key),
                   onInstall: (skillKey, name, installId) =>
                     installSkill(state, skillKey, name, installId),
+                  onDetailOpen: (key) => (state.skillsDetailKey = key),
+                  onDetailClose: () => (state.skillsDetailKey = null),
                 }),
               )
             : nothing
@@ -1436,10 +1547,7 @@ export function renderApp(state: AppViewState) {
                   state.setTab("agents" as import("./navigation.ts").Tab);
                 },
                 onSessionSelect: (key: string) => {
-                  state.setSessionKey(key);
-                  state.chatMessages = [];
-                  void loadChatHistory(state);
-                  void state.loadAssistantIdentity();
+                  switchChatSession(state, key);
                 },
                 showNewMessages: state.chatNewMessagesBelow && !state.chatManualRefreshInFlight,
                 onScrollToBottom: () => state.scrollToBottom(),
@@ -1519,6 +1627,7 @@ export function renderApp(state: AppViewState) {
                 onRawChange: (next) => {
                   state.configRaw = next;
                 },
+                onRequestUpdate: requestHostUpdate,
                 onFormModeChange: (mode) => (state.configFormMode = mode),
                 onFormPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onSearchChange: (query) => (state.configSearchQuery = query),
@@ -1537,6 +1646,8 @@ export function renderApp(state: AppViewState) {
                 themeMode: state.themeMode,
                 setTheme: (t, ctx) => state.setTheme(t, ctx),
                 setThemeMode: (m, ctx) => state.setThemeMode(m, ctx),
+                borderRadius: state.settings.borderRadius,
+                setBorderRadius: (v) => state.setBorderRadius(v),
                 gatewayUrl: state.settings.gatewayUrl,
                 assistantName: state.assistantName,
                 configPath: state.configSnapshot?.path ?? null,
@@ -1589,6 +1700,7 @@ export function renderApp(state: AppViewState) {
                 onRawChange: (next) => {
                   state.configRaw = next;
                 },
+                onRequestUpdate: requestHostUpdate,
                 onFormModeChange: (mode) => (state.communicationsFormMode = mode),
                 onFormPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onSearchChange: (query) => (state.communicationsSearchQuery = query),
@@ -1607,6 +1719,8 @@ export function renderApp(state: AppViewState) {
                 themeMode: state.themeMode,
                 setTheme: (t, ctx) => state.setTheme(t, ctx),
                 setThemeMode: (m, ctx) => state.setThemeMode(m, ctx),
+                borderRadius: state.settings.borderRadius,
+                setBorderRadius: (v) => state.setBorderRadius(v),
                 gatewayUrl: state.settings.gatewayUrl,
                 assistantName: state.assistantName,
                 configPath: state.configSnapshot?.path ?? null,
@@ -1653,6 +1767,7 @@ export function renderApp(state: AppViewState) {
                 onRawChange: (next) => {
                   state.configRaw = next;
                 },
+                onRequestUpdate: requestHostUpdate,
                 onFormModeChange: (mode) => (state.appearanceFormMode = mode),
                 onFormPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onSearchChange: (query) => (state.appearanceSearchQuery = query),
@@ -1671,6 +1786,8 @@ export function renderApp(state: AppViewState) {
                 themeMode: state.themeMode,
                 setTheme: (t, ctx) => state.setTheme(t, ctx),
                 setThemeMode: (m, ctx) => state.setThemeMode(m, ctx),
+                borderRadius: state.settings.borderRadius,
+                setBorderRadius: (v) => state.setBorderRadius(v),
                 gatewayUrl: state.settings.gatewayUrl,
                 assistantName: state.assistantName,
                 configPath: state.configSnapshot?.path ?? null,
@@ -1717,6 +1834,7 @@ export function renderApp(state: AppViewState) {
                 onRawChange: (next) => {
                   state.configRaw = next;
                 },
+                onRequestUpdate: requestHostUpdate,
                 onFormModeChange: (mode) => (state.automationFormMode = mode),
                 onFormPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onSearchChange: (query) => (state.automationSearchQuery = query),
@@ -1735,6 +1853,8 @@ export function renderApp(state: AppViewState) {
                 themeMode: state.themeMode,
                 setTheme: (t, ctx) => state.setTheme(t, ctx),
                 setThemeMode: (m, ctx) => state.setThemeMode(m, ctx),
+                borderRadius: state.settings.borderRadius,
+                setBorderRadius: (v) => state.setBorderRadius(v),
                 gatewayUrl: state.settings.gatewayUrl,
                 assistantName: state.assistantName,
                 configPath: state.configSnapshot?.path ?? null,
@@ -1781,6 +1901,7 @@ export function renderApp(state: AppViewState) {
                 onRawChange: (next) => {
                   state.configRaw = next;
                 },
+                onRequestUpdate: requestHostUpdate,
                 onFormModeChange: (mode) => (state.infrastructureFormMode = mode),
                 onFormPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onSearchChange: (query) => (state.infrastructureSearchQuery = query),
@@ -1799,6 +1920,8 @@ export function renderApp(state: AppViewState) {
                 themeMode: state.themeMode,
                 setTheme: (t, ctx) => state.setTheme(t, ctx),
                 setThemeMode: (m, ctx) => state.setThemeMode(m, ctx),
+                borderRadius: state.settings.borderRadius,
+                setBorderRadius: (v) => state.setBorderRadius(v),
                 gatewayUrl: state.settings.gatewayUrl,
                 assistantName: state.assistantName,
                 configPath: state.configSnapshot?.path ?? null,
@@ -1845,6 +1968,7 @@ export function renderApp(state: AppViewState) {
                 onRawChange: (next) => {
                   state.configRaw = next;
                 },
+                onRequestUpdate: requestHostUpdate,
                 onFormModeChange: (mode) => (state.aiAgentsFormMode = mode),
                 onFormPatch: (path, value) => updateConfigFormValue(state, path, value),
                 onSearchChange: (query) => (state.aiAgentsSearchQuery = query),
@@ -1863,6 +1987,8 @@ export function renderApp(state: AppViewState) {
                 themeMode: state.themeMode,
                 setTheme: (t, ctx) => state.setTheme(t, ctx),
                 setThemeMode: (m, ctx) => state.setThemeMode(m, ctx),
+                borderRadius: state.settings.borderRadius,
+                setBorderRadius: (v) => state.setBorderRadius(v),
                 gatewayUrl: state.settings.gatewayUrl,
                 assistantName: state.assistantName,
                 configPath: state.configSnapshot?.path ?? null,

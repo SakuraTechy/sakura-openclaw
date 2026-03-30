@@ -56,7 +56,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "onboard",
-        description: "网关、工作区和技能的交互式引导向导",
+        description: "交互式引导配置网关、工作区和技能",
         hasSubcommands: false,
       },
     ],
@@ -70,7 +70,7 @@ const coreEntries: CoreCliEntry[] = [
       {
         name: "configure",
         description:
-          "Interactive setup wizard for credentials, channels, gateway, and agent defaults",
+          "交互式配置凭证、渠道、网关和代理默认设置",
         hasSubcommands: false,
       },
     ],
@@ -84,7 +84,7 @@ const coreEntries: CoreCliEntry[] = [
       {
         name: "config",
         description:
-          "Non-interactive config helpers (get/set/unset/file/validate). Default: starts setup wizard.",
+          "非交互式配置工具（get/set/unset/file/validate）。默认：启动引导式设置。",
         hasSubcommands: true,
       },
     ],
@@ -97,7 +97,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "backup",
-        description: "Create and verify local backup archives for OpenClaw state",
+        description: "创建和验证 OpenClaw 状态的本地备份归档",
         hasSubcommands: true,
       },
     ],
@@ -110,22 +110,22 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "doctor",
-        description: "Health checks + quick fixes for the gateway and channels",
+        description: "网关和渠道的健康检查与快速修复",
         hasSubcommands: false,
       },
       {
         name: "dashboard",
-        description: "Open the Control UI with your current token",
+        description: "使用当前令牌打开控制面板",
         hasSubcommands: false,
       },
       {
         name: "reset",
-        description: "Reset local config/state (keeps the CLI installed)",
+        description: "重置本地配置/状态（保留 CLI）",
         hasSubcommands: false,
       },
       {
         name: "uninstall",
-        description: "Uninstall the gateway service + local data (CLI remains)",
+        description: "卸载网关服务和本地数据（保留 CLI）",
         hasSubcommands: false,
       },
     ],
@@ -138,7 +138,7 @@ const coreEntries: CoreCliEntry[] = [
     commands: [
       {
         name: "message",
-        description: "Send, read, and manage messages",
+        description: "发送、读取和管理消息",
         hasSubcommands: true,
       },
     ],
@@ -158,6 +158,19 @@ const coreEntries: CoreCliEntry[] = [
     register: async ({ program }) => {
       const mod = await import("../memory-cli.js");
       mod.registerMemoryCli(program);
+    },
+  },
+  {
+    commands: [
+      {
+        name: "mcp",
+        description: "管理内嵌的 Pi MCP 服务器",
+        hasSubcommands: true,
+      },
+    ],
+    register: async ({ program }) => {
+      const mod = await import("../mcp-cli.js");
+      mod.registerMcpCli(program);
     },
   },
   {

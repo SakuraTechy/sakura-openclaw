@@ -12,8 +12,8 @@ import {
   listChatChannels,
 } from "../channels/registry.js";
 import { formatCliCommand } from "../cli/command-format.js";
+import { isChannelConfigured } from "../config/channel-configured.js";
 import type { OpenClawConfig } from "../config/config.js";
-import { isChannelConfigured } from "../config/plugin-auto-enable.js";
 import type { DmPolicy } from "../config/types.js";
 import { enablePluginInConfig } from "../plugins/enable.js";
 import { DEFAULT_ACCOUNT_ID, normalizeAccountId } from "../routing/session-key.js";
@@ -32,6 +32,7 @@ import type {
   ChannelSetupDmPolicy,
   ChannelSetupResult,
   ChannelSetupStatus,
+  ChannelOnboardingPostWriteHook,
   SetupChannelsOptions,
 } from "./channel-setup/types.js";
 import type { ChannelChoice } from "./onboard-types.js";
@@ -45,6 +46,37 @@ type ChannelStatusSummary = {
   statusByChannel: Map<ChannelChoice, ChannelSetupStatus>;
   statusLines: string[];
 };
+
+export function createChannelOnboardingPostWriteHookCollector() {
+  const hooks = new Map<string, ChannelOnboardingPostWriteHook>();
+  return {
+    collect(hook: ChannelOnboardingPostWriteHook) {
+      hooks.set(`${hook.channel}:${hook.accountId}`, hook);
+    },
+    drain(): ChannelOnboardingPostWriteHook[] {
+      const next = [...hooks.values()];
+      hooks.clear();
+      return next;
+    },
+  };
+}
+
+export async function runCollectedChannelOnboardingPostWriteHooks(params: {
+  hooks: ChannelOnboardingPostWriteHook[];
+  cfg: OpenClawConfig;
+  runtime: RuntimeEnv;
+}): Promise<void> {
+  for (const hook of params.hooks) {
+    try {
+      await hook.run({ cfg: params.cfg, runtime: params.runtime });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      params.runtime.error(
+        `Channel ${hook.channel} post-setup warning for "${hook.accountId}": ${message}`,
+      );
+    }
+  }
+}
 
 function formatAccountLabel(accountId: string): string {
   return accountId === DEFAULT_ACCOUNT_ID ? "默认 (主账户)" : accountId;
@@ -292,12 +324,17 @@ async function maybeConfigureDmPolicies(params: {
 
   let cfg = params.cfg;
   const selectPolicy = async (policy: ChannelSetupDmPolicy) => {
+    const accountId = accountIdsByChannel?.get(policy.channel);
+    const { policyKey, allowFromKey } = policy.resolveConfigKeys?.(cfg, accountId) ?? {
+      policyKey: policy.policyKey,
+      allowFromKey: policy.allowFromKey,
+    };
     await prompter.note(
       [
         "默认: 配对 (未知私信将获得配对码)。",
         `批准: ${formatCliCommand(`openclaw pairing approve ${policy.channel} <code>`)}`,
-        `白名单私信: ${policy.policyKey}="allowlist" + ${policy.allowFromKey} 条目。`,
-        `公开私信: ${policy.policyKey}="open" + ${policy.allowFromKey} 包含 "*"。`,
+        `白名单私信: ${policyKey}="allowlist" + ${allowFromKey} 条目。`,
+        `公开私信: ${policyKey}="open" + ${allowFromKey} 包含 "*"。`,
         "Multi-user DMs: run: " +
           formatCliCommand('openclaw config set session.dmScope "per-channel-peer"') +
           ' (or "per-account-channel-peer" for multi-account channels) to isolate sessions.',
@@ -305,28 +342,31 @@ async function maybeConfigureDmPolicies(params: {
       ].join("\n"),
       `${policy.label} DM access`,
     );
-    return (await prompter.select({
-      message: `${policy.label} 私信策略`,
-      options: [
-        { value: "pairing", label: "配对 (推荐)" },
-        { value: "allowlist", label: "白名单 (仅特定用户)" },
-        { value: "open", label: "开放 (公开入站私信)" },
-        { value: "已禁用", label: "禁用 (忽略私信)" },
-      ],
-    })) as DmPolicy;
+    return {
+      accountId,
+      nextPolicy: (await prompter.select({
+        message: `${policy.label} 私信策略`,
+        options: [
+          { value: "pairing", label: "配对 (推荐)" },
+          { value: "allowlist", label: "白名单 (仅特定用户)" },
+          { value: "open", label: "开放 (公开入站私信)" },
+          { value: "disabled", label: "禁用 (忽略私信)" },
+        ],
+      })) as DmPolicy,
+    };
   };
 
   for (const policy of dmPolicies) {
-    const current = policy.getCurrent(cfg);
-    const nextPolicy = await selectPolicy(policy);
+    const { accountId, nextPolicy } = await selectPolicy(policy);
+    const current = policy.getCurrent(cfg, accountId);
     if (nextPolicy !== current) {
-      cfg = policy.setPolicy(cfg, nextPolicy);
+      cfg = policy.setPolicy(cfg, nextPolicy, accountId);
     }
     if (nextPolicy === "allowlist" && policy.promptAllowFrom) {
       cfg = await policy.promptAllowFrom({
         cfg,
         prompter,
-        accountId: accountIdsByChannel?.get(policy.channel),
+        accountId,
       });
     }
   }
@@ -600,9 +640,24 @@ export async function setupChannels(
   };
 
   const applySetupResult = async (channel: ChannelChoice, result: ChannelSetupResult) => {
+    const previousCfg = next;
     next = result.cfg;
+    const adapter = getVisibleSetupFlowAdapter(channel);
     if (result.accountId) {
       recordAccount(channel, result.accountId);
+      if (adapter?.afterConfigWritten) {
+        options?.onPostWriteHook?.({
+          channel,
+          accountId: result.accountId,
+          run: async ({ cfg, runtime }) =>
+            await adapter.afterConfigWritten?.({
+              previousCfg,
+              cfg,
+              accountId: result.accountId!,
+              runtime,
+            }),
+        });
+      }
     }
     addSelection(channel);
     await refreshStatus(channel);

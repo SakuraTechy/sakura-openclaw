@@ -51,7 +51,7 @@ let activeRecognition: SpeechRecognitionInstance | null = null;
 export function startStt(callbacks: SttCallbacks): boolean {
   const Ctor = getSpeechRecognitionCtor();
   if (!Ctor) {
-    callbacks.onError?.("Speech recognition is not supported in this browser");
+    callbacks.onError?.("此浏览器不支持语音识别");
     return false;
   }
 
@@ -142,7 +142,7 @@ export function speakText(
   },
 ): boolean {
   if (!isTtsSupported()) {
-    opts?.onError?.("Speech synthesis is not supported in this browser");
+    opts?.onError?.("此浏览器不支持语音合成");
     return false;
   }
 
