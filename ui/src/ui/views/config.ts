@@ -1,4 +1,5 @@
 import { html, nothing, type TemplateResult } from "lit";
+import { t } from "../../i18n/index.ts";
 import { icons } from "../icons.ts";
 import { BORDER_RADIUS_STOPS, type BorderRadiusStop } from "../storage.ts";
 import type { ThemeTransitionContext } from "../theme-transition.ts";
@@ -37,6 +38,7 @@ export type ConfigProps = {
   schemaLoading: boolean;
   uiHints: ConfigUiHints;
   formMode: "form" | "raw";
+  rawAvailable?: boolean;
   showModeToggle?: boolean;
   formValue: Record<string, unknown> | null;
   originalValue: Record<string, unknown> | null;
@@ -420,7 +422,7 @@ const SECTION_CATEGORIES: SectionCategory[] = [
   },
   {
     id: "appearance",
-    label: "外观",
+    label: t("tabs.appearance"),
     sections: [
       { key: "__appearance__", label: "主题" },
       { key: "ui", label: "界面" },
@@ -578,7 +580,9 @@ function renderAppearanceSection(props: ConfigProps) {
           ${THEME_OPTIONS.map(
             (opt) => html`
               <button
-                class="settings-theme-card ${opt.id === props.theme ? "settings-theme-card--active" : ""}"
+                class="settings-theme-card ${opt.id === props.theme
+                  ? "settings-theme-card--active"
+                  : ""}"
                 title=${opt.description}
                 @click=${(e: Event) => {
                   if (opt.id !== props.theme) {
@@ -591,11 +595,11 @@ function renderAppearanceSection(props: ConfigProps) {
               >
                 <span class="settings-theme-card__icon" aria-hidden="true">${opt.icon}</span>
                 <span class="settings-theme-card__label">${opt.label}</span>
-                ${
-                  opt.id === props.theme
-                    ? html`<span class="settings-theme-card__check" aria-hidden="true">${icons.check}</span>`
-                    : nothing
-                }
+                ${opt.id === props.theme
+                  ? html`<span class="settings-theme-card__check" aria-hidden="true"
+                      >${icons.check}</span
+                    >`
+                  : nothing}
               </button>
             `,
           )}
@@ -636,20 +640,20 @@ function renderAppearanceSection(props: ConfigProps) {
           <div class="settings-info-row">
             <span class="settings-info-row__label">状态</span>
             <span class="settings-info-row__value">
-              <span class="settings-status-dot ${props.connected ? "settings-status-dot--ok" : ""}"></span>
-              ${props.connected ? "已连接" : "离线"}
+              <span
+                class="settings-status-dot ${props.connected ? "settings-status-dot--ok" : ""}"
+              ></span>
+              ${props.connected ? t("common.connected") : t("common.offline")}
             </span>
           </div>
-          ${
-            props.assistantName
-              ? html`
+          ${props.assistantName
+            ? html`
                 <div class="settings-info-row">
                   <span class="settings-info-row__label">助手</span>
                   <span class="settings-info-row__value">${props.assistantName}</span>
                 </div>
               `
-              : nothing
-          }
+            : nothing}
         </div>
       </div>
     </div>
@@ -707,7 +711,8 @@ export function renderConfig(props: ConfigProps) {
     unsupportedPaths: scopeUnsupportedPaths(rawAnalysis.unsupportedPaths, { include, exclude }),
   };
   const formUnsafe = analysis.schema ? analysis.unsupportedPaths.length > 0 : false;
-  const formMode = showModeToggle ? props.formMode : "form";
+  const rawAvailable = props.rawAvailable ?? true;
+  const formMode = showModeToggle && rawAvailable ? props.formMode : "form";
   const envSensitiveVisible = cvs.envRevealed;
   const requestUpdate = props.onRequestUpdate ?? (() => props.onRawChange(props.raw));
 
@@ -784,134 +789,119 @@ export function renderConfig(props: ConfigProps) {
       <main class="config-main">
         <div class="config-actions">
           <div class="config-actions__left">
-            ${
-              showModeToggle
-                ? html`
-                    <div class="config-mode-toggle">
-                      <button
-                        class="config-mode-toggle__btn ${formMode === "form" ? "active" : ""}"
-                        ?disabled=${props.schemaLoading || !props.schema}
-                        title=${formUnsafe ? "Form view can't safely edit some fields" : ""}
-                        @click=${() => props.onFormModeChange("form")}
-                      >
-                        表单
-                      </button>
-                      <button
-                        class="config-mode-toggle__btn ${formMode === "raw" ? "active" : ""}"
-                        @click=${() => props.onFormModeChange("raw")}
-                      >
-                        原始
-                      </button>
-                    </div>
-                  `
-                : nothing
-            }
-            ${
-              hasChanges
-                ? html`
-	                  <span class="config-changes-badge"
-	                    >${
-                        formMode === "raw"
-                          ? "未保存的更改"
-                          : `${diff.length} 项未保存更改`
-                      }</span
-	                  >
-	                `
-                : html`
-                    <span class="config-status muted">无更改</span>
-                  `
-            }
+            ${showModeToggle
+              ? html`
+                  <div class="config-mode-toggle">
+                    <button
+                      class="config-mode-toggle__btn ${formMode === "form" ? "active" : ""}"
+                      ?disabled=${props.schemaLoading || !props.schema}
+                      title=${formUnsafe ? "Form view can't safely edit some fields" : ""}
+                      @click=${() => props.onFormModeChange("form")}
+                    >
+                      Form
+                    </button>
+                    <button
+                      class="config-mode-toggle__btn ${formMode === "raw" ? "active" : ""}"
+                      ?disabled=${!rawAvailable}
+                      title=${rawAvailable
+                        ? "Edit raw JSON/JSON5 config"
+                        : "Raw mode unavailable for this snapshot"}
+                      @click=${() => props.onFormModeChange("raw")}
+                    >
+                      Raw
+                    </button>
+                  </div>
+                `
+              : nothing}
+            ${hasChanges
+              ? html`
+                  <span class="config-changes-badge"
+                    >${formMode === "raw"
+                      ? "未保存的更改"
+                      : `${diff.length} 项未保存更改`}</span
+                  >
+                `
+              : html` <span class="config-status muted">无更改</span> `}
           </div>
           <div class="config-actions__right">
-            ${
-              props.onOpenFile
-                ? html`
-                    <button
-                      class="btn btn--sm"
-                      title=${props.configPath ? `Open ${props.configPath}` : "Open config file"}
-                      @click=${props.onOpenFile}
-                    >
-                      ${icons.fileText} 打开
-                    </button>
-                  `
-                : nothing
-            }
-            <button
-              class="btn btn--sm"
-              ?disabled=${props.loading}
-              @click=${props.onReload}
-            >
-              ${props.loading ? "加载中…" : "重新加载"}
+            ${!rawAvailable
+              ? html`
+                  <span class="config-status muted"
+                    >Raw mode disabled (snapshot cannot safely round-trip raw text).</span
+                  >
+                `
+              : nothing}
+            ${props.onOpenFile
+              ? html`
+                  <button
+                    class="btn btn--sm"
+                    title=${props.configPath ? `Open ${props.configPath}` : "Open config file"}
+                    @click=${props.onOpenFile}
+                  >
+                    ${icons.fileText} 打开
+                  </button>
+                `
+              : nothing}
+            <button class="btn btn--sm" ?disabled=${props.loading} @click=${props.onReload}>
+              ${props.loading ? t("common.loading") : t("common.reload")}
             </button>
-            <button
-              class="btn btn--sm primary"
-              ?disabled=${!canSave}
-              @click=${props.onSave}
-            >
+            <button class="btn btn--sm primary" ?disabled=${!canSave} @click=${props.onSave}>
               ${props.saving ? "保存中…" : "保存"}
             </button>
-            <button
-              class="btn btn--sm"
-              ?disabled=${!canApply}
-              @click=${props.onApply}
-            >
+            <button class="btn btn--sm" ?disabled=${!canApply} @click=${props.onApply}>
               ${props.applying ? "应用中…" : "应用"}
             </button>
-            <button
-              class="btn btn--sm"
-              ?disabled=${!canUpdate}
-              @click=${props.onUpdate}
-            >
+            <button class="btn btn--sm" ?disabled=${!canUpdate} @click=${props.onUpdate}>
               ${props.updating ? "更新中…" : "更新"}
             </button>
           </div>
         </div>
 
         <div class="config-top-tabs">
-          ${
-            formMode === "form"
-              ? html`
-                  <div class="config-search config-search--top">
-                    <div class="config-search__input-row">
-                      <svg
-                        class="config-search__icon"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                      >
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="M21 21l-4.35-4.35"></path>
-                      </svg>
-                      <input
-                        type="text"
-                        class="config-search__input"
-                        placeholder="搜索设置..."
-                        aria-label="Search settings"
-                        .value=${props.searchQuery}
-                        @input=${(e: Event) =>
-                          props.onSearchChange((e.target as HTMLInputElement).value)}
-                      />
-                      ${
-                        props.searchQuery
-                          ? html`
-                              <button
-                                class="config-search__clear"
-                                aria-label="Clear search"
-                                @click=${() => props.onSearchChange("")}
-                              >
-                                ×
-                              </button>
-                            `
-                          : nothing
-                      }
-                    </div>
+          ${formMode === "form"
+            ? html`
+                <div class="config-search config-search--top">
+                  <div class="config-search__input-row">
+                    <svg
+                      class="config-search__icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    >
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="M21 21l-4.35-4.35"></path>
+                    </svg>
+                    <input
+                      type="text"
+                      class="config-search__input"
+                      placeholder="搜索设置..."
+                      aria-label="Search settings"
+                      .value=${props.searchQuery}
+                      @input=${(e: Event) =>
+                        props.onSearchChange((e.target as HTMLInputElement).value)}
+                    />
+                    ${props.searchQuery
+                      ? html`
+                          <button
+                            class="config-search__clear"
+                            aria-label="Clear search"
+                            @click=${() => props.onSearchChange("")}
+                          >
+                            ×
+                          </button>
+                        `
+                      : nothing}
                   </div>
-                `
-              : nothing
-          }
+                </div>
+              `
+            : nothing}
 
-          <div class="config-top-tabs__scroller" role="tablist" aria-label="设置分区">
+          <div
+            class="config-top-tabs__scroller"
+            role="tablist"
+            aria-label="${t("common.settingsSections")}"
+          >
             ${topTabs.map(
               (tab) => html`
                 <button
@@ -926,40 +916,50 @@ export function renderConfig(props: ConfigProps) {
               `,
             )}
           </div>
-
         </div>
 
-        ${
-          validity === "invalid" && !cvs.validityDismissed
-            ? html`
+        ${validity === "invalid" && !cvs.validityDismissed
+          ? html`
               <div class="config-validity-warning">
-                <svg class="config-validity-warning__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <svg
+                  class="config-validity-warning__icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  width="16"
+                  height="16"
+                >
+                  <path
+                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
+                  ></path>
                   <line x1="12" y1="9" x2="12" y2="13"></line>
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                <span class="config-validity-warning__text">您的配置无效。某些设置可能无法按预期工作。</span>
+                <span class="config-validity-warning__text"
+                  >您的配置无效。某些设置可能无法按预期工作。</span
+                >
                 <button
                   class="btn btn--sm"
                   @click=${() => {
                     cvs.validityDismissed = true;
                     requestUpdate();
                   }}
-                >不再提醒</button>
+                >
+                  Don't remind again
+                </button>
               </div>
             `
-            : nothing
-        }
+          : nothing}
 
         <!-- Diff panel (form mode only - raw mode doesn't have granular diff) -->
-        ${
-          hasChanges && formMode === "form"
-            ? html`
+        ${hasChanges && formMode === "form"
+          ? html`
               <details class="config-diff">
                 <summary class="config-diff__summary">
-                  <span
-                    >查看 ${diff.length} 项待处理更改</span
-                  >
+                  <span>View ${diff.length} pending change${diff.length !== 1 ? "s" : ""}</span>
                   <svg
                     class="config-diff__chevron"
                     viewBox="0 0 24 24"
@@ -990,63 +990,63 @@ export function renderConfig(props: ConfigProps) {
                 </div>
               </details>
             `
-            : nothing
-        }
-	        ${
-            activeSectionMeta && formMode === "form"
-              ? html`
-	              <div class="config-section-hero">
-	                <div class="config-section-hero__icon">
-	                  ${getSectionIcon(props.activeSection ?? "")}
+          : nothing}
+        ${activeSectionMeta && formMode === "form"
+          ? html`
+              <div class="config-section-hero">
+                <div class="config-section-hero__icon">
+                  ${getSectionIcon(props.activeSection ?? "")}
                 </div>
                 <div class="config-section-hero__text">
-                  <div class="config-section-hero__title">
-                    ${activeSectionMeta.label}
-                  </div>
-                  ${
-                    activeSectionMeta.description
-                      ? html`<div class="config-section-hero__desc">
+                  <div class="config-section-hero__title">${activeSectionMeta.label}</div>
+                  ${activeSectionMeta.description
+                    ? html`<div class="config-section-hero__desc">
                         ${activeSectionMeta.description}
                       </div>`
-                      : nothing
-                  }
+                    : nothing}
                 </div>
-                ${
-                  props.activeSection === "env"
-                    ? html`
+                ${props.activeSection === "env"
+                  ? html`
                       <button
-                        class="config-env-peek-btn ${envSensitiveVisible ? "config-env-peek-btn--active" : ""}"
+                        class="config-env-peek-btn ${envSensitiveVisible
+                          ? "config-env-peek-btn--active"
+                          : ""}"
                         title=${envSensitiveVisible ? "隐藏环境值" : "显示环境值"}
                         @click=${() => {
                           cvs.envRevealed = !cvs.envRevealed;
                           requestUpdate();
                         }}
                       >
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          width="16"
+                          height="16"
+                        >
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                           <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                         查看
                       </button>
                     `
-                    : nothing
-                }
+                  : nothing}
               </div>
             `
-              : nothing
-          }
+          : nothing}
         <!-- Form content -->
         <div class="config-content">
-          ${
-            props.activeSection === "__appearance__"
-              ? includeVirtualSections
-                ? renderAppearanceSection(props)
-                : nothing
-              : formMode === "form"
-                ? html`
-                ${showAppearanceOnRoot ? renderAppearanceSection(props) : nothing}
-                ${
-                  props.schemaLoading
+          ${props.activeSection === "__appearance__"
+            ? includeVirtualSections
+              ? renderAppearanceSection(props)
+              : nothing
+            : formMode === "form"
+              ? html`
+                  ${showAppearanceOnRoot ? renderAppearanceSection(props) : nothing}
+                  ${props.schemaLoading
                     ? html`
                         <div class="config-loading">
                           <div class="config-loading__spinner"></div>
@@ -1057,6 +1057,7 @@ export function renderConfig(props: ConfigProps) {
                         schema: analysis.schema,
                         uiHints: props.uiHints,
                         value: props.formValue,
+                        rawAvailable,
                         disabled: props.loading || !props.formValue,
                         unsupportedPaths: analysis.unsupportedPaths,
                         onPatch: props.onFormPatch,
@@ -1070,39 +1071,38 @@ export function renderConfig(props: ConfigProps) {
                           toggleSensitivePathReveal(path);
                           requestUpdate();
                         },
-                      })
-                }
-              `
-                : (() => {
-                    const sensitiveCount = countSensitiveConfigValues(
-                      props.formValue,
-                      [],
-                      props.uiHints,
-                    );
-                    const blurred = sensitiveCount > 0 && !cvs.rawRevealed;
-                    return html`
-                    ${
-                      formUnsafe
-                        ? html`
-                            <div class="callout info" style="margin-bottom: 12px">
-                              Your config contains fields 表单编辑器无法安全表示的字段。请使用原始模式编辑这些
-                              entries.
-                            </div>
-                          `
-                        : nothing
-                    }
+                      })}
+                `
+              : (() => {
+                  const sensitiveCount = countSensitiveConfigValues(
+                    props.formValue,
+                    [],
+                    props.uiHints,
+                  );
+                  const blurred = sensitiveCount > 0 && !cvs.rawRevealed;
+                  return html`
+                    ${formUnsafe
+                      ? html`
+                          <div class="callout info" style="margin-bottom: 12px">
+                            Your config contains fields the form editor can't safely represent. Use
+                            Raw mode to edit those entries.
+                          </div>
+                        `
+                      : nothing}
                     <div class="field config-raw-field">
                       <span style="display:flex;align-items:center;gap:8px;">
                         原始配置 (JSON/JSON5)
-                        ${
-                          sensitiveCount > 0
-                            ? html`
-                              <span class="pill pill--sm">${sensitiveCount} 个密钥${blurred ? "已隐藏" : "可见"}</span>
+                        ${sensitiveCount > 0
+                          ? html`
+                              <span class="pill pill--sm"
+                                >${sensitiveCount} secret${sensitiveCount === 1 ? "" : "s"}
+                                ${blurred ? "redacted" : "visible"}</span
+                              >
                               <button
                                 class="btn btn--icon config-raw-toggle ${blurred ? "" : "active"}"
-                                title=${
-                                  blurred ? "显示敏感值" : "隐藏敏感值"
-                                }
+                                title=${blurred
+                                  ? "Reveal sensitive values"
+                                  : "Hide sensitive values"}
                                 aria-label="Toggle raw config redaction"
                                 aria-pressed=${!blurred}
                                 @click=${() => {
@@ -1113,36 +1113,34 @@ export function renderConfig(props: ConfigProps) {
                                 ${blurred ? icons.eyeOff : icons.eye}
                               </button>
                             `
-                            : nothing
-                        }
+                          : nothing}
                       </span>
-                      <textarea
-                        class="${blurred ? "config-raw-redacted" : ""}"
-                        placeholder=${blurred ? REDACTED_PLACEHOLDER : "原始配置 (JSON/JSON5)"}
-                        .value=${blurred ? "" : props.raw}
-                        ?readonly=${blurred}
-                        @input=${(e: Event) => {
-                          if (blurred) {
-                            return;
-                          }
-                          props.onRawChange((e.target as HTMLTextAreaElement).value);
-                        }}
-                      ></textarea>
+                      ${blurred
+                        ? html`
+                            <div class="callout info" style="margin-top: 12px">
+                              ${sensitiveCount} sensitive value${sensitiveCount === 1 ? "" : "s"}
+                              hidden. Use the reveal button above to edit the raw config.
+                            </div>
+                          `
+                        : html`
+                            <textarea
+                              placeholder="原始配置 (JSON/JSON5)"
+                              .value=${props.raw}
+                              @input=${(e: Event) => {
+                                props.onRawChange((e.target as HTMLTextAreaElement).value);
+                              }}
+                            ></textarea>
+                          `}
                     </div>
                   `;
-                  })()
-          }
+                })()}
         </div>
 
-        ${
-          props.issues.length > 0
-            ? html`<div class="callout danger" style="margin-top: 12px;">
-              <pre class="code-block">
-${JSON.stringify(props.issues, null, 2)}</pre
-              >
+        ${props.issues.length > 0
+          ? html`<div class="callout danger" style="margin-top: 12px;">
+              <pre class="code-block">${JSON.stringify(props.issues, null, 2)}</pre>
             </div>`
-            : nothing
-        }
+          : nothing}
       </main>
     </div>
   `;

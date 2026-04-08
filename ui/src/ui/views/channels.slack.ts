@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { t } from "../../i18n/index.ts";
 import { formatRelativeTimestamp } from "../format.ts";
 import type { SlackStatus } from "../types.ts";
 import { renderChannelConfigSection } from "./channels.config.ts";
@@ -22,29 +23,27 @@ export function renderSlackCard(params: {
     subtitle: "Socket 模式状态和渠道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "已配置", value: formatNullableBoolean(configured) },
-      { label: "运行中", value: slack?.running ? "Yes" : "No" },
+      { label: t("common.configured"), value: formatNullableBoolean(configured) },
+      { label: t("common.running"), value: slack?.running ? t("common.yes") : t("common.no") },
       {
-        label: "上次启动",
-        value: slack?.lastStartAt ? formatRelativeTimestamp(slack.lastStartAt) : "n/a",
+        label: t("common.lastStart"),
+        value: slack?.lastStartAt ? formatRelativeTimestamp(slack.lastStartAt) : t("common.na"),
       },
       {
-        label: "上次探测",
-        value: slack?.lastProbeAt ? formatRelativeTimestamp(slack.lastProbeAt) : "n/a",
+        label: t("common.last探测"),
+        value: slack?.last探测At ? formatRelativeTimestamp(slack.last探测At) : t("common.na"),
       },
     ],
     lastError: slack?.lastError,
     secondaryCallout: slack?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          探测 ${slack.probe.ok ? "成功" : "失败"} ·
+          ${slack.probe.ok ? t("common.probeOk") : t("common.probeFailed")} ·
           ${slack.probe.status ?? ""} ${slack.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "slack", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>
-        Probe
-      </button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>${t("common.probe")}</button>
     </div>`,
   });
 }

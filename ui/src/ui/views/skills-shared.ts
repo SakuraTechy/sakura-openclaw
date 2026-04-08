@@ -30,23 +30,11 @@ export function renderSkillStatusChips(params: {
   return html`
     <div class="chip-row" style="margin-top: 6px;">
       <span class="chip">${skill.source}</span>
-      ${
-        showBundledBadge
-          ? html`
-              <span class="chip">bundled</span>
-            `
-          : nothing
-      }
+      ${showBundledBadge ? html` <span class="chip">bundled</span> ` : nothing}
       <span class="chip ${skill.eligible ? "chip-ok" : "chip-warn"}">
         ${skill.eligible ? "可用" : "已阻止"}
       </span>
-      ${
-        skill.disabled
-          ? html`
-              <span class="chip chip-warn">已禁用</span>
-            `
-          : nothing
-      }
+      ${skill.disabled ? html` <span class="chip chip-warn">已禁用</span> ` : nothing}
     </div>
   `;
 }

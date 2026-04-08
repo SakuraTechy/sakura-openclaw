@@ -1,47 +1,50 @@
+import { DEFAULT_ACCOUNT_ID } from "openclaw/plugin-sdk/account-id";
 import { createScopedDmSecurityResolver } from "openclaw/plugin-sdk/channel-config-helpers";
+import { createChatChannelPlugin } from "openclaw/plugin-sdk/channel-core";
 import { createAccountStatusSink } from "openclaw/plugin-sdk/channel-lifecycle";
 import { createPairingPrefixStripper } from "openclaw/plugin-sdk/channel-pairing";
 import {
   createOpenGroupPolicyRestrictSendersWarningCollector,
   projectAccountWarningCollector,
 } from "openclaw/plugin-sdk/channel-policy";
-import { createAttachedChannelResultAdapter } from "openclaw/plugin-sdk/channel-send-result";
-import { createChatChannelPlugin } from "openclaw/plugin-sdk/core";
+import {
+  buildProbeChannelStatusSummary,
+  PAIRING_APPROVED_MESSAGE,
+} from "openclaw/plugin-sdk/channel-status";
 import { createLazyRuntimeNamedExport } from "openclaw/plugin-sdk/lazy-runtime";
+import { isPrivateNetworkOptInEnabled } from "openclaw/plugin-sdk/ssrf-runtime";
 import {
   createComputedAccountStatusAdapter,
   createDefaultChannelRuntimeState,
 } from "openclaw/plugin-sdk/status-helpers";
-import {
-  listBlueBubblesAccountIds,
-  type ResolvedBlueBubblesAccount,
-  resolveBlueBubblesAccount,
-  resolveDefaultBlueBubblesAccountId,
-} from "./accounts.js";
+import { type ResolvedBlueBubblesAccount } from "./accounts.js";
 import { bluebubblesMessageActions } from "./actions.js";
 import {
   bluebubblesCapabilities,
   bluebubblesConfigAdapter,
   bluebubblesConfigSchema,
-  bluebubblesMeta as meta,
   bluebubblesReload,
   describeBlueBubblesAccount,
+  bluebubblesMeta as meta,
 } from "./channel-shared.js";
 import type { BlueBubblesProbe } from "./channel.runtime.js";
+import { createBlueBubblesConversationBindingManager } from "./conversation-bindings.js";
+import {
+  matchBlueBubblesAcpConversation,
+  normalizeBlueBubblesAcpConversationId,
+  resolveBlueBubblesConversationIdFromTarget,
+} from "./conversation-id.js";
+import { bluebubblesDoctor } from "./doctor.js";
 import {
   resolveBlueBubblesGroupRequireMention,
   resolveBlueBubblesGroupToolPolicy,
 } from "./group-policy.js";
 import type { ChannelAccountSnapshot, ChannelPlugin } from "./runtime-api.js";
-import {
-  buildProbeChannelStatusSummary,
-  collectBlueBubblesStatusIssues,
-  DEFAULT_ACCOUNT_ID,
-  PAIRING_APPROVED_MESSAGE,
-} from "./runtime-api.js";
+import { collectRuntimeConfigAssignments, secretTargetRegistryEntries } from "./secret-contract.js";
 import { resolveBlueBubblesOutboundSessionRoute } from "./session-route.js";
 import { blueBubblesSetupAdapter } from "./setup-core.js";
 import { blueBubblesSetupWizard } from "./setup-surface.js";
+import { collectBlueBubblesStatusIssues } from "./status-issues.js";
 import {
   extractHandleFromChatGuid,
   inferBlueBubblesTargetChatType,
@@ -94,7 +97,36 @@ export const bluebubblesPlugin: ChannelPlugin<ResolvedBlueBubblesAccount, BlueBu
         isConfigured: (account) => account.configured,
         describeAccount: (account): ChannelAccountSnapshot => describeBlueBubblesAccount(account),
       },
+      doctor: bluebubblesDoctor,
+      conversationBindings: {
+        supportsCurrentConversationBinding: true,
+        createManager: ({ cfg, accountId }) =>
+          createBlueBubblesConversationBindingManager({
+            cfg,
+            accountId: accountId ?? undefined,
+          }),
+      },
       actions: bluebubblesMessageActions,
+      secrets: {
+        secretTargetRegistryEntries,
+        collectRuntimeConfigAssignments,
+      },
+      bindings: {
+        compileConfiguredBinding: ({ conversationId }) =>
+          normalizeBlueBubblesAcpConversationId(conversationId),
+        matchInboundConversation: ({ compiledBinding, conversationId }) =>
+          matchBlueBubblesAcpConversation({
+            bindingConversationId: compiledBinding.conversationId,
+            conversationId,
+          }),
+        resolveCommandConversation: ({ originatingTo, commandTo, fallbackTo }) => {
+          const conversationId =
+            resolveBlueBubblesConversationIdFromTarget(originatingTo ?? "") ??
+            resolveBlueBubblesConversationIdFromTarget(commandTo ?? "") ??
+            resolveBlueBubblesConversationIdFromTarget(fallbackTo ?? "");
+          return conversationId ? { conversationId } : null;
+        },
+      },
       messaging: {
         normalizeTarget: normalizeBlueBubblesMessagingTarget,
         inferTargetChatType: ({ to }) => inferBlueBubblesTargetChatType(to),
@@ -196,7 +228,7 @@ export const bluebubblesPlugin: ChannelPlugin<ResolvedBlueBubblesAccount, BlueBu
             baseUrl: account.baseUrl,
             password: account.config.password ?? null,
             timeoutMs,
-            allowPrivateNetwork: account.config.allowPrivateNetwork === true,
+            allowPrivateNetwork: isPrivateNetworkOptInEnabled(account.config),
           }),
         resolveAccountSnapshot: ({ account, runtime, probe }) => {
           const running = runtime?.running ?? false;
@@ -217,6 +249,10 @@ export const bluebubblesPlugin: ChannelPlugin<ResolvedBlueBubblesAccount, BlueBu
         startAccount: async (ctx) => {
           const runtime = await loadBlueBubblesChannelRuntime();
           const account = ctx.account;
+          const conversationBindings = createBlueBubblesConversationBindingManager({
+            cfg: ctx.cfg,
+            accountId: ctx.accountId,
+          });
           const webhookPath = runtime.resolveWebhookPathFromConfig(account.config);
           const statusSink = createAccountStatusSink({
             accountId: ctx.accountId,
@@ -226,14 +262,18 @@ export const bluebubblesPlugin: ChannelPlugin<ResolvedBlueBubblesAccount, BlueBu
             baseUrl: account.baseUrl,
           });
           ctx.log?.info(`[${account.accountId}] starting provider (webhook=${webhookPath})`);
-          return runtime.monitorBlueBubblesProvider({
-            account,
-            config: ctx.cfg,
-            runtime: ctx.runtime,
-            abortSignal: ctx.abortSignal,
-            statusSink,
-            webhookPath,
-          });
+          try {
+            return await runtime.monitorBlueBubblesProvider({
+              account,
+              config: ctx.cfg,
+              runtime: ctx.runtime,
+              abortSignal: ctx.abortSignal,
+              statusSink,
+              webhookPath,
+            });
+          } finally {
+            conversationBindings.stop();
+          }
         },
       },
     },
@@ -259,11 +299,12 @@ export const bluebubblesPlugin: ChannelPlugin<ResolvedBlueBubblesAccount, BlueBu
           /^bluebubbles:/i,
           normalizeBlueBubblesHandle,
         ),
-        notify: async ({ cfg, id, message }) => {
+        notify: async ({ cfg, id, message, accountId }) => {
           await (
             await loadBlueBubblesChannelRuntime()
           ).sendMessageBlueBubbles(id, message, {
             cfg: cfg,
+            accountId,
           });
         },
       },

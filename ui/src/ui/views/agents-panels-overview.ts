@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { t } from "../../i18n/index.ts";
 import type {
   AgentIdentityResult,
   AgentsFilesListResult,
@@ -49,20 +50,31 @@ export function renderAgentOverview(params: {
     onSelectPanel,
   } = params;
   const config = resolveAgentConfig(configForm, agent.id);
+  const agentModel = agent.model;
   const workspaceFromFiles =
     agentFilesList && agentFilesList.agentId === agent.id ? agentFilesList.workspace : null;
   const workspace =
-    workspaceFromFiles || config.entry?.workspace || config.defaults?.workspace || "default";
+    workspaceFromFiles ||
+    config.entry?.workspace ||
+    config.defaults?.workspace ||
+    agent.workspace ||
+    "default";
   const model = config.entry?.model
     ? resolveModelLabel(config.entry?.model)
-    : resolveModelLabel(config.defaults?.model);
-  const defaultModel = resolveModelLabel(config.defaults?.model);
+    : config.defaults?.model
+      ? resolveModelLabel(config.defaults?.model)
+      : resolveModelLabel(agentModel);
+  const defaultModel = resolveModelLabel(config.defaults?.model ?? agentModel);
   const entryPrimary = resolveModelPrimary(config.entry?.model);
   const defaultPrimary =
     resolveModelPrimary(config.defaults?.model) ||
-    (defaultModel !== "-" ? normalizeModelValue(defaultModel) : null);
+    (defaultModel !== "-" ? normalizeModelValue(defaultModel) : null) ||
+    (configForm ? null : resolveModelPrimary(agentModel));
   const effectivePrimary = entryPrimary ?? defaultPrimary ?? null;
-  const modelFallbacks = resolveModelFallbacks(config.entry?.model);
+  const modelFallbacks =
+    resolveModelFallbacks(config.entry?.model) ??
+    resolveModelFallbacks(config.defaults?.model) ??
+    (configForm ? null : resolveModelFallbacks(agentModel));
   const fallbackChips = modelFallbacks ?? [];
   const skillFilter = Array.isArray(config.entry?.skills) ? config.entry?.skills : null;
   const skillCount = skillFilter?.length ?? null;
@@ -100,7 +112,9 @@ export function renderAgentOverview(params: {
               class="workspace-link mono"
               @click=${() => onSelectPanel("files")}
               title="Open Files tab"
-            >${workspace}</button>
+            >
+              ${workspace}
+            </button>
           </div>
         </div>
         <div class="agent-kv">
@@ -113,13 +127,13 @@ export function renderAgentOverview(params: {
         </div>
       </div>
 
-      ${
-        configDirty
-          ? html`
-              <div class="callout warn" style="margin-top: 16px">您有未保存的配置更改。</div>
-            `
-          : nothing
-      }
+      ${configDirty
+        ? html`
+            <div class="callout warn" style="margin-top: 16px">
+              您有未保存的配置更改。
+            </div>
+          `
+        : nothing}
 
       <div class="agent-model-select" style="margin-top: 20px;">
         <div class="label">模型选择</div>
@@ -132,29 +146,28 @@ export function renderAgentOverview(params: {
               @change=${(e: Event) =>
                 onModelChange(agent.id, (e.target as HTMLSelectElement).value || null)}
             >
-              ${
-                isDefault
-                  ? html`
-                      <option value="">Not set</option>
-                    `
-                  : html`
-                      <option value="">
-                        ${defaultPrimary ? `继承默认（${defaultPrimary}）` : "继承默认"}
-                      </option>
-                    `
-              }
+              ${isDefault
+                ? html` <option value="">Not set</option> `
+                : html`
+                    <option value="">
+                      ${defaultPrimary ? `继承默认（${defaultPrimary}）` : "继承默认"}
+                    </option>
+                  `}
               ${buildModelOptions(configForm, effectivePrimary ?? undefined, params.modelCatalog)}
             </select>
           </label>
           <div class="field">
             <span>后备模型</span>
-            <div class="agent-chip-input" @click=${(e: Event) => {
-              const container = e.currentTarget as HTMLElement;
-              const input = container.querySelector("input");
-              if (input) {
-                input.focus();
-              }
-            }}>
+            <div
+              class="agent-chip-input"
+              @click=${(e: Event) => {
+                const container = e.currentTarget as HTMLElement;
+                const input = container.querySelector("input");
+                if (input) {
+                  input.focus();
+                }
+              }}
+            >
               ${fallbackChips.map(
                 (chip, i) => html`
                   <span class="chip">
@@ -164,7 +177,9 @@ export function renderAgentOverview(params: {
                       class="chip-remove"
                       ?disabled=${disabled}
                       @click=${() => removeChip(i)}
-                    >&times;</button>
+                    >
+                      &times;
+                    </button>
                   </span>
                 `,
               )}
@@ -185,8 +200,13 @@ export function renderAgentOverview(params: {
           </div>
         </div>
         <div class="agent-model-actions">
-          <button type="button" class="btn btn--sm" ?disabled=${configLoading} @click=${onConfigReload}>
-            重新加载配置
+          <button
+            type="button"
+            class="btn btn--sm"
+            ?disabled=${configLoading}
+            @click=${onConfigReload}
+          >
+            ${t("common.reloadConfig")}
           </button>
           <button
             type="button"

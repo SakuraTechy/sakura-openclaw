@@ -295,7 +295,7 @@ export function registerModelsCli(program: Command) {
 
   auth
     .command("add")
-    .description("交互式认证助手 (设置令牌或粘贴令牌)")
+    .description("交互式认证助手（提供商认证或粘贴令牌）")
     .action(async () => {
       await runModelsCommand(async () => {
         await modelsAuthAddCommand({}, defaultRuntime);
@@ -324,7 +324,7 @@ export function registerModelsCli(program: Command) {
   auth
     .command("setup-token")
     .description("运行提供商 CLI 以创建/同步令牌 (需要 TTY)")
-    .option("--provider <name>", "提供商 ID (默认: anthropic)")
+    .option("--provider <name>", "提供商 ID")
     .option("--yes", "跳过确认", false)
     .action(async (opts) => {
       await runModelsCommand(async () => {
@@ -381,8 +381,8 @@ export function registerModelsCli(program: Command) {
 
   order
     .command("get")
-    .description("显示每代理认证顺序覆盖 (来自 auth-profiles.json)")
-    .requiredOption("--provider <name>", "提供商 ID (例如 anthropic)")
+    .description("Show per-agent auth order override (from auth-state.json)")
+    .requiredOption("--provider <name>", "Provider id (e.g. anthropic)")
     .option("--agent <id>", "Agent id (default: configured default agent)")
     .option("--json", "Output JSON", false)
     .action(async (opts, command) => {
@@ -402,8 +402,8 @@ export function registerModelsCli(program: Command) {
 
   order
     .command("set")
-    .description("设置每代理认证顺序覆盖 (锁定轮换到此列表)")
-    .requiredOption("--provider <name>", "提供商 ID (例如 anthropic)")
+    .description("Set per-agent auth order override (writes auth-state.json)")
+    .requiredOption("--provider <name>", "Provider id (e.g. anthropic)")
     .option("--agent <id>", "Agent id (default: configured default agent)")
     .argument("<profileIds...>", "认证配置 ID (例如 anthropic:default)")
     .action(async (profileIds: string[], opts, command) => {

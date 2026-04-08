@@ -1,6 +1,5 @@
 import {
-  createTopLevelChannelDmPolicy,
-  createTopLevelChannelDmPolicySetter,
+  addWildcardAllowFrom,
   DEFAULT_ACCOUNT_ID,
   formatCliCommand,
   formatDocsLink,
@@ -30,14 +29,11 @@ import {
 } from "./zalo-js.js";
 
 const channel = "zalouser" as const;
-const setZalouserDmPolicy = createTopLevelChannelDmPolicySetter({
-  channel,
-});
-const ZALOUSER_ALLOW_FROM_PLACEHOLDER = "Alice, 123456789, or leave empty to configure later";
-const ZALOUSER_GROUPS_PLACEHOLDER = "Family, Work, 123456789, or leave empty for now";
-const ZALOUSER_DM_ACCESS_TITLE = "Zalo Personal DM access";
-const ZALOUSER_ALLOWLIST_TITLE = "Zalo Personal allowlist";
-const ZALOUSER_GROUPS_TITLE = "Zalo groups";
+const ZALOUSER_ALLOW_FROM_PLACEHOLDER = "Alice, 123456789, 或留空稍后配置";
+const ZALOUSER_GROUPS_PLACEHOLDER = "家庭, 工作, 123456789, 或暂时留空";
+const ZALOUSER_DM_ACCESS_TITLE = "Zalo Personal 私聊权限";
+const ZALOUSER_ALLOWLIST_TITLE = "Zalo Personal 白名单";
+const ZALOUSER_GROUPS_TITLE = "Zalo 群组";
 
 function parseZalouserEntries(raw: string): string[] {
   return raw
@@ -58,7 +54,28 @@ function setZalouserAccountScopedConfig(
     accountId,
     patch: defaultPatch,
     accountPatch,
-  }) as OpenClawConfig;
+  });
+}
+
+function setZalouserDmPolicy(
+  cfg: OpenClawConfig,
+  accountId: string,
+  policy: DmPolicy,
+): OpenClawConfig {
+  const resolvedAccountId = normalizeAccountId(accountId) ?? DEFAULT_ACCOUNT_ID;
+  const resolved = resolveZalouserAccountSync({ cfg, accountId: resolvedAccountId });
+  return setZalouserAccountScopedConfig(
+    cfg,
+    resolvedAccountId,
+    {
+      dmPolicy: policy,
+      ...(policy === "open" ? { allowFrom: addWildcardAllowFrom(resolved.config.allowFrom) } : {}),
+    },
+    {
+      dmPolicy: policy,
+      ...(policy === "open" ? { allowFrom: addWildcardAllowFrom(resolved.config.allowFrom) } : {}),
+    },
+  );
 }
 
 function setZalouserGroupPolicy(
@@ -77,7 +94,7 @@ function setZalouserGroupAllowlist(
   groupKeys: string[],
 ): OpenClawConfig {
   const groups = Object.fromEntries(
-    groupKeys.map((key) => [key, { allow: true, requireMention: true }]),
+    groupKeys.map((key) => [key, { enabled: true, requireMention: true }]),
   );
   return setZalouserAccountScopedConfig(cfg, accountId, {
     groups,
@@ -116,13 +133,13 @@ async function noteZalouserHelp(
 ): Promise<void> {
   await prompter.note(
     [
-      "Zalo Personal Account login via QR code.",
+      "Zalo Personal 账户通过扫码登录。",
       "",
-      "This plugin uses zca-js directly (no external CLI dependency).",
+      "此插件直接使用 zca-js（无需额外 CLI 依赖）。",
       "",
       `Docs: ${formatDocsLink("/channels/zalouser", "zalouser")}`,
     ].join("\n"),
-    "Zalo Personal Setup",
+    "Zalo Personal 设置",
   );
 }
 
@@ -137,7 +154,7 @@ async function promptZalouserAllowFrom(params: {
 
   while (true) {
     const entry = await prompter.text({
-      message: "Zalouser allowFrom (name or user id)",
+      message: "Zalouser 允许列表（用户名或用户 ID）",
       placeholder: ZALOUSER_ALLOW_FROM_PLACEHOLDER,
       initialValue: existingAllowFrom.length > 0 ? existingAllowFrom.join(", ") : undefined,
     });
@@ -145,8 +162,8 @@ async function promptZalouserAllowFrom(params: {
     if (parts.length === 0) {
       await prompter.note(
         [
-          "No DM allowlist entries added yet.",
-          "Direct chats will stay blocked until you add people later.",
+          "尚未添加私聊白名单条目。",
+          "私聊将保持屏蔽，直到你稍后添加联系人。",
           `Tip: use \`${formatCliCommand("openclaw directory peers list --channel zalouser")}\` to look up people after onboarding.`,
         ].join("\n"),
         ZALOUSER_ALLOWLIST_TITLE,
@@ -189,24 +206,40 @@ async function promptZalouserAllowFrom(params: {
   }
 }
 
-const zalouserDmPolicy: ChannelSetupDmPolicy = createTopLevelChannelDmPolicy({
+const zalouserDmPolicy: ChannelSetupDmPolicy = {
   label: "Zalo Personal",
   channel,
   policyKey: "channels.zalouser.dmPolicy",
   allowFromKey: "channels.zalouser.allowFrom",
-  getCurrent: (cfg) => (cfg.channels?.zalouser?.dmPolicy ?? "pairing") as DmPolicy,
+  resolveConfigKeys: (cfg, accountId) =>
+    (accountId ?? resolveDefaultZalouserAccountId(cfg)) !== DEFAULT_ACCOUNT_ID
+      ? {
+          policyKey: `channels.zalouser.accounts.${accountId ?? resolveDefaultZalouserAccountId(cfg)}.dmPolicy`,
+          allowFromKey: `channels.zalouser.accounts.${accountId ?? resolveDefaultZalouserAccountId(cfg)}.allowFrom`,
+        }
+      : {
+          policyKey: "channels.zalouser.dmPolicy",
+          allowFromKey: "channels.zalouser.allowFrom",
+        },
+  getCurrent: (cfg, accountId) =>
+    resolveZalouserAccountSync({
+      cfg,
+      accountId: accountId ?? resolveDefaultZalouserAccountId(cfg),
+    }).config.dmPolicy ?? "pairing",
+  setPolicy: (cfg, policy, accountId) =>
+    setZalouserDmPolicy(cfg, accountId ?? resolveDefaultZalouserAccountId(cfg), policy),
   promptAllowFrom: async ({ cfg, prompter, accountId }) => {
     const id =
       accountId && normalizeAccountId(accountId)
         ? (normalizeAccountId(accountId) ?? DEFAULT_ACCOUNT_ID)
-        : resolveDefaultZalouserAccountId(cfg as OpenClawConfig);
+        : resolveDefaultZalouserAccountId(cfg);
     return await promptZalouserAllowFrom({
-      cfg: cfg as OpenClawConfig,
+      cfg: cfg,
       prompter,
       accountId: id,
     });
   },
-});
+};
 
 async function promptZalouserQuickstartDmPolicy(params: {
   cfg: OpenClawConfig;
@@ -215,31 +248,31 @@ async function promptZalouserQuickstartDmPolicy(params: {
 }): Promise<OpenClawConfig> {
   const { cfg, prompter, accountId } = params;
   const resolved = resolveZalouserAccountSync({ cfg, accountId });
-  const existingPolicy = (cfg.channels?.zalouser?.dmPolicy ?? "pairing") as DmPolicy;
+  const existingPolicy = resolved.config.dmPolicy ?? "pairing";
   const existingAllowFrom = resolved.config.allowFrom ?? [];
   const existingLabel = existingAllowFrom.length > 0 ? existingAllowFrom.join(", ") : "unset";
 
   await prompter.note(
     [
-      "Direct chats are configured separately from group chats.",
-      "- pairing (default): unknown people get a pairing code",
-      "- allowlist: only listed people can DM",
-      "- open: anyone can DM",
-      "- disabled: ignore DMs",
+      "私聊和群聊的权限分开配置。",
+      "- pairing（默认）：陌生人会收到一个配对码",
+      "- allowlist：仅白名单用户可以私聊",
+      "- open：任何人都可以私聊",
+      "- disabled：忽略私聊消息",
       "",
       `Current: dmPolicy=${existingPolicy}, allowFrom=${existingLabel}`,
-      "If you choose allowlist now, you can leave it empty and add people later.",
+      "如果现在选择 allowlist，可以先留空，稍后再添加联系人。",
     ].join("\n"),
     ZALOUSER_DM_ACCESS_TITLE,
   );
 
   const policy = (await prompter.select({
-    message: "Zalo Personal DM policy",
+    message: "Zalo Personal 私聊策略",
     options: [
-      { value: "pairing", label: "Pairing (recommended)" },
-      { value: "allowlist", label: "Allowlist (specific users only)" },
-      { value: "open", label: "Open (public inbound DMs)" },
-      { value: "disabled", label: "Disabled (ignore DMs)" },
+      { value: "pairing", label: "配对码（推荐）" },
+      { value: "allowlist", label: "白名单（仅指定用户）" },
+      { value: "open", label: "开放（公开接收私聊）" },
+      { value: "disabled", label: "禁用（忽略私聊）" },
     ],
     initialValue: existingPolicy,
   })) as DmPolicy;
@@ -251,7 +284,7 @@ async function promptZalouserQuickstartDmPolicy(params: {
       accountId,
     });
   }
-  return setZalouserDmPolicy(cfg, policy);
+  return setZalouserDmPolicy(cfg, accountId, policy);
 }
 
 export { zalouserSetupAdapter } from "./setup-core.js";
@@ -259,25 +292,29 @@ export { zalouserSetupAdapter } from "./setup-core.js";
 export const zalouserSetupWizard: ChannelSetupWizard = {
   channel,
   status: {
-    configuredLabel: "logged in",
-    unconfiguredLabel: "needs QR login",
-    configuredHint: "recommended · logged in",
-    unconfiguredHint: "recommended · QR login",
+    configuredLabel: "已登录",
+    unconfiguredLabel: "需要扫码登录",
+    configuredHint: "推荐 · 已登录",
+    unconfiguredHint: "推荐 · 扫码登录",
     configuredScore: 1,
     unconfiguredScore: 15,
-    resolveConfigured: async ({ cfg }) => {
-      const ids = listZalouserAccountIds(cfg);
-      for (const accountId of ids) {
-        const account = resolveZalouserAccountSync({ cfg, accountId });
+    resolveConfigured: async ({ cfg, accountId }) => {
+      const ids = accountId ? [accountId] : listZalouserAccountIds(cfg);
+      for (const resolvedAccountId of ids) {
+        const account = resolveZalouserAccountSync({ cfg, accountId: resolvedAccountId });
         if (await checkZcaAuthenticated(account.profile)) {
           return true;
         }
       }
       return false;
     },
-    resolveStatusLines: async ({ cfg, configured }) => {
+    resolveStatusLines: async ({ cfg, accountId, configured }) => {
       void cfg;
-      return [`Zalo Personal: ${configured ? "logged in" : "needs QR login"}`];
+      const label =
+        accountId && accountId !== DEFAULT_ACCOUNT_ID
+          ? `Zalo Personal (${accountId})`
+          : "Zalo Personal";
+      return [`${label}: ${configured ? "logged in" : "needs QR login"}`];
     },
   },
   prepare: async ({ cfg, accountId, prompter, options }) => {
@@ -288,7 +325,7 @@ export const zalouserSetupWizard: ChannelSetupWizard = {
     if (!alreadyAuthenticated) {
       await noteZalouserHelp(prompter);
       const wantsLogin = await prompter.confirm({
-        message: "Login via QR code now?",
+        message: "现在通过扫码登录？",
         initialValue: true,
       });
 
@@ -302,12 +339,12 @@ export const zalouserSetupWizard: ChannelSetupWizard = {
               qrPath
                 ? `QR image saved to: ${qrPath}`
                 : "Could not write QR image file; use gateway web login UI instead.",
-              "Scan + approve on phone, then continue.",
+              "用手机扫描并确认，然后继续。",
             ].join("\n"),
-            "QR Login",
+            "扫码登录",
           );
           const scanned = await prompter.confirm({
-            message: "Did you scan and approve the QR on your phone?",
+            message: "你是否已在手机上扫描并确认了二维码？",
             initialValue: true,
           });
           if (scanned) {
@@ -323,7 +360,7 @@ export const zalouserSetupWizard: ChannelSetupWizard = {
       }
     } else {
       const keepSession = await prompter.confirm({
-        message: "Zalo Personal already logged in. Keep session?",
+        message: "Zalo Personal 已登录。保持当前会话？",
         initialValue: true,
       });
       if (!keepSession) {
@@ -339,7 +376,7 @@ export const zalouserSetupWizard: ChannelSetupWizard = {
             [start.message, qrPath ? `QR image saved to: ${qrPath}` : undefined]
               .filter(Boolean)
               .join("\n"),
-            "QR Login",
+            "扫码登录",
           );
           const waited = await waitForZaloQrLogin({ profile: account.profile, timeoutMs: 120_000 });
           await prompter.note(waited.message, waited.connected ? "Success" : "Login pending");
@@ -374,22 +411,21 @@ export const zalouserSetupWizard: ChannelSetupWizard = {
       Object.keys(resolveZalouserAccountSync({ cfg, accountId }).config.groups ?? {}),
     updatePrompt: ({ cfg, accountId }) =>
       Boolean(resolveZalouserAccountSync({ cfg, accountId }).config.groups),
-    setPolicy: ({ cfg, accountId, policy }) =>
-      setZalouserGroupPolicy(cfg as OpenClawConfig, accountId, policy),
+    setPolicy: ({ cfg, accountId, policy }) => setZalouserGroupPolicy(cfg, accountId, policy),
     resolveAllowlist: async ({ cfg, accountId, entries, prompter }) => {
       if (entries.length === 0) {
         await prompter.note(
           [
-            "No group allowlist entries added yet.",
-            "Group chats will stay blocked until you add groups later.",
+            "尚未添加群组白名单条目。",
+            "群聊将保持屏蔽，直到你稍后添加群组。",
             `Tip: use \`${formatCliCommand("openclaw directory groups list --channel zalouser")}\` after onboarding to find group IDs.`,
-            "Mention requirement stays on by default for groups you allow later.",
+            "你稍后允许的群组默认保持 @提及 要求。",
           ].join("\n"),
           ZALOUSER_GROUPS_TITLE,
         );
         return [];
       }
-      const updatedAccount = resolveZalouserAccountSync({ cfg: cfg as OpenClawConfig, accountId });
+      const updatedAccount = resolveZalouserAccountSync({ cfg: cfg, accountId });
       try {
         const resolved = await resolveZaloGroupsByEntries({
           profile: updatedAccount.profile,
@@ -417,7 +453,7 @@ export const zalouserSetupWizard: ChannelSetupWizard = {
       }
     },
     applyAllowlist: ({ cfg, accountId, resolved }) =>
-      setZalouserGroupAllowlist(cfg as OpenClawConfig, accountId, resolved as string[]),
+      setZalouserGroupAllowlist(cfg, accountId, resolved as string[]),
   },
   finalize: async ({ cfg, accountId, forceAllowFrom, options, prompter }) => {
     let next = cfg;

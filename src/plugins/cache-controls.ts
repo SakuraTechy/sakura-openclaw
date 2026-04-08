@@ -46,11 +46,8 @@ export function resolvePluginSnapshotCacheTtlMs(env: NodeJS.ProcessEnv): number 
   return Math.min(discoveryCacheMs, manifestCacheMs);
 }
 
-export function buildPluginSnapshotCacheEnvKey(
-  env: NodeJS.ProcessEnv,
-  options: { includeProcessVitestFallback?: boolean } = {},
-) {
-  return {
+export function buildPluginSnapshotCacheEnvKey(env: NodeJS.ProcessEnv): string {
+  return JSON.stringify({
     OPENCLAW_BUNDLED_PLUGINS_DIR: env.OPENCLAW_BUNDLED_PLUGINS_DIR ?? "",
     OPENCLAW_DISABLE_PLUGIN_DISCOVERY_CACHE: env.OPENCLAW_DISABLE_PLUGIN_DISCOVERY_CACHE ?? "",
     OPENCLAW_DISABLE_PLUGIN_MANIFEST_CACHE: env.OPENCLAW_DISABLE_PLUGIN_MANIFEST_CACHE ?? "",
@@ -61,8 +58,6 @@ export function buildPluginSnapshotCacheEnvKey(
     OPENCLAW_CONFIG_PATH: env.OPENCLAW_CONFIG_PATH ?? "",
     HOME: env.HOME ?? "",
     USERPROFILE: env.USERPROFILE ?? "",
-    VITEST: options.includeProcessVitestFallback
-      ? (env.VITEST ?? process.env.VITEST ?? "")
-      : (env.VITEST ?? ""),
-  };
+    VITEST: env.VITEST ?? "",
+  });
 }

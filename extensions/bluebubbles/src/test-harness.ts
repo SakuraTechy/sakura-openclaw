@@ -31,9 +31,20 @@ export function resolveBlueBubblesAccountFromConfig(params: {
   cfg?: { channels?: { bluebubbles?: Record<string, unknown> } };
   accountId?: string;
 }) {
-  const config = params.cfg?.channels?.bluebubbles ?? {};
+  const baseConfig = params.cfg?.channels?.bluebubbles ?? {};
+  const accountId = params.accountId ?? "default";
+  const accountConfig =
+    accountId === "default"
+      ? {}
+      : ((baseConfig.accounts as Record<string, Record<string, unknown> | undefined> | undefined)?.[
+          accountId
+        ] ?? {});
+  const config = {
+    ...baseConfig,
+    ...accountConfig,
+  };
   return {
-    accountId: params.accountId ?? "default",
+    accountId,
     enabled: config.enabled !== false,
     configured: Boolean(config.serverUrl && config.password),
     config,
@@ -68,12 +79,29 @@ export function installBlueBubblesFetchTestHooks(params: {
     mockReturnValue: (value: boolean | null) => unknown;
   };
 }) {
+  const setFetchGuardPassthrough = createBlueBubblesFetchGuardPassthroughInstaller();
   beforeEach(() => {
     vi.stubGlobal("fetch", params.mockFetch);
     // Replace the SSRF guard with a passthrough that delegates to the mocked global.fetch,
     // wrapping the result in a real Response so callers can call .arrayBuffer() on it.
-    _setFetchGuardForTesting(async (p) => {
-      const raw = await globalThis.fetch(p.url, p.init);
+    setFetchGuardPassthrough();
+    params.mockFetch.mockReset();
+    params.privateApiStatusMock.mockReset?.();
+    params.privateApiStatusMock.mockClear?.();
+    params.privateApiStatusMock.mockReturnValue(BLUE_BUBBLES_PRIVATE_API_STATUS.unknown);
+  });
+
+  afterEach(() => {
+    _setFetchGuardForTesting(null);
+    vi.unstubAllGlobals();
+  });
+}
+
+export function createBlueBubblesFetchGuardPassthroughInstaller() {
+  return (capturePolicy?: (policy: unknown) => void) => {
+    _setFetchGuardForTesting(async (params) => {
+      capturePolicy?.(params.policy);
+      const raw = await globalThis.fetch(params.url, params.init);
       let body: ArrayBuffer;
       if (typeof raw.arrayBuffer === "function") {
         body = await raw.arrayBuffer();
@@ -92,17 +120,8 @@ export function installBlueBubblesFetchTestHooks(params: {
           headers: (raw as { headers?: HeadersInit }).headers,
         }),
         release: async () => {},
-        finalUrl: p.url,
+        finalUrl: params.url,
       };
     });
-    params.mockFetch.mockReset();
-    params.privateApiStatusMock.mockReset?.();
-    params.privateApiStatusMock.mockClear?.();
-    params.privateApiStatusMock.mockReturnValue(BLUE_BUBBLES_PRIVATE_API_STATUS.unknown);
-  });
-
-  afterEach(() => {
-    _setFetchGuardForTesting(null);
-    vi.unstubAllGlobals();
-  });
+  };
 }

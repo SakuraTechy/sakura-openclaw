@@ -1,9 +1,19 @@
 import type { Command } from "commander";
-import type { OpenClawConfig } from "../../config/config.js";
-import { isTruthyEnvValue } from "../../infra/env.js";
-import { getPrimaryCommand, hasHelpOrVersion } from "../argv.js";
-import { reparseProgramFromActionArgs } from "./action-reparse.js";
-import { removeCommand, removeCommandByName } from "./command-tree.js";
+import { resolveCliArgvInvocation } from "../argv-invocation.js";
+import {
+  shouldEagerRegisterSubcommands,
+  shouldRegisterPrimarySubcommandOnly,
+} from "../command-registration-policy.js";
+import {
+  buildCommandGroupEntries,
+  defineImportedProgramCommandGroupSpecs,
+  type CommandGroupDescriptorSpec,
+} from "./command-group-descriptors.js";
+import {
+  registerCommandGroupByName,
+  registerCommandGroups,
+  type CommandGroupEntry,
+} from "./register-command-groups.js";
 import {
   getSubCliCommandsWithSubcommands,
   getSubCliEntries as getSubCliEntryDescriptors,
@@ -14,346 +24,212 @@ export { getSubCliCommandsWithSubcommands };
 
 type SubCliRegistrar = (program: Command) => Promise<void> | void;
 
-type SubCliEntry = SubCliDescriptor & {
-  register: SubCliRegistrar;
-};
-
-const shouldRegisterPrimaryOnly = (argv: string[]) => {
-  if (isTruthyEnvValue(process.env.OPENCLAW_DISABLE_LAZY_SUBCOMMANDS)) {
-    return false;
+async function registerSubCliWithPluginCommands(
+  program: Command,
+  registerSubCli: () => Promise<void>,
+  pluginCliPosition: "before" | "after",
+) {
+  const { registerPluginCliCommandsFromValidatedConfig } = await import("../../plugins/cli.js");
+  if (pluginCliPosition === "before") {
+    await registerPluginCliCommandsFromValidatedConfig(program);
   }
-  if (hasHelpOrVersion(argv)) {
-    return false;
+  await registerSubCli();
+  if (pluginCliPosition === "after") {
+    await registerPluginCliCommandsFromValidatedConfig(program);
   }
-  return true;
-};
-
-const shouldEagerRegisterSubcommands = (_argv: string[]) => {
-  return isTruthyEnvValue(process.env.OPENCLAW_DISABLE_LAZY_SUBCOMMANDS);
-};
-
-export const loadValidatedConfigForPluginRegistration =
-  async (): Promise<OpenClawConfig | null> => {
-    const mod = await import("../../config/config.js");
-    const snapshot = await mod.readConfigFileSnapshot();
-    if (!snapshot.valid) {
-      return null;
-    }
-    return mod.loadConfig();
-  };
+}
 
 // Note for humans and agents:
 // If you update the list of commands, also check whether they have subcommands
 // and set the flag accordingly.
-const entries: SubCliEntry[] = [
-  {
-    name: "acp",
-    description: "Agent Control Protocol 工具",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../acp-cli.js");
-      mod.registerAcpCli(program);
+const entrySpecs: readonly CommandGroupDescriptorSpec<SubCliRegistrar>[] = [
+  ...defineImportedProgramCommandGroupSpecs([
+    {
+      commandNames: ["acp"],
+      loadModule: () => import("../acp-cli.js"),
+      exportName: "registerAcpCli",
     },
-  },
-  {
-    name: "gateway",
-    description: "运行、检查和查询 WebSocket 网关",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../gateway-cli.js");
-      mod.registerGatewayCli(program);
+    {
+      commandNames: ["gateway"],
+      loadModule: () => import("../gateway-cli.js"),
+      exportName: "registerGatewayCli",
     },
-  },
-  {
-    name: "daemon",
-    description: "网关服务（旧版别名）",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../daemon-cli.js");
-      mod.registerDaemonCli(program);
+    {
+      commandNames: ["daemon"],
+      loadModule: () => import("../daemon-cli.js"),
+      exportName: "registerDaemonCli",
     },
-  },
-  {
-    name: "logs",
-    description: "通过 RPC 查看网关日志",
-    hasSubcommands: false,
-    register: async (program) => {
-      const mod = await import("../logs-cli.js");
-      mod.registerLogsCli(program);
+    {
+      commandNames: ["logs"],
+      loadModule: () => import("../logs-cli.js"),
+      exportName: "registerLogsCli",
     },
-  },
-  {
-    name: "system",
-    description: "系统事件、心跳和在线状态",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../system-cli.js");
-      mod.registerSystemCli(program);
+    {
+      commandNames: ["system"],
+      loadModule: () => import("../system-cli.js"),
+      exportName: "registerSystemCli",
     },
-  },
-  {
-    name: "models",
-    description: "发现、扫描和配置模型",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../models-cli.js");
-      mod.registerModelsCli(program);
+    {
+      commandNames: ["models"],
+      loadModule: () => import("../models-cli.js"),
+      exportName: "registerModelsCli",
     },
-  },
-  {
-    name: "approvals",
-    description: "管理执行审批（网关或节点主机）",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../exec-approvals-cli.js");
-      mod.registerExecApprovalsCli(program);
+    {
+      commandNames: ["approvals"],
+      loadModule: () => import("../exec-approvals-cli.js"),
+      exportName: "registerExecApprovalsCli",
     },
-  },
-  {
-    name: "nodes",
-    description: "管理网关节点配对和节点命令",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../nodes-cli.js");
-      mod.registerNodesCli(program);
+    {
+      commandNames: ["nodes"],
+      loadModule: () => import("../nodes-cli.js"),
+      exportName: "registerNodesCli",
     },
-  },
-  {
-    name: "devices",
-    description: "设备配对和令牌管理",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../devices-cli.js");
-      mod.registerDevicesCli(program);
+    {
+      commandNames: ["devices"],
+      loadModule: () => import("../devices-cli.js"),
+      exportName: "registerDevicesCli",
     },
-  },
-  {
-    name: "node",
-    description: "运行和管理无头节点主机服务",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../node-cli.js");
-      mod.registerNodeCli(program);
+    {
+      commandNames: ["node"],
+      loadModule: () => import("../node-cli.js"),
+      exportName: "registerNodeCli",
     },
-  },
-  {
-    name: "sandbox",
-    description: "管理沙箱容器以隔离代理",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../sandbox-cli.js");
-      mod.registerSandboxCli(program);
+    {
+      commandNames: ["sandbox"],
+      loadModule: () => import("../sandbox-cli.js"),
+      exportName: "registerSandboxCli",
     },
-  },
-  {
-    name: "tui",
-    description: "打开连接到网关的终端界面",
-    hasSubcommands: false,
-    register: async (program) => {
-      const mod = await import("../tui-cli.js");
-      mod.registerTuiCli(program);
+    {
+      commandNames: ["tui"],
+      loadModule: () => import("../tui-cli.js"),
+      exportName: "registerTuiCli",
     },
-  },
-  {
-    name: "cron",
-    description: "通过网关调度器管理定时任务",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../cron-cli.js");
-      mod.registerCronCli(program);
+    {
+      commandNames: ["cron"],
+      loadModule: () => import("../cron-cli.js"),
+      exportName: "registerCronCli",
     },
-  },
-  {
-    name: "dns",
-    description: "DNS 工具 - 广域发现（Tailscale + CoreDNS）",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../dns-cli.js");
-      mod.registerDnsCli(program);
+    {
+      commandNames: ["dns"],
+      loadModule: () => import("../dns-cli.js"),
+      exportName: "registerDnsCli",
     },
-  },
-  {
-    name: "docs",
-    description: "搜索 OpenClaw 在线文档",
-    hasSubcommands: false,
-    register: async (program) => {
-      const mod = await import("../docs-cli.js");
-      mod.registerDocsCli(program);
+    {
+      commandNames: ["docs"],
+      loadModule: () => import("../docs-cli.js"),
+      exportName: "registerDocsCli",
     },
-  },
-  {
-    name: "hooks",
-    description: "管理内部代理 Hooks",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../hooks-cli.js");
-      mod.registerHooksCli(program);
+    {
+      commandNames: ["qa"],
+      loadModule: () => import("../qa-cli.js"),
+      exportName: "registerQaCli",
     },
-  },
-  {
-    name: "webhooks",
-    description: "Webhook 工具与集成",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../webhooks-cli.js");
-      mod.registerWebhooksCli(program);
+    {
+      commandNames: ["hooks"],
+      loadModule: () => import("../hooks-cli.js"),
+      exportName: "registerHooksCli",
     },
-  },
-  {
-    name: "qr",
-    description: "生成 iOS 配对二维码/设置码",
-    hasSubcommands: false,
-    register: async (program) => {
-      const mod = await import("../qr-cli.js");
-      mod.registerQrCli(program);
+    {
+      commandNames: ["webhooks"],
+      loadModule: () => import("../webhooks-cli.js"),
+      exportName: "registerWebhooksCli",
     },
-  },
-  {
-    name: "clawbot",
-    description: "旧版 clawbot 命令别名",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../clawbot-cli.js");
-      mod.registerClawbotCli(program);
+    {
+      commandNames: ["qr"],
+      loadModule: () => import("../qr-cli.js"),
+      exportName: "registerQrCli",
     },
-  },
+    {
+      commandNames: ["clawbot"],
+      loadModule: () => import("../clawbot-cli.js"),
+      exportName: "registerClawbotCli",
+    },
+  ]),
   {
-    name: "pairing",
-    description: "安全私信配对（审批入站请求）",
-    hasSubcommands: true,
+    commandNames: ["pairing"],
     register: async (program) => {
       // Initialize plugins before registering pairing CLI.
       // The pairing CLI calls listPairingChannels() at registration time,
       // which requires the plugin registry to be populated with channel plugins.
-      const { registerPluginCliCommands } = await import("../../plugins/cli.js");
-      const config = await loadValidatedConfigForPluginRegistration();
-      if (config) {
-        registerPluginCliCommands(program, config);
-      }
-      const mod = await import("../pairing-cli.js");
-      mod.registerPairingCli(program);
+      await registerSubCliWithPluginCommands(
+        program,
+        async () => {
+          const mod = await import("../pairing-cli.js");
+          mod.registerPairingCli(program);
+        },
+        "before",
+      );
     },
   },
   {
-    name: "plugins",
-    description: "管理 OpenClaw 插件和扩展",
-    hasSubcommands: true,
+    commandNames: ["plugins"],
     register: async (program) => {
-      const mod = await import("../plugins-cli.js");
-      mod.registerPluginsCli(program);
-      const { registerPluginCliCommands } = await import("../../plugins/cli.js");
-      const config = await loadValidatedConfigForPluginRegistration();
-      if (config) {
-        registerPluginCliCommands(program, config);
-      }
+      await registerSubCliWithPluginCommands(
+        program,
+        async () => {
+          const mod = await import("../plugins-cli.js");
+          mod.registerPluginsCli(program);
+        },
+        "after",
+      );
     },
   },
-  {
-    name: "channels",
-    description: "管理已连接的聊天渠道（Telegram、Discord 等）",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../channels-cli.js");
-      mod.registerChannelsCli(program);
+  ...defineImportedProgramCommandGroupSpecs([
+    {
+      commandNames: ["channels"],
+      loadModule: () => import("../channels-cli.js"),
+      exportName: "registerChannelsCli",
     },
-  },
-  {
-    name: "directory",
-    description: "查询支持渠道的联系人和群组 ID",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../directory-cli.js");
-      mod.registerDirectoryCli(program);
+    {
+      commandNames: ["directory"],
+      loadModule: () => import("../directory-cli.js"),
+      exportName: "registerDirectoryCli",
     },
-  },
-  {
-    name: "security",
-    description: "安全工具和本地配置审计",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../security-cli.js");
-      mod.registerSecurityCli(program);
+    {
+      commandNames: ["security"],
+      loadModule: () => import("../security-cli.js"),
+      exportName: "registerSecurityCli",
     },
-  },
-  {
-    name: "secrets",
-    description: "密钥运行时重载控制",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../secrets-cli.js");
-      mod.registerSecretsCli(program);
+    {
+      commandNames: ["secrets"],
+      loadModule: () => import("../secrets-cli.js"),
+      exportName: "registerSecretsCli",
     },
-  },
-  {
-    name: "skills",
-    description: "列出和检查可用技能",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../skills-cli.js");
-      mod.registerSkillsCli(program);
+    {
+      commandNames: ["skills"],
+      loadModule: () => import("../skills-cli.js"),
+      exportName: "registerSkillsCli",
     },
-  },
-  {
-    name: "update",
-    description: "更新 OpenClaw 并检查更新渠道状态",
-    hasSubcommands: true,
-    register: async (program) => {
-      const mod = await import("../update-cli.js");
-      mod.registerUpdateCli(program);
+    {
+      commandNames: ["update"],
+      loadModule: () => import("../update-cli.js"),
+      exportName: "registerUpdateCli",
     },
-  },
-  {
-    name: "completion",
-    description: "生成 Shell 补全脚本",
-    hasSubcommands: false,
-    register: async (program) => {
-      const mod = await import("../completion-cli.js");
-      mod.registerCompletionCli(program);
+    {
+      commandNames: ["completion"],
+      loadModule: () => import("../completion-cli.js"),
+      exportName: "registerCompletionCli",
     },
-  },
+  ]),
 ];
+
+function resolveSubCliCommandGroups(): CommandGroupEntry[] {
+  return buildCommandGroupEntries(getSubCliEntryDescriptors(), entrySpecs, (register) => register);
+}
 
 export function getSubCliEntries(): ReadonlyArray<SubCliDescriptor> {
   return getSubCliEntryDescriptors();
 }
 
 export async function registerSubCliByName(program: Command, name: string): Promise<boolean> {
-  const entry = entries.find((candidate) => candidate.name === name);
-  if (!entry) {
-    return false;
-  }
-  removeCommandByName(program, entry.name);
-  await entry.register(program);
-  return true;
-}
-
-function registerLazyCommand(program: Command, entry: SubCliEntry) {
-  const placeholder = program.command(entry.name).description(entry.description);
-  placeholder.allowUnknownOption(true);
-  placeholder.allowExcessArguments(true);
-  placeholder.action(async (...actionArgs) => {
-    removeCommand(program, placeholder);
-    await entry.register(program);
-    await reparseProgramFromActionArgs(program, actionArgs);
-  });
+  return registerCommandGroupByName(program, resolveSubCliCommandGroups(), name);
 }
 
 export function registerSubCliCommands(program: Command, argv: string[] = process.argv) {
-  if (shouldEagerRegisterSubcommands(argv)) {
-    for (const entry of entries) {
-      void entry.register(program);
-    }
-    return;
-  }
-  const primary = getPrimaryCommand(argv);
-  if (primary && shouldRegisterPrimaryOnly(argv)) {
-    const entry = entries.find((candidate) => candidate.name === primary);
-    if (entry) {
-      registerLazyCommand(program, entry);
-      return;
-    }
-  }
-  for (const candidate of entries) {
-    registerLazyCommand(program, candidate);
-  }
+  const { primary } = resolveCliArgvInvocation(argv);
+  registerCommandGroups(program, resolveSubCliCommandGroups(), {
+    eager: shouldEagerRegisterSubcommands(),
+    primary,
+    registerPrimaryOnly: Boolean(primary && shouldRegisterPrimarySubcommandOnly(argv)),
+  });
 }

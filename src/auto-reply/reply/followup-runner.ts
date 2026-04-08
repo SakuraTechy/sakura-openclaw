@@ -8,11 +8,13 @@ import { resolveBootstrapWarningSignaturesSeen } from "../../agents/bootstrap-bu
 import { lookupContextTokens } from "../../agents/context.js";
 import { DEFAULT_CONTEXT_TOKENS } from "../../agents/defaults.js";
 import { runWithModelFallback } from "../../agents/model-fallback.js";
+import { isCliProvider } from "../../agents/model-selection.js";
 import { runEmbeddedPiAgent } from "../../agents/pi-embedded.js";
 import type { SessionEntry } from "../../config/sessions.js";
 import type { TypingMode } from "../../config/types.js";
 import { logVerbose } from "../../globals.js";
 import { registerAgentRunContext } from "../../infra/agent-events.js";
+import { formatErrorMessage } from "../../infra/errors.js";
 import { defaultRuntime } from "../../runtime.js";
 import { isInternalMessageChannel } from "../../utils/message-channel.js";
 import { stripHeartbeatToken } from "../heartbeat.js";
@@ -33,6 +35,7 @@ import {
   filterMessagingToolMediaDuplicates,
   shouldSuppressMessagingToolReplies,
 } from "./reply-payloads.js";
+import { createReplyOperation } from "./reply-run-registry.js";
 import { resolveReplyToMode } from "./reply-threading.js";
 import { isRoutableChannel, routeReply } from "./route-reply.js";
 import { incrementRunCompactionCount, persistRunSessionUsage } from "./session-run-accounting.js";
@@ -134,6 +137,13 @@ export function createFollowupRunner(params: {
   };
 
   return async (queued: FollowupRun) => {
+    const replySessionKey = queued.run.sessionKey ?? sessionKey;
+    const replyOperation = createReplyOperation({
+      sessionId: queued.run.sessionId,
+      sessionKey: replySessionKey ?? "",
+      resetTriggered: false,
+      upstreamAbortSignal: opts?.abortSignal,
+    });
     try {
       const runId = crypto.randomUUID();
       const shouldSurfaceToControlUi = isInternalMessageChannel(
@@ -166,10 +176,12 @@ export function createFollowupRunner(params: {
         sessionKey,
         storePath,
         isHeartbeat: opts?.isHeartbeat === true,
+        replyOperation,
       });
       let bootstrapPromptWarningSignaturesSeen = resolveBootstrapWarningSignaturesSeen(
         activeSessionEntry?.systemPromptReport,
       );
+      replyOperation.setPhase("running");
       try {
         const fallbackResult = await runWithModelFallback({
           cfg: queued.run.config,
@@ -188,6 +200,7 @@ export function createFollowupRunner(params: {
             try {
               const result = await runEmbeddedPiAgent({
                 allowGatewaySubagentBinding: true,
+                replyOperation,
                 sessionId: queued.run.sessionId,
                 sessionKey: queued.run.sessionKey,
                 agentId: queued.run.agentId,
@@ -266,7 +279,8 @@ export function createFollowupRunner(params: {
         fallbackProvider = fallbackResult.provider;
         fallbackModel = fallbackResult.model;
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = formatErrorMessage(err);
+        replyOperation.fail("run_failed", err);
         defaultRuntime.error?.(`Followup agent failed before reply: ${message}`);
         return;
       }
@@ -292,6 +306,11 @@ export function createFollowupRunner(params: {
           providerUsed: fallbackProvider,
           contextTokensUsed,
           systemPromptReport: runResult.meta?.systemPromptReport,
+          cliSessionBinding: runResult.meta?.agentMeta?.cliSessionBinding,
+          usageIsContextSnapshot: isCliProvider(
+            fallbackProvider ?? queued.run.provider,
+            queued.run.config,
+          ),
           logLabel: "followup",
         });
       }
@@ -360,6 +379,7 @@ export function createFollowupRunner(params: {
       if (autoCompactionCount > 0) {
         const previousSessionId = queued.run.sessionId;
         const count = await incrementRunCompactionCount({
+          cfg: queued.run.config,
           sessionEntry,
           sessionStore,
           sessionKey,
@@ -392,6 +412,7 @@ export function createFollowupRunner(params: {
 
       await sendFollowupPayloads(finalPayloads, queued);
     } finally {
+      replyOperation.complete();
       // Both signals are required for the typing controller to clean up.
       // The main inbound dispatch path calls markDispatchIdle() from the
       // buffered dispatcher's finally block, but followup turns bypass the

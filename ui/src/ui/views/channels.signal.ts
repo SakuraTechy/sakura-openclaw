@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { t } from "../../i18n/index.ts";
 import { formatRelativeTimestamp } from "../format.ts";
 import type { SignalStatus } from "../types.ts";
 import { renderChannelConfigSection } from "./channels.config.ts";
@@ -22,30 +23,28 @@ export function renderSignalCard(params: {
     subtitle: "signal-cli 状态和渠道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "已配置", value: formatNullableBoolean(configured) },
-      { label: "运行中", value: signal?.running ? "Yes" : "No" },
-      { label: "基础 URL", value: signal?.baseUrl ?? "n/a" },
+      { label: t("common.configured"), value: formatNullableBoolean(configured) },
+      { label: t("common.running"), value: signal?.running ? t("common.yes") : t("common.no") },
+      { label: t("common.baseUrl"), value: signal?.baseUrl ?? t("common.na") },
       {
-        label: "上次启动",
-        value: signal?.lastStartAt ? formatRelativeTimestamp(signal.lastStartAt) : "n/a",
+        label: t("common.lastStart"),
+        value: signal?.lastStartAt ? formatRelativeTimestamp(signal.lastStartAt) : t("common.na"),
       },
       {
-        label: "上次探测",
-        value: signal?.lastProbeAt ? formatRelativeTimestamp(signal.lastProbeAt) : "n/a",
+        label: t("common.last探测"),
+        value: signal?.last探测At ? formatRelativeTimestamp(signal.last探测At) : t("common.na"),
       },
     ],
     lastError: signal?.lastError,
     secondaryCallout: signal?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          探测 ${signal.probe.ok ? "成功" : "失败"} ·
+          ${signal.probe.ok ? t("common.probeOk") : t("common.probeFailed")} ·
           ${signal.probe.status ?? ""} ${signal.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "signal", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>
-        Probe
-      </button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>${t("common.probe")}</button>
     </div>`,
   });
 }

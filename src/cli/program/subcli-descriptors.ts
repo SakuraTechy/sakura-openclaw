@@ -1,10 +1,9 @@
-export type SubCliDescriptor = {
-  name: string;
-  description: string;
-  hasSubcommands: boolean;
-};
+import { defineCommandDescriptorCatalog } from "./command-descriptor-utils.js";
+import type { NamedCommandDescriptor } from "./command-group-descriptors.js";
 
-export const SUB_CLI_DESCRIPTORS = [
+export type SubCliDescriptor = NamedCommandDescriptor;
+
+const subCliCommandCatalog = defineCommandDescriptorCatalog([
   { name: "acp", description: "Agent Control Protocol 工具", hasSubcommands: true },
   {
     name: "gateway",
@@ -69,6 +68,11 @@ export const SUB_CLI_DESCRIPTORS = [
     hasSubcommands: false,
   },
   {
+    name: "qa",
+    description: "运行 QA 场景并启动私有 QA 调试器 UI",
+    hasSubcommands: true,
+  },
+  {
     name: "hooks",
     description: "管理内部代理 Hook",
     hasSubcommands: true,
@@ -80,7 +84,7 @@ export const SUB_CLI_DESCRIPTORS = [
   },
   {
     name: "qr",
-    description: "生成 iOS 配对二维码/设置码",
+    description: "生成移动端配对二维码/设置码",
     hasSubcommands: false,
   },
   {
@@ -133,12 +137,14 @@ export const SUB_CLI_DESCRIPTORS = [
     description: "生成 Shell 补全脚本",
     hasSubcommands: false,
   },
-] as const satisfies ReadonlyArray<SubCliDescriptor>;
+] as const satisfies ReadonlyArray<SubCliDescriptor>);
+
+export const SUB_CLI_DESCRIPTORS = subCliCommandCatalog.descriptors;
 
 export function getSubCliEntries(): ReadonlyArray<SubCliDescriptor> {
-  return SUB_CLI_DESCRIPTORS;
+  return subCliCommandCatalog.getDescriptors();
 }
 
 export function getSubCliCommandsWithSubcommands(): string[] {
-  return SUB_CLI_DESCRIPTORS.filter((entry) => entry.hasSubcommands).map((entry) => entry.name);
+  return subCliCommandCatalog.getCommandsWithSubcommands();
 }

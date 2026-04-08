@@ -1,9 +1,4 @@
-import {
-  DISCORD_DEFAULT_INBOUND_WORKER_TIMEOUT_MS,
-  DISCORD_DEFAULT_LISTENER_TIMEOUT_MS,
-} from "../../extensions/discord/timeouts.js";
 import { MEDIA_AUDIO_FIELD_HELP } from "./media-audio-field-metadata.js";
-import { IRC_FIELD_HELP } from "./schema.irc.js";
 import { describeTalkSilenceTimeoutDefaults } from "./talk-defaults.js";
 
 export const FIELD_HELP: Record<string, string> = {
@@ -148,24 +143,11 @@ export const FIELD_HELP: Record<string, string> = {
   "gateway.remote.sshTarget":
     "通过 SSH 访问远程网关（将网关端口隧道到本地）。格式：user@host 或 user@host:port。",
   "gateway.remote.sshIdentity": "可选的 SSH 身份文件路径（传递给 ssh -i）。",
-  "talk.provider": 'Active Talk provider id (for example "elevenlabs").',
+  "talk.provider": 'Active Talk provider id (for example "acme-speech").',
   "talk.providers":
     "按提供商 ID 索引的特定提供商 Talk 设置。迁移期间，优先使用 talk.providers.<id> 而非旧版顶层字段。",
-  "talk.providers.*.voiceId": "提供商默认的 Talk 模式语音 ID。",
-  "talk.providers.*.voiceAliases": "可选的提供商语音别名映射，用于 Talk 指令。",
-  "talk.providers.*.modelId": "提供商默认的 Talk 模式模型 ID。",
-  "talk.providers.*.outputFormat": "提供商默认的 Talk 模式输出格式。",
+  "talk.providers.*": "匹配提供商 ID 的 Talk 配置字段。此处的值在通话使用指定提供商时覆盖顶级 talk.* 默认值。",
   "talk.providers.*.apiKey": "提供商的 Talk 模式 API 密钥。", // pragma: allowlist secret
-  "talk.voiceId":
-    "旧版 ElevenLabs 默认 Talk 模式语音 ID。建议使用 talk.providers.elevenlabs.voiceId。",
-  "talk.voiceAliases":
-    'Use this legacy ElevenLabs voice alias map (for example {"Clawd":"ElevenLabs 默认语音 ID（Clawd）。"}) only during migration. Prefer talk.providers.elevenlabs.voiceAliases.',
-  "talk.modelId":
-    "旧版 ElevenLabs Talk 模式模型 ID（默认：eleven_v3）。建议使用 talk.providers.elevenlabs.modelId。",
-  "talk.outputFormat":
-    "仅在迁移期间使用此旧版 ElevenLabs Talk 模式输出格式（例如 pcm_44100 或 mp3_44100_128）。建议使用 talk.providers.elevenlabs.outputFormat。",
-  "talk.apiKey":
-    "旧版 ElevenLabs API 密钥。建议使用 talk.providers.elevenlabs.apiKey 或 ELEVENLABS_API_KEY 环境变量。",
   "talk.interruptOnSpeech":
     "如果为 true（默认），在 Talk 模式中用户开始说话时停止助手语音。保持启用以实现对话轮换。",
   "talk.silenceTimeoutMs": `Milliseconds of user silence before Talk mode finalizes and sends the current transcript. Leave unset to keep the platform default pause window (${describeTalkSilenceTimeoutDefaults()}).`,
@@ -205,13 +187,15 @@ export const FIELD_HELP: Record<string, string> = {
   "acp.runtime.installCommand":
     "当 ACP 后端接线缺失时，`/acp install` 和 `/acp doctor` 显示的可选操作员安装/设置命令。",
   "agents.list.*.skills":
-    "此代理的可选技能白名单（省略 = 所有技能；空 = 无技能）。",
+    "此代理的可选技能允许列表。省略时继承 agents.defaults.skills（未设置时默认为所有技能）。",
   "agents.list[].skills":
-    "此代理的可选技能白名单（省略 = 所有技能；空 = 无技能）。",
+    "此代理的可选技能允许列表。省略时继承 agents.defaults.skills（未设置时默认为所有技能）。",
   agents:
     "代理配置，定义 AI 代理的行为、身份、模型和运行时设置。",
   "agents.defaults":
     "代理默认设置，未显式覆盖时使用的基础配置。",
+  "agents.defaults.skills":
+    "代理省略 agents.list[].skills 时继承的默认技能允许列表。未设置时所有已发现的技能均可用。",
   "agents.list":
     "代理列表，定义一个或多个代理及其配置。",
   "agents.list[].thinkingDefault":
@@ -227,7 +211,7 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.list[].runtime.acp":
     "当 runtime.type=acp 时此代理的 ACP 运行时默认值。绑定级别的 ACP 覆盖仍在每个会话中优先。",
   "agents.list[].runtime.acp.agent":
-    "此 OpenClaw 代理使用的可选 ACP 运行时代理 ID（例如 codex、claude）。",
+    "此 OpenClaw 代理使用的可选 ACP 运行时代理 ID（例如 codex、claude、cursor、gemini、openclaw）。",
   "agents.list[].runtime.acp.backend":
     "此代理 ACP 会话的可选 ACP 后端覆盖（回退到全局 acp.backend）。",
   "agents.list[].runtime.acp.mode":
@@ -282,8 +266,6 @@ export const FIELD_HELP: Record<string, string> = {
     "控制页面内容如何转换供代理使用的默认快照提取模式。选择在可读性、保真度和令牌占用之间平衡的模式。",
   "browser.ssrfPolicy":
     "可能到达内部主机的浏览器/网络获取路径的服务端请求伪造防护设置。在生产中保持限制性默认值，仅开放明确批准的目标。",
-  "browser.ssrfPolicy.allowPrivateNetwork":
-    "browser.ssrfPolicy.dangerouslyAllowPrivateNetwork 的旧版别名。建议使用带 dangerously 前缀的键以使风险意图明确。",
   "browser.ssrfPolicy.dangerouslyAllowPrivateNetwork":
     "允许从浏览器工具访问私有网络地址范围。受信任网络操作员设置默认启用；禁用以强制执行仅公共的严格解析检查。",
   "browser.ssrfPolicy.allowedHostnames":
@@ -317,7 +299,7 @@ export const FIELD_HELP: Record<string, string> = {
   "tools.exec":
     "执行工具配置，控制代理如何运行命令和脚本。",
   "tools.exec.host":
-    "选择 shell 命令的执行主机策略，通常控制本地与委托执行环境。使用满足自动化需求的最安全主机模式。",
+    '选择 shell 命令的执行目标策略。使用 "auto" 自动感知运行时（优先沙箱，否则网关），或固定指定 sandbox/gateway/node。',
   "tools.exec.security":
     "控制命令执行的沙箱/审批预期的执行安全态势选择器。对不受信任的提示保持严格安全模式，仅对受信任的操作员工作流放宽。",
   "tools.exec.ask":
@@ -330,6 +312,10 @@ export const FIELD_HELP: Record<string, string> = {
     "启用 agent_to_agent 工具界面，使一个代理可以在运行时调用另一个代理。在简单部署中保持关闭，仅在编排价值超过复杂性时启用。",
   "tools.agentToAgent.allow":
     "启用编排时允许 agent_to_agent 调用的目标代理 ID 白名单。使用显式白名单避免不受控的跨代理调用图。",
+  "tools.experimental":
+    "实验性内置工具开关。默认关闭，仅在有意测试预览功能时启用。",
+  "tools.experimental.planTool":
+    "启用实验性结构化 `update_plan` 工具，用于所有提供商的非平凡多步骤工作跟踪。OpenAI 和 OpenAI Codex 运行即使未设置此标志也会自动启用。",
   "tools.elevated":
     "特权命令界面的提升工具访问控制，仅应从受信任的发送者可达。除非操作员工作流明确需要提升操作，否则保持禁用。",
   "tools.elevated.enabled":
@@ -442,6 +428,8 @@ export const FIELD_HELP: Record<string, string> = {
     "在网关默认值之外额外允许的 node.invoke 命令（命令字符串数组）。在此启用危险命令是安全敏感的覆盖，会被 `openclaw security audit` 标记。",
   "gateway.nodes.denyCommands":
     "要阻止的节点命令名称，即使存在于节点声明或默认白名单中（仅精确命令名称匹配，例如 `system.run`；不检查该命令内的 shell 文本）。",
+  "gateway.webchat.chatHistoryMaxChars":
+    "chat.history 响应中每个文本字段截断前的最大字符数（默认：12000）。",
   nodeHost:
     "节点主机配置。",
   "nodeHost.browserProxy":
@@ -537,11 +525,11 @@ export const FIELD_HELP: Record<string, string> = {
   "diagnostics.cacheTrace.includePrompt": "在缓存跟踪中包含提示内容。",
   "diagnostics.cacheTrace.includeSystem": "在缓存跟踪中包含系统消息。",
   "tools.exec.applyPatch.enabled":
-    "实验性。当工具策略允许时，为 OpenAI 模型启用 apply_patch。",
+    "在执行审批允许时启用或禁用 OpenAI 和 OpenAI Codex 模型的 apply_patch。默认为 true。",
   "tools.exec.applyPatch.workspaceOnly":
     "将 apply_patch 路径限制在工作区目录内（默认：true）。设为 false 允许写入工作区外部（危险）。",
   "tools.exec.applyPatch.allowModels":
-    'Optional allowlist of model ids (e.g. "gpt-5.2" or "openai/gpt-5.2").',
+    'Optional allowlist of model ids (e.g. "gpt-5.4" or "openai/gpt-5.4").',
   "tools.loopDetection.enabled":
     "启用重复工具调用循环检测和退避安全检查（默认：false）。",
   "tools.loopDetection.historySize": "循环检测的工具历史窗口大小（默认：30）。",
@@ -597,6 +585,8 @@ export const FIELD_HELP: Record<string, string> = {
     "当未设置特定模态模型列表时，媒体理解工具使用的共享回退模型列表。保持与可用的多模态提供商对齐以避免运行时回退波动。",
   "tools.media.concurrency":
     "跨图片、音频和视频任务的每轮最大并发媒体理解操作数。在资源受限的部署中降低以防止 CPU/网络饱和。",
+  "tools.media.asyncCompletion.directSend":
+    "对已完成的异步音乐/视频生成任务启用直接渠道发送，而非依赖请求者会话唤醒路径。默认关闭，分离的媒体完成保持传统模型交付流程，除非选择启用。",
   "tools.media.image.enabled":
     "启用图片理解，以便附加或引用的图片可以被解释为文本上下文。如果需要纯文本操作或想避免图片处理成本则禁用。",
   "tools.media.image.maxBytes":
@@ -635,7 +625,7 @@ export const FIELD_HELP: Record<string, string> = {
   "skills.load.watchDebounceMs":
     "重载逻辑运行前合并快速技能文件更改的去抖窗口（毫秒）。增加以减少频繁写入时的重载波动，或降低以更快的编辑反馈。",
   approvals:
-    "Approval routing controls for forwarding exec approval requests to chat destinations outside the originating session. Keep this disabled unless operators need explicit out-of-band approval visibility.",
+    "Approval routing controls for forwarding exec and plugin approval requests to chat destinations outside the originating session. Keep these disabled unless operators need explicit out-of-band approval visibility.",
   "approvals.exec":
     "执行审批转发行为分组，包括启用、路由模式、过滤器和显式目标。当审批提示必须到达操作渠道而非仅源线程时在此配置。",
   "approvals.exec.enabled":
@@ -656,6 +646,26 @@ export const FIELD_HELP: Record<string, string> = {
     "审批必须通过特定账户上下文路由时多账户渠道设置的可选账户选择器。仅在目标渠道有多个已配置身份时使用。",
   "approvals.exec.targets[].threadId":
     "支持审批转发的线程投递的渠道的可选线程/话题目标。用于将审批流量控制在操作线程中而非主渠道。",
+  "approvals.plugin":
+    "控制插件审批转发行为，包括启用、路由模式、回退和显式目标。",
+  "approvals.plugin.enabled":
+    "启用将插件审批请求转发到已配置的交付目标（默认：false）。",
+  "approvals.plugin.mode":
+    'Controls where plugin approval prompts are sent: "session" uses origin chat, "targets" uses configured targets, and "both" sends to both paths.',
+  "approvals.plugin.agentFilter":
+    'Optional allowlist of agent IDs eligible for forwarded plugin approvals, for example `["primary", "ops-agent"]`. Use this to limit forwarding blast radius.',
+  "approvals.plugin.sessionFilter":
+    'Optional session-key filters matched as substring or regex-style patterns, for example `["discord:", "^agent:ops:"]`. Use narrow patterns so only intended approval contexts are forwarded.',
+  "approvals.plugin.targets":
+    "在插件审批转发模式包含基于目标的路由时使用的显式交付目标。",
+  "approvals.plugin.targets[].channel":
+    "用于转发插件审批交付的渠道/提供商 ID，如 discord 或 slack。",
+  "approvals.plugin.targets[].to":
+    "目标渠道内的目标标识符（渠道 ID、用户 ID 或线程 ID，取决于渠道）。",
+  "approvals.plugin.targets[].accountId":
+    "多账户渠道设置中的可选账户选择器，当插件审批需要到达特定账户上下文时使用。",
+  "approvals.plugin.targets[].threadId":
+    "对于支持线程交付的渠道的可选线程/话题目标，用于转发插件审批请求。",
   "tools.fs.workspaceOnly":
     "将文件系统工具（read/write/edit/apply_patch）限制在工作区目录内（默认：false）。",
   "tools.sessions.visibility":
@@ -673,32 +683,43 @@ export const FIELD_HELP: Record<string, string> = {
   "tools.message.crossContext.marker.suffix":
     'Text suffix for cross-context markers (supports "{channel}").',
   "tools.message.broadcast.enabled": "启用广播操作（默认：true）。",
-  "tools.web.search.enabled": "启用网页搜索功能。",
+  "tools.web.search.enabled":
+    "启用托管网页搜索和符合条件模型的可选 Codex 原生搜索。",
   "tools.web.search.provider":
     "搜索提供商 ID。如省略则从可用 API 密钥自动检测。",
   "tools.web.search.maxResults": "搜索返回的最大结果数。",
   "tools.web.search.timeoutSeconds": "web_search 请求的超时（秒）。",
   "tools.web.search.cacheTtlMinutes": "web_search 结果的缓存 TTL（分钟）。",
+  "tools.web.search.openaiCodex.enabled":
+    "为支持 Codex 的模型启用原生 Codex 网页搜索。",
+  "tools.web.search.openaiCodex.mode":
+    '原生 Codex 网页搜索模式："cached"（默认）或 "live"。',
+  "tools.web.search.openaiCodex.allowedDomains":
+    "传递给原生 Codex web_search 工具的可选域名白名单。",
+  "tools.web.search.openaiCodex.contextSize":
+    '原生 Codex 搜索上下文大小提示："low"、"medium" 或 "high"。',
+  "tools.web.search.openaiCodex.userLocation.country":
+    "发送给原生 Codex 网页搜索的近似国家。",
+  "tools.web.search.openaiCodex.userLocation.region":
+    "发送给原生 Codex 网页搜索的近似地区/州。",
+  "tools.web.search.openaiCodex.userLocation.city":
+    "发送给原生 Codex 网页搜索的近似城市。",
+  "tools.web.search.openaiCodex.userLocation.timezone":
+    "发送给原生 Codex 网页搜索的近似时区。",
+  "tools.web.search.brave.mode":
+    'Brave 搜索模式："web"（URL 结果）或 "llm-context"（预提取页面内容用于 LLM 上下文）。',
   "tools.web.fetch.enabled": "启用 web_fetch 工具（轻量级 HTTP 获取）。",
   "tools.web.fetch.maxChars": "web_fetch 返回的最大字符数（截断）。",
   "tools.web.fetch.maxCharsCap":
     "web_fetch maxChars 的硬性上限（适用于配置和工具调用）。",
-  "tools.web.fetch.maxResponseBytes": "Max download size before truncation.",
+  "tools.web.fetch.maxResponseBytes": "截断前的最大下载大小。",
+  "tools.web.fetch.provider": "网页获取回退提供商 ID。",
   "tools.web.fetch.timeoutSeconds": "web_fetch 请求的超时（秒）。",
   "tools.web.fetch.cacheTtlMinutes": "web_fetch 结果的缓存 TTL（分钟）。",
   "tools.web.fetch.maxRedirects": "web_fetch 允许的最大重定向次数（默认：3）。",
   "tools.web.fetch.userAgent": "覆盖 web_fetch 请求的 User-Agent 头。",
   "tools.web.fetch.readability":
     "使用 Readability 从 HTML 中提取主要内容（回退到基本 HTML 清理）。",
-  "tools.web.fetch.firecrawl.enabled": "启用 web_fetch 的 Firecrawl 回退（如已配置）。",
-  "tools.web.fetch.firecrawl.apiKey": "Firecrawl API 密钥（回退：FIRECRAWL_API_KEY 环境变量）。",
-  "tools.web.fetch.firecrawl.baseUrl":
-    "Firecrawl 基础 URL（例如 https://api.firecrawl.dev 或自定义端点）。",
-  "tools.web.fetch.firecrawl.onlyMainContent":
-    "为 true 时，Firecrawl 仅返回主要内容（默认：true）。",
-  "tools.web.fetch.firecrawl.maxAgeMs":
-    "Firecrawl maxAge（毫秒），用于 API 支持时的缓存结果。",
-  "tools.web.fetch.firecrawl.timeoutSeconds": "Firecrawl 请求的超时（秒）。",
   models:
     "模型配置。",
   "models.mode":
@@ -719,33 +740,61 @@ export const FIELD_HELP: Record<string, string> = {
     "合并到提供商请求中的静态 HTTP 头，用于租户路由、代理认证或自定义网关需求。谨慎使用并将敏感头值保存在密钥中。",
   "models.providers.*.authHeader":
     "为 true 时，凭证通过 HTTP Authorization 头发送，即使有替代认证方式。仅在你的提供商或代理明确要求 Authorization 转发时使用。",
+  "models.providers.*.request":
+    "模型提供商请求的可选覆盖，包括额外头、认证覆盖、代理路由和 TLS 客户端设置。仅在上游或企业网络路径需要传输自定义时使用。",
+  "models.providers.*.request.headers":
+    "在默认归属和认证解析后合并到提供商请求中的额外头。",
+  "models.providers.*.request.auth":
+    "覆盖此提供商的请求认证行为。",
+  "models.providers.*.request.auth.mode":
+    '认证覆盖模式。',
+  "models.providers.*.request.auth.token":
+    "认证模式为 authorization-bearer 时使用的 Bearer 令牌。",
+  "models.providers.*.request.auth.headerName":
+    "认证模式为 header 时使用的自定义认证头名称。",
+  "models.providers.*.request.auth.value":
+    "认证模式为 header 时使用的自定义认证头值。",
+  "models.providers.*.request.auth.prefix":
+    "认证模式为 header 时在 request.auth.value 前添加的可选前缀。",
+  "models.providers.*.request.proxy":
+    '模型提供商请求的可选代理覆盖。',
+  "models.providers.*.request.proxy.mode":
+    '模型提供商请求的代理覆盖模式。',
+  "models.providers.*.request.proxy.url":
+    "request.proxy.mode 为 explicit-proxy 时使用的显式代理 URL。URL 中嵌入的凭据被视为敏感信息，在快照中脱敏。",
+  "models.providers.*.request.proxy.tls":
+    "连接到配置的代理时使用的可选 TLS 设置。",
+  "models.providers.*.request.proxy.tls.ca":
+    "用于验证代理 TLS 证书链的自定义 CA 包。",
+  "models.providers.*.request.proxy.tls.cert":
+    "需要双向 TLS 时向代理提供的客户端 TLS 证书。",
+  "models.providers.*.request.proxy.tls.key":
+    "与 request.proxy.tls.cert 配对的私钥，用于代理双向 TLS。",
+  "models.providers.*.request.proxy.tls.passphrase":
+    "用于解密 request.proxy.tls.key 的可选密码短语。",
+  "models.providers.*.request.proxy.tls.serverName":
+    "建立到代理的 TLS 连接时使用的可选 SNI/服务器名称覆盖。",
+  "models.providers.*.request.proxy.tls.insecureSkipVerify":
+    "跳过代理 TLS 证书验证。仅在受控开发环境中使用。",
+  "models.providers.*.request.tls":
+    "直接连接到上游模型端点时使用的可选 TLS 设置。",
+  "models.providers.*.request.tls.ca":
+    "用于验证上游 TLS 证书链的自定义 CA 包。",
+  "models.providers.*.request.tls.cert":
+    "需要双向 TLS 时向上游端点提供的客户端 TLS 证书。",
+  "models.providers.*.request.tls.key":
+    "与 request.tls.cert 配对的私钥，用于上游双向 TLS。",
+  "models.providers.*.request.tls.passphrase":
+    "用于解密 request.tls.key 的可选密码短语。",
+  "models.providers.*.request.tls.serverName":
+    "建立上游 TLS 连接时使用的可选 SNI/服务器名称覆盖。",
+  "models.providers.*.request.tls.insecureSkipVerify":
+    "跳过上游 TLS 证书验证。仅在受控开发环境中使用。",
   "models.providers.*.models":
     "提供商的已声明模型列表，包括标识符、元数据和可选的兼容性/成本提示。保持 ID 与提供商目录值完全一致，以确保选择和回退正确解析。",
-  "models.bedrockDiscovery":
-    "自动 AWS Bedrock 模型发现设置，用于从账户可见性合成提供商模型条目。保持发现范围受限和刷新间隔保守以减少 API 开销。",
-  "models.bedrockDiscovery.enabled":
-    "启用定期 Bedrock 模型发现和目录刷新。除非积极使用 Bedrock 且 IAM 权限配置正确，否则保持禁用。",
-  "models.bedrockDiscovery.region":
-    "启用发现时用于 Bedrock 发现调用的 AWS 区域。使用你的 Bedrock 模型已配置的区域以避免空发现结果。",
-  "models.bedrockDiscovery.providerFilter":
-    "可选的 Bedrock 发现提供商白名单过滤器，仅刷新选定的提供商。用于在多提供商环境中限制发现范围。",
-  "models.bedrockDiscovery.refreshInterval":
-    "Bedrock 发现轮询的刷新间隔（秒），用于随时间检测新可用模型。在生产环境中使用较长间隔以减少 API 成本和控制面噪声。",
-  "models.bedrockDiscovery.defaultContextWindow":
-    "当提供商元数据缺少显式限制时应用于已发现模型的回退上下文窗口值。使用现实的默认值以避免超过真实提供商约束的超大提示。",
-  "models.bedrockDiscovery.defaultMaxTokens":
-    "当提供商元数据缺少显式输出令牌限制时应用于已发现模型的回退最大令牌值。使用保守默认值以减少截断意外和意外令牌消耗。",
   auth: "认证配置。",
-  "channels.slack.allowBots":
-    "允许机器人发送的消息触发 Slack 回复（默认：false）。",
   "channels.matrix.allowBots":
     'Allow messages from other configured Matrix bot accounts to trigger replies (default: false). Set "mentions" to only accept bot messages that visibly mention this bot.',
-  "channels.slack.thread.historyScope":
-    'Scope for Slack thread history context ("thread" isolates per thread; "channel" reuses channel history).',
-  "channels.slack.thread.inheritParent":
-    "如果为 true，Slack 线程会话继承父频道的对话记录（默认：false）。",
-  "channels.slack.thread.initialHistoryLimit":
-    "启动新线程会话时获取的最大现有 Slack 线程消息数（默认：20，设为 0 禁用）。",
   "channels.mattermost.botToken":
     "来自 Mattermost 系统控制台 -> 集成 -> 机器人账户的机器人令牌。",
   "channels.mattermost.baseUrl":
@@ -764,9 +813,21 @@ export const FIELD_HELP: Record<string, string> = {
   "auth.cooldowns.billingBackoffHoursByProvider":
     "可选的按提供商计费退避时间覆盖（小时）。",
   "auth.cooldowns.billingMaxHours": "计费退避时间上限（小时，默认：24）。",
+  "auth.cooldowns.authPermanentBackoffMinutes":
+    "高置信度 auth_permanent 故障的基础退避时长（分钟）（默认：10）。保持此值低于计费退避，以便提供商在上游认证暂时故障后自动恢复。",
+  "auth.cooldowns.authPermanentMaxMinutes":
+    "auth_permanent 退避上限（分钟）（默认：60）。",
   "auth.cooldowns.failureWindowHours": "退避计数器的失败窗口（小时，默认：24）。",
+  "auth.cooldowns.overloadedProfileRotations":
+    "过载错误时允许的同一提供商认证配置文件最大轮换次数，超过后切换到模型回退（默认：1）。",
+  "auth.cooldowns.overloadedBackoffMs":
+    "重试过载的提供商/配置文件轮换前的固定延迟毫秒数（默认：0）。",
+  "auth.cooldowns.rateLimitedProfileRotations":
+    "限速错误时允许的同一提供商认证配置文件最大轮换次数，超过后切换到模型回退（默认：1）。",
   "agents.defaults.workspace":
     "暴露给代理运行时工具的默认工作区路径，用于文件系统上下文和仓库感知行为。从包装器运行时请显式设置，以保持路径解析确定性。",
+  "agents.defaults.contextInjection":
+    'Controls when workspace bootstrap files are injected into the system prompt: "always" (default) or "continuation-skip" for safe continuation turns after a completed assistant response.',
   "agents.defaults.bootstrapMaxChars":
     "注入系统提示的每个工作区引导文件在截断前的最大字符数（默认：20000）。",
   "agents.defaults.bootstrapTotalMaxChars":
@@ -789,6 +850,16 @@ export const FIELD_HELP: Record<string, string> = {
     'Chooses which sources are indexed: "memory" reads MEMORY.md + memory files, and "sessions" includes transcript history. Keep ["memory"] unless you need recall from prior chat transcripts.',
   "agents.defaults.memorySearch.extraPaths":
     "将额外目录或 .md 文件添加到默认记忆文件之外的记忆索引中。当关键参考文档位于仓库其他位置时使用；启用多模态记忆时，这些路径下匹配的图片/音频文件也有资格被索引。",
+  "agents.defaults.memorySearch.qmd":
+    "当一个代理需要查询另一个代理的转录集合时使用；QMD 特定的额外集合让你选择加入跨代理记忆搜索，而无需将所有内容扁平化到一个共享命名空间中。",
+  "agents.defaults.memorySearch.qmd.extraCollections":
+    "当你需要跨代理的定向转录搜索时使用；在此添加集合以限定 QMD 回忆范围，而无需创建共享的全局转录命名空间。",
+  "agents.defaults.memorySearch.qmd.extraCollections.path":
+    "为额外 QMD 集合使用绝对或工作区相对文件系统路径；将其指向你实际希望此代理搜索的转录目录或笔记文件夹。",
+  "agents.defaults.memorySearch.qmd.extraCollections.name":
+    "仅当路径指向代理工作区外部时保留配置的集合标签；工作区内的路径即使提供了名称也保持代理范围。用于位于工作区外部的共享跨代理转录根目录。",
+  "agents.defaults.memorySearch.qmd.extraCollections.pattern":
+    "使用 glob 模式限制集合中哪些文件被索引；保持默认 `**/*.md` 除非你需要更窄的子集。",
   "agents.defaults.memorySearch.multimodal":
     'Optional multimodal memory settings for indexing image and audio files from configured extra paths. Keep this off unless your embedding model explicitly supports cross-modal embeddings, and set `memorySearch.fallback` to "none" while it is enabled. Matching files are uploaded to the configured remote embedding provider during indexing.',
   "agents.defaults.memorySearch.multimodal.enabled":
@@ -800,11 +871,11 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.defaults.memorySearch.experimental.sessionMemory":
     "将会话记录索引到记忆搜索中，使响应可以引用先前的聊天轮次。除非需要记录回忆，否则保持关闭，因为索引成本和存储使用都会增加。",
   "agents.defaults.memorySearch.provider":
-    'Selects the embedding backend used to build/query memory vectors: "openai", "gemini", "voyage", "mistral", "ollama", or "local". Keep your most reliable provider here and configure fallback for resilience.',
+    '用于构建/查询记忆向量的嵌入后端。',
   "agents.defaults.memorySearch.model":
     "当需要非默认模型时，选定的记忆提供商使用的嵌入模型覆盖。仅在需要超出提供商默认值的显式回忆质量/成本调优时设置。",
   "agents.defaults.memorySearch.outputDimensionality":
-    "仅限 Gemini embedding-2：选择内存嵌入的输出向量大小。使用 768、1536 或 3072（默认），更改后需要完全重新索引，因为存储的向量维度必须保持一致。",
+    "向量嵌入的提供商特定输出维度覆盖。",
   "agents.defaults.memorySearch.remote.baseUrl":
     "覆盖嵌入 API 端点，如 OpenAI 兼容代理或自定义 Gemini 基础 URL。仅在通过自己的网关或供应商端点路由时使用；否则保持提供商默认值。",
   "agents.defaults.memorySearch.remote.apiKey":
@@ -874,6 +945,8 @@ export const FIELD_HELP: Record<string, string> = {
     "启用 mcporter 支持的 QMD 模式时自动启动 mcporter 守护进程（默认：true）。除非进程生命周期由你的服务管理器外部管理，否则保持启用。",
   "memory.qmd.searchMode":
     'Selects the QMD retrieval path: "query" uses standard query flow, "search" uses search-oriented retrieval, and "vsearch" emphasizes vector retrieval. Keep default unless tuning relevance quality.',
+  "memory.qmd.searchTool":
+    "覆盖 QMD 搜索使用的确切 mcporter 工具名称，同时保留 `searchMode` 作为语义检索模式。仅当你的 QMD MCP 服务器暴露了自定义工具（如 `hybrid_search`）时才使用此项，保持未设置以使用正常的内置工具映射。",
   "memory.qmd.includeDefaultMemory":
     "自动将默认记忆文件（MEMORY.md 和 memory/**/*.md）索引到 QMD 集合中。除非你希望仅通过显式自定义路径控制索引，否则保持启用。",
   "memory.qmd.paths":
@@ -946,7 +1019,7 @@ export const FIELD_HELP: Record<string, string> = {
   "plugins.enabled":
     "在启动和配置重载期间全局启用或禁用插件/扩展加载（默认：true）。仅在部署需要扩展功能时保持启用。",
   "plugins.allow":
-    "可选的插件 ID 白名单；设置后仅列出的插件有资格加载。用于在受控环境中强制执行批准的扩展清单。",
+    "可选的插件 ID 允许列表；设置后仅列出的插件可加载。",
   "plugins.deny":
     "可选的插件 ID 黑名单，即使白名单或路径包含也被阻止。使用拒绝规则进行紧急回滚和对风险插件的硬性阻止。",
   "plugins.load":
@@ -984,8 +1057,7 @@ export const FIELD_HELP: Record<string, string> = {
   "plugins.installs.*.source": 'Install source ("npm", "archive", or "path").',
   "plugins.installs.*.spec": "安装时使用的原始 npm spec（如果源是 npm）。",
   "plugins.installs.*.sourcePath": "安装时使用的原始归档/路径（如有）。",
-  "plugins.installs.*.installPath":
-    "已解析的安装目录（通常为 ~/.openclaw/extensions/<id>）。",
+  "plugins.installs.*.installPath": "已安装插件包的解析安装目录。",
   "plugins.installs.*.version": "安装时记录的版本（如可用）。",
   "plugins.installs.*.resolvedName": "从获取的工件解析的 npm 包名称。",
   "plugins.installs.*.resolvedVersion":
@@ -1017,6 +1089,16 @@ export const FIELD_HELP: Record<string, string> = {
     "共享图片生成功能使用的可选图片生成模型（provider/model）。",
   "agents.defaults.imageGenerationModel.fallbacks":
     "有序的回退图片生成模型（provider/model）。",
+  "agents.defaults.videoGenerationModel.primary":
+    "共享视频生成功能使用的可选视频生成模型（提供商/模型）。",
+  "agents.defaults.videoGenerationModel.fallbacks":
+    "有序的回退视频生成模型（提供商/模型）。",
+  "agents.defaults.musicGenerationModel.primary":
+    "共享音乐生成功能使用的可选音乐生成模型（提供商/模型）。",
+  "agents.defaults.musicGenerationModel.fallbacks":
+    "有序的回退音乐生成模型（提供商/模型）。",
+  "agents.defaults.mediaGenerationAutoProviderFallback":
+    "When true (default), shared image, music, and video generation automatically appends other auth-backed provider defaults after explicit primary/fallback refs. Set false to disable implicit cross-provider fallback while keeping explicit fallbacks.",
   "agents.defaults.pdfModel.primary":
     "PDF 分析工具的可选 PDF 模型（provider/model）。默认为 imageModel，然后是会话模型。",
   "agents.defaults.pdfModel.fallbacks": "有序的回退 PDF 模型（provider/model）。",
@@ -1061,6 +1143,8 @@ export const FIELD_HELP: Record<string, string> = {
     "仅用于压缩摘要的可选 provider/model 覆盖。当你希望压缩在与会话默认值不同的模型上运行时设置，不设置则继续使用主代理模型。",
   "agents.defaults.compaction.truncateAfterCompaction":
     "启用后，在压缩后重写会话 JSONL 文件以移除已摘要的条目。防止多次压缩循环的长时间运行会话的文件无限增长。默认：false。",
+  "agents.defaults.compaction.notifyUser":
+    "启用时，在压缩开始时向用户发送简短的压缩通知（例如 '🧹 正在压缩上下文...'）。默认禁用以保持压缩静默且不打扰用户。",
   "agents.defaults.compaction.memoryFlush":
     "在重度压缩前运行代理式记忆写入的预压缩记忆刷新设置。对长会话保持启用，以便在激进裁剪前持久化重要上下文。",
   "agents.defaults.compaction.memoryFlush.enabled":
@@ -1339,15 +1423,7 @@ export const FIELD_HELP: Record<string, string> = {
   "hooks.internal":
     "从模块路径加载的内置/自定义事件处理器的内部 hook 运行时设置。用于受信任的进程内自动化并保持处理器加载严格限定范围。",
   "hooks.internal.enabled":
-    "启用内部 hook 处理器和内部 hook 运行时中已配置条目的处理。除非有意配置内部 hook 处理器，否则保持禁用。",
-  "hooks.internal.handlers":
-    "将事件名称映射到模块和可选导出的内部事件处理器列表。保持处理器定义明确以使事件到代码的路由可审计。",
-  "hooks.internal.handlers[].event":
-    "运行时发出时触发此处理器模块的内部事件名称。使用稳定的事件命名约定以避免处理器间的意外重叠。",
-  "hooks.internal.handlers[].module":
-    "运行时加载的内部 hook 处理器实现的安全相对模块路径。将模块文件保存在经过审查的目录中并避免动态路径组合。",
-  "hooks.internal.handlers[].export":
-    "不使用模块默认导出时内部 hook 处理器函数的可选命名导出。当一个模块提供多个处理器入口点时设置。",
+    "启用内部钩子和在内部钩子运行时中配置的条目的处理。",
   "hooks.internal.entries":
     "用于注册具体运行时处理器和元数据的已配置内部 hook 条目记录。保持条目明确和版本化以使生产行为可审计。",
   "hooks.internal.load":
@@ -1390,32 +1466,22 @@ export const FIELD_HELP: Record<string, string> = {
     "启用时在最终回复投递后移除确认回应。在持久确认回应造成杂乱的渠道中保持启用以获得更清洁的 UX。",
   "messages.tts":
     "消息文字转语音设置。",
+  "messages.tts.providers":
+    "Provider-specific TTS settings keyed by speech provider id. Use this instead of bundled provider-specific top-level keys so speech plugins stay decoupled from core config schema.",
+  "messages.tts.providers.*":
+    "Provider-specific TTS configuration for one speech provider id. Keep fields scoped to the plugin that owns that provider.",
+  "messages.tts.providers.*.apiKey":
+    "语音提供商需要认证时使用的提供商 API 密钥。", // pragma: allowlist secret
   channels:
     "消息渠道配置，包括 Discord、Telegram、Slack 等。",
-  "channels.telegram":
-    "Telegram 渠道提供商配置，包括认证令牌、重试行为和消息渲染控制。使用此部分为 Telegram 特定 API 语义调整机器人行为。",
-  "channels.slack":
-    "Slack 渠道提供商配置，用于机器人/应用令牌、流式行为和私信策略控制。保持令牌处理和线程行为明确以避免嘈杂的工作区交互。",
-  "channels.discord":
-    "Discord 渠道提供商配置，用于机器人认证、重试策略、流式传输、线程绑定和可选的语音功能。除非需要，否则保持特权意图和高级功能禁用。",
-  "channels.whatsapp":
-    "WhatsApp 渠道提供商配置，用于访问策略和消息批处理行为。使用此部分调整 WhatsApp 聊天的响应速度和私信路由安全。",
-  "channels.signal":
-    "Signal 渠道提供商配置，包括账户身份和私信策略行为。保持账户映射明确以在多设备设置中保持路由稳定。",
-  "channels.imessage":
-    "iMessage 渠道提供商配置，用于 CLI 集成和私信访问策略处理。当运行时环境有非标准二进制位置时使用显式 CLI 路径。",
-  "channels.bluebubbles":
-    "BlueBubbles 渠道提供商配置，用于 Apple 消息桥接集成。在共享部署中保持私信策略与你的可信发送者模型对齐。",
-  "channels.msteams":
-    "Microsoft Teams 渠道提供商配置和特定于提供商的策略开关。使用此部分将 Teams 行为与其他企业聊天提供商隔离。",
   "channels.mattermost":
     "Mattermost 渠道提供商配置，用于机器人凭证、基础 URL 和消息触发模式。在高流量团队频道中保持提及/触发规则严格。",
-  "channels.irc":
-    "IRC 渠道提供商配置和经典 IRC 传输工作流的兼容性设置。当将旧式聊天基础设施桥接到 OpenClaw 时使用此部分。",
   "channels.defaults":
     "未设置特定于提供商的设置时应用于所有提供商的默认渠道行为。在按提供商调优前使用此项强制执行一致的基准策略。",
   "channels.defaults.groupPolicy":
     'Default group policy across channels: "open", "disabled", or "allowlist". Keep "allowlist" for safer production setups unless broad group participation is intentional.',
+  "channels.defaults.contextVisibility":
+    '获取的引用/线程/历史内容的默认补充上下文可见性："all"（保留所有上下文）、"allowlist"（仅允许列表中的发送者）或 "allowlist_quote"（允许列表 + 保留显式引用）。',
   "channels.defaults.heartbeat":
     "提供商/渠道发出的状态消息的默认心跳可见性设置。全局调整以减少嘈杂的健康状态更新同时保持警报可见。",
   "channels.defaults.heartbeat.showOk":
@@ -1428,78 +1494,10 @@ export const FIELD_HELP: Record<string, string> = {
     'Controls whether heartbeat delivery may target direct/DM chats: "allow" (default) permits DM delivery and "block" suppresses direct-target sends.',
   "agents.list.*.heartbeat.directPolicy":
     'Per-agent override for heartbeat direct/DM delivery policy; use "block" for agents that should only send heartbeat alerts to non-DM destinations.',
-  "channels.telegram.configWrites":
-    "允许 Telegram 响应渠道事件/命令时写入配置（默认：true）。",
-  "channels.telegram.botToken":
-    "用于认证此账户/提供商配置的 Bot API 请求的 Telegram 机器人令牌。使用密钥/环境变量替换，如疑似泄露则轮换令牌。",
-  "channels.telegram.capabilities.inlineButtons":
-    "为支持的命令和交互界面启用 Telegram 内联按钮组件。如果你的部署需要纯文本兼容行为则禁用。",
-  "channels.telegram.execApprovals":
-    "Telegram 原生执行审批路由和审批者授权。仅当 Telegram 应作为所选机器人账户的显式执行审批客户端时启用。",
-  "channels.telegram.execApprovals.enabled":
-    "为此账户启用 Telegram 执行审批。为 false 或未设置时，Telegram 消息/按钮无法批准执行请求。",
-  "channels.telegram.execApprovals.approvers":
-    "允许为此机器人账户批准执行请求的 Telegram 用户 ID。使用数字 Telegram 用户 ID；当目标包含 dm 时提示仅发送给这些审批者。",
-  "channels.telegram.execApprovals.agentFilter":
-    'Optional allowlist of agent IDs eligible for Telegram exec approvals, for example `["main", "ops-agent"]`. Use this to keep approval prompts scoped to the agents you actually operate from Telegram.',
-  "channels.telegram.execApprovals.sessionFilter":
-    "在使用 Telegram 审批路由前匹配的可选会话键过滤器（子字符串或正则模式）。使用窄模式使 Telegram 审批仅出现在预期会话中。",
-  "channels.telegram.execApprovals.target":
-    'Controls where Telegram approval prompts are sent: "dm" sends to approver DMs (default), "channel" sends to the originating Telegram chat/topic, and "both" sends to both. Channel delivery exposes the command text to the chat, so only use it in trusted groups/topics.',
-  "channels.slack.configWrites":
-    "允许 Slack 响应渠道事件/命令时写入配置（默认：true）。",
-  "channels.slack.botToken":
-    "用于已配置工作区中标准聊天操作的 Slack 机器人令牌。保持此凭证范围受限，如工作区应用权限更改则轮换。",
-  "channels.slack.appToken":
-    "启用时用于 Socket Mode 连接和事件传输的 Slack 应用级令牌。使用最小权限应用范围并将此令牌存储为密钥。",
-  "channels.slack.userToken":
-    "用于需要超出机器人权限的用户上下文 API 访问的可选 Slack 用户令牌。谨慎使用并审计范围，因为此令牌可能具有更广泛的权限。",
-  "channels.slack.userTokenReadOnly":
-    "为 true 时，在可能的情况下将配置的 Slack 用户令牌使用视为只读辅助行为。如果你只需要补充读取而不需要用户上下文写入则保持启用。",
-  "channels.slack.capabilities.interactiveReplies":
-    "启用代理编写的 Slack 交互式回复指令（`[[slack_buttons: ...]]`、`[[slack_select: ...]]`）。默认：关闭。",
   "channels.mattermost.configWrites":
     "允许 Mattermost 响应渠道事件/命令时写入配置（默认：true）。",
-  "channels.discord.configWrites":
-    "允许 Discord 响应渠道事件/命令时写入配置（默认：true）。",
-  "channels.discord.token":
-    "用于此提供商账户的网关和 REST API 认证的 Discord 机器人令牌。将此密钥置于已提交配置之外，泄露后立即轮换。",
-  "channels.discord.allowBots":
-    'Allow bot-authored messages to trigger Discord replies (default: false). Set "mentions" to only accept bot messages that mention the bot.',
-  "channels.discord.proxy":
-    "Discord 网关 + API 请求的代理 URL（app-id 查找和白名单解析）。通过 channels.discord.accounts.<id>.proxy 按账户设置。",
-  "channels.whatsapp.configWrites":
-    "允许 WhatsApp 响应渠道事件/命令时写入配置（默认：true）。",
-  "channels.signal.configWrites":
-    "允许 Signal 响应渠道事件/命令时写入配置（默认：true）。",
-  "channels.signal.account":
-    "用于将此渠道配置绑定到特定 Signal 身份的 Signal 账户标识符（电话/号码句柄）。保持与你的已链接设备/会话状态对齐。",
-  "channels.imessage.configWrites":
-    "允许 iMessage 响应渠道事件/命令时写入配置（默认：true）。",
-  "channels.imessage.cliPath":
-    "用于发送/接收操作的 iMessage 桥接 CLI 二进制文件的文件系统路径。当二进制文件不在服务运行时环境的 PATH 中时显式设置。",
-  "channels.msteams.configWrites":
-    "允许 Microsoft Teams 响应渠道事件/命令时写入配置（默认：true）。",
   "channels.modelByChannel":
     "按 提供商 -> 渠道 ID -> 模型覆盖 的映射（值为 provider/model 或别名）。",
-  ...IRC_FIELD_HELP,
-  "channels.discord.commands.native": 'Override native commands for Discord (bool or "auto").',
-  "channels.discord.commands.nativeSkills":
-    'Override native skill commands for Discord (bool or "auto").',
-  "channels.telegram.commands.native": 'Override native commands for Telegram (bool or "auto").',
-  "channels.telegram.commands.nativeSkills":
-    'Override native skill commands for Telegram (bool or "auto").',
-  "channels.slack.commands.native": 'Override native commands for Slack (bool or "auto").',
-  "channels.slack.commands.nativeSkills":
-    'Override native skill commands for Slack (bool or "auto").',
-  "channels.slack.streaming":
-    'Unified Slack stream preview mode: "off" | "partial" | "block" | "progress". Legacy boolean/streamMode keys are auto-mapped.',
-  "channels.slack.nativeStreaming":
-    "当 channels.slack.streaming 为 partial 时启用原生 Slack 文本流式传输（chat.startStream/chat.appendStream/chat.stopStream）（默认：true）。",
-  "channels.slack.streamMode":
-    "旧版 Slack 预览模式别名（replace | status_final | append）；自动迁移到 channels.slack.streaming。",
-  "channels.telegram.customCommands":
-    "额外的 Telegram 机器人菜单命令（与原生合并；冲突忽略）。",
   "messages.suppressToolErrors":
     "为 true 时，抑制向用户显示 ⚠️ 工具错误警告。代理已在上下文中看到错误并可以重试。默认：false。",
   "messages.ackReaction": "用于确认入站消息的表情符号回应（空则禁用）。",
@@ -1508,133 +1506,11 @@ export const FIELD_HELP: Record<string, string> = {
   "messages.statusReactions":
     "在代理进展时更新触发消息上表情符号的生命周期状态回应（queued → thinking → tool → done/error）。",
   "messages.statusReactions.enabled":
-    "为 Telegram 启用生命周期状态回应。启用时，确认回应变为初始 'queued' 状态并自动经过 thinking、tool、done/error 进展。默认：false。",
+    "在支持的渠道上启用生命周期状态反应。",
   "messages.statusReactions.emojis":
     "覆盖默认状态回应表情符号。键：thinking、compacting、tool、coding、web、done、error、stallSoft、stallHard。必须是有效的 Telegram 回应表情符号。",
   "messages.statusReactions.timing":
     "覆盖默认时序。键：debounceMs (700)、stallSoftMs (25000)、stallHardMs (60000)、doneHoldMs (1500)、errorHoldMs (2500)。",
   "messages.inbound.debounceMs":
     "批处理来自同一发送者的快速入站消息的去抖窗口（毫秒，0 禁用）。",
-  "channels.telegram.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.telegram.allowFrom=["*"].',
-  "channels.telegram.streaming":
-    'Unified Telegram stream preview mode: "off" | "partial" | "block" | "progress" (default: "partial"). "progress" maps to "partial" on Telegram. Legacy boolean/streamMode keys are auto-mapped.',
-  "channels.discord.streaming":
-    'Unified Discord stream preview mode: "off" | "partial" | "block" | "progress". "progress" maps to "partial" on Discord. Legacy boolean/streamMode keys are auto-mapped.',
-  "channels.discord.streamMode":
-    "旧版 Discord 预览模式别名（off | partial | block）；自动迁移到 channels.discord.streaming。",
-  "channels.discord.draftChunk.minChars":
-    'Minimum chars before emitting a Discord stream preview update when channels.discord.streaming="block" (default: 200).',
-  "channels.discord.draftChunk.maxChars":
-    'Target max size for a Discord stream preview chunk when channels.discord.streaming="block" (default: 800; clamped to channels.discord.textChunkLimit).',
-  "channels.discord.draftChunk.breakPreference":
-    "Discord 草稿块的首选断点（paragraph | newline | sentence）。默认：paragraph。",
-  "channels.telegram.retry.attempts":
-    "出站 Telegram API 调用的最大重试次数（默认：3）。",
-  "channels.telegram.retry.minDelayMs": "Telegram 出站调用的最小重试延迟（毫秒）。",
-  "channels.telegram.retry.maxDelayMs":
-    "Telegram 出站调用的最大重试延迟上限（毫秒）。",
-  "channels.telegram.retry.jitter": "应用于 Telegram 重试延迟的抖动因子（0-1）。",
-  "channels.telegram.network.autoSelectFamily":
-    "覆盖 Telegram 的 Node autoSelectFamily（true=启用，false=禁用）。",
-  "channels.telegram.timeoutSeconds":
-    "Telegram API 请求中止前的最大秒数（默认：500，grammY 标准）。",
-  "channels.telegram.silentErrorReplies":
-    "为 true 时，标记为错误的 Telegram 机器人回复静默发送（无通知声音）。默认：false。",
-  "channels.telegram.apiRoot":
-    "自定义 Telegram Bot API 根 URL。用于自托管的 Bot API 服务器（https://github.com/tdlib/telegram-bot-api）或 api.telegram.org 被屏蔽地区的反向代理。",
-  "channels.telegram.autoTopicLabel":
-    "使用 LLM 在第一条消息时自动重命名私信论坛话题。默认：true。设为 false 禁用，或使用对象形式 { enabled: true, prompt: '...' } 自定义提示。",
-  "channels.telegram.autoTopicLabel.enabled":
-    "是否启用自动话题标签。默认：true。",
-  "channels.telegram.autoTopicLabel.prompt":
-    "基于 LLM 的话题命名自定义提示。用户消息附加在提示之后。",
-  "channels.telegram.threadBindings.enabled":
-    "启用 Telegram 会话绑定功能（/focus、/unfocus、/agents 和 /session idle|max-age）。设置时覆盖 session.threadBindings.enabled。",
-  "channels.telegram.threadBindings.idleHours":
-    "Telegram 绑定会话的不活跃窗口（小时）。设为 0 禁用空闲自动解绑（默认：24）。设置时覆盖 session.threadBindings.idleHours。",
-  "channels.telegram.threadBindings.maxAgeHours":
-    "Telegram 绑定会话的可选硬性最大时长（小时）。设为 0 禁用硬性上限（默认：0）。设置时覆盖 session.threadBindings.maxAgeHours。",
-  "channels.telegram.threadBindings.spawnSubagentSessions":
-    "允许带 thread=true 的子代理生成在支持时自动绑定 Telegram 当前会话。",
-  "channels.telegram.threadBindings.spawnAcpSessions":
-    "允许带 thread=true 的 ACP 生成在支持时自动绑定 Telegram 当前会话。",
-  "channels.whatsapp.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.whatsapp.allowFrom=["*"].',
-  "channels.whatsapp.selfChatMode": "同一手机设置（机器人使用你的个人 WhatsApp 号码）。",
-  "channels.whatsapp.debounceMs":
-    "批量处理来自同一发送者的快速连续消息的去抖窗口（毫秒，0 禁用）。",
-  "channels.signal.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.signal.allowFrom=["*"].',
-  "channels.imessage.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.imessage.allowFrom=["*"].',
-  "channels.bluebubbles.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.bluebubbles.allowFrom=["*"].',
-  "channels.discord.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.discord.allowFrom=["*"].',
-  "channels.discord.dm.policy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.discord.allowFrom=["*"] (legacy: channels.discord.dm.allowFrom).',
-  "channels.discord.retry.attempts":
-    "出站 Discord API 调用的最大重试次数（默认：3）。",
-  "channels.discord.retry.minDelayMs": "Discord 出站调用的最小重试延迟（毫秒）。",
-  "channels.discord.retry.maxDelayMs": "Discord 出站调用的最大重试延迟上限（毫秒）。",
-  "channels.discord.retry.jitter": "应用于 Discord 重试延迟的抖动因子（0-1）。",
-  "channels.discord.maxLinesPerMessage": "每条 Discord 消息的软性最大行数（默认：17）。",
-  "channels.discord.inboundWorker.runTimeoutMs": `Optional queued Discord inbound worker timeout in ms. This is separate from Carbon listener timeouts; defaults to ${DISCORD_DEFAULT_INBOUND_WORKER_TIMEOUT_MS} and can be disabled with 0. Set per account via channels.discord.accounts.<id>.inboundWorker.runTimeoutMs.`,
-  "channels.discord.eventQueue.listenerTimeout": `Canonical Discord listener timeout control in ms for gateway normalization/enqueue handlers. Default is ${DISCORD_DEFAULT_LISTENER_TIMEOUT_MS} in OpenClaw; set per account via channels.discord.accounts.<id>.eventQueue.listenerTimeout.`,
-  "channels.discord.eventQueue.maxQueueSize":
-    "可选的 Discord 事件队列容量覆盖（反压前的最大排队事件数）。通过 channels.discord.accounts.<id>.eventQueue.maxQueueSize 按账户设置。",
-  "channels.discord.eventQueue.maxConcurrency":
-    "可选的 Discord 事件队列并发覆盖（最大并发处理器执行数）。通过 channels.discord.accounts.<id>.eventQueue.maxConcurrency 按账户设置。",
-  "channels.discord.threadBindings.enabled":
-    "启用 Discord 线程绑定功能（/focus、绑定线程路由/投递和线程绑定子代理会话）。设置时覆盖 session.threadBindings.enabled。",
-  "channels.discord.threadBindings.idleHours":
-    "Discord 线程绑定会话（/focus 和生成的线程会话）的不活跃窗口（小时）。设为 0 禁用空闲自动解绑（默认：24）。设置时覆盖 session.threadBindings.idleHours。",
-  "channels.discord.threadBindings.maxAgeHours":
-    "Discord 线程绑定会话的可选硬性最大时长（小时）。设为 0 禁用硬性上限（默认：0）。设置时覆盖 session.threadBindings.maxAgeHours。",
-  "channels.discord.threadBindings.spawnSubagentSessions":
-    "允许带 thread=true 的子代理生成自动创建和绑定 Discord 线程（默认：false；需选择加入）。设为 true 以启用此账户/渠道的线程绑定子代理生成。",
-  "channels.discord.threadBindings.spawnAcpSessions":
-    "允许 /acp spawn 为 ACP 会话自动创建和绑定 Discord 线程（默认：false；需选择加入）。设为 true 以启用此账户/渠道的线程绑定 ACP 生成。",
-  "channels.discord.ui.components.accentColor":
-    "Discord 组件容器的强调色（十六进制）。通过 channels.discord.accounts.<id>.ui.components.accentColor 按账户设置。",
-  "channels.discord.voice.enabled":
-    "启用 Discord 语音频道会话（默认：true）。省略 channels.discord.voice 以保持此账户的语音支持禁用。",
-  "channels.discord.voice.autoJoin":
-    "启动时自动加入的语音频道（guildId/channelId 条目列表）。",
-  "channels.discord.voice.daveEncryption":
-    "切换 Discord 语音加入的 DAVE 端到端加密（默认：true，@discordjs/voice 标准；Discord 可能要求此项）。",
-  "channels.discord.voice.decryptionFailureTolerance":
-    "DAVE 尝试会话恢复前的连续解密失败次数（传递给 @discordjs/voice；默认：24）。",
-  "channels.discord.voice.tts":
-    "Discord 语音播放的可选 TTS 覆盖（与 messages.tts 合并）。",
-  "channels.discord.intents.presence":
-    "启用 Guild Presences 特权意图。还必须在 Discord 开发者门户中启用。允许跟踪用户活动（如 Spotify）。默认：false。",
-  "channels.discord.intents.guildMembers":
-    "启用 Guild Members 特权意图。还必须在 Discord 开发者门户中启用。默认：false。",
-  "channels.discord.pluralkit.enabled":
-    "解析 PluralKit 代理消息并将系统成员视为不同的发送者。",
-  "channels.discord.pluralkit.token":
-    "用于解析私有系统或成员的可选 PluralKit 令牌。",
-  "channels.discord.activity": "Discord 在线状态活动文本（默认为自定义状态）。",
-  "channels.discord.status": "Discord 在线状态（online、dnd、idle、invisible）。",
-  "channels.discord.autoPresence.enabled":
-    "基于运行时/模型可用性信号启用自动 Discord 机器人在线状态更新。启用时：healthy=>online，degraded/unknown=>idle，exhausted/unavailable=>dnd。",
-  "channels.discord.autoPresence.intervalMs":
-    "评估 Discord 自动在线状态的频率（毫秒，默认：30000）。",
-  "channels.discord.autoPresence.minUpdateIntervalMs":
-    "实际 Discord 在线状态更新调用之间的最小时间（毫秒，默认：15000）。防止在嘈杂的状态变化时刷屏。",
-  "channels.discord.autoPresence.healthyText":
-    "运行时健康时（online）的可选自定义状态文本。如省略，在设置时回退到静态 channels.discord.activity。",
-  "channels.discord.autoPresence.degradedText":
-    "运行时/模型可用性降级或未知时（idle）的可选自定义状态文本。",
-  "channels.discord.autoPresence.exhaustedText":
-    "运行时检测到模型配额耗尽/不可用时（dnd）的可选自定义状态文本。支持 {reason} 模板占位符。",
-  "channels.discord.activityType":
-    "Discord 在线状态活动类型（0=正在玩，1=正在直播，2=正在听，3=正在看，4=自定义，5=正在竞技）。",
-  "channels.discord.activityUrl": "Discord 在线状态直播 URL（activityType=1 时必需）。",
-  "channels.slack.dm.policy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.slack.allowFrom=["*"] (legacy: channels.slack.dm.allowFrom).',
-  "channels.slack.dmPolicy":
-    'Direct message access control ("pairing" recommended). "open" requires channels.slack.allowFrom=["*"].',
 };

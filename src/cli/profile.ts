@@ -1,9 +1,10 @@
 import os from "node:os";
 import path from "node:path";
-import { consumeRootOptionToken, FLAG_TERMINATOR } from "../infra/cli-root-options.js";
+import { FLAG_TERMINATOR } from "../infra/cli-root-options.js";
 import { resolveRequiredHomeDir } from "../infra/home-dir.js";
-import { getPrimaryCommand } from "./argv.js";
+import { resolveCliArgvInvocation } from "./argv-invocation.js";
 import { isValidProfileName } from "./profile-utils.js";
+import { forwardConsumedCliRootOption } from "./root-option-forward.js";
 import { takeCliRootOptionValue } from "./root-option-value.js";
 
 export type CliProfileParseResult =
@@ -31,7 +32,7 @@ export function parseCliProfileArgs(argv: string[]): CliProfileParseResult {
     }
 
     if (arg === "--dev") {
-      if (getPrimaryCommand(out) === "gateway") {
+      if (resolveCliArgvInvocation(out).primary === "gateway") {
         out.push(arg);
         continue;
       }
@@ -65,14 +66,8 @@ export function parseCliProfileArgs(argv: string[]): CliProfileParseResult {
       continue;
     }
 
-    const consumedRootOption = consumeRootOptionToken(args, i);
+    const consumedRootOption = forwardConsumedCliRootOption(args, i, out);
     if (consumedRootOption > 0) {
-      for (let offset = 0; offset < consumedRootOption; offset += 1) {
-        const token = args[i + offset];
-        if (token !== undefined) {
-          out.push(token);
-        }
-      }
       i += consumedRootOption - 1;
       continue;
     }

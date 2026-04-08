@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { t } from "../../i18n/index.ts";
 import { formatRelativeTimestamp } from "../format.ts";
 import type { DiscordStatus } from "../types.ts";
 import { renderChannelConfigSection } from "./channels.config.ts";
@@ -22,29 +23,27 @@ export function renderDiscordCard(params: {
     subtitle: "机器人状态和渠道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "已配置", value: formatNullableBoolean(configured) },
-      { label: "运行中", value: discord?.running ? "Yes" : "No" },
+      { label: t("common.configured"), value: formatNullableBoolean(configured) },
+      { label: t("common.running"), value: discord?.running ? t("common.yes") : t("common.no") },
       {
-        label: "上次启动",
-        value: discord?.lastStartAt ? formatRelativeTimestamp(discord.lastStartAt) : "n/a",
+        label: t("common.lastStart"),
+        value: discord?.lastStartAt ? formatRelativeTimestamp(discord.lastStartAt) : t("common.na"),
       },
       {
-        label: "上次探测",
-        value: discord?.lastProbeAt ? formatRelativeTimestamp(discord.lastProbeAt) : "n/a",
+        label: t("common.last探测"),
+        value: discord?.last探测At ? formatRelativeTimestamp(discord.last探测At) : t("common.na"),
       },
     ],
     lastError: discord?.lastError,
     secondaryCallout: discord?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          探测 ${discord.probe.ok ? "成功" : "失败"} ·
+          ${discord.probe.ok ? t("common.probeOk") : t("common.probeFailed")} ·
           ${discord.probe.status ?? ""} ${discord.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "discord", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>
-        Probe
-      </button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>${t("common.probe")}</button>
     </div>`,
   });
 }

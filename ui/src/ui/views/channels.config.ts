@@ -1,4 +1,5 @@
 import { html } from "lit";
+import { t } from "../../i18n/index.ts";
 import type { ConfigUiHints } from "../types.ts";
 import { formatChannelExtraValue, resolveChannelConfigValue } from "./channel-config-extras.ts";
 import type { ChannelsProps } from "./channels.types.ts";
@@ -86,15 +87,11 @@ export function renderChannelConfigForm(props: ChannelConfigFormProps) {
   const analysis = analyzeConfigSchema(props.schema);
   const normalized = analysis.schema;
   if (!normalized) {
-    return html`
-      <div class="callout danger">架构不可用。请使用原始模式。</div>
-    `;
+    return html` <div class="callout danger">架构不可用。请使用原始模式。</div> `;
   }
   const node = resolveSchemaNode(normalized, ["channels", props.channelId]);
   if (!node) {
-    return html`
-      <div class="callout danger">渠道配置架构不可用。</div>
-    `;
+    return html` <div class="callout danger">渠道配置架构不可用。</div> `;
   }
   const configValue = props.configValue ?? {};
   const value = resolveChannelValue(configValue, props.channelId);
@@ -120,20 +117,16 @@ export function renderChannelConfigSection(params: { channelId: string; props: C
   const disabled = props.configSaving || props.configSchemaLoading;
   return html`
     <div style="margin-top: 16px;">
-      ${
-        props.configSchemaLoading
-          ? html`
-              <div class="muted">加载配置架构中…</div>
-            `
-          : renderChannelConfigForm({
-              channelId,
-              configValue: props.configForm,
-              schema: props.configSchema,
-              uiHints: props.configUiHints,
-              disabled,
-              onPatch: props.onConfigPatch,
-            })
-      }
+      ${props.configSchemaLoading
+        ? html` <div class="muted">加载配置架构中…</div> `
+        : renderChannelConfigForm({
+            channelId,
+            configValue: props.configForm,
+            schema: props.configSchema,
+            uiHints: props.configUiHints,
+            disabled,
+            onPatch: props.onConfigPatch,
+          })}
       <div class="row" style="margin-top: 12px;">
         <button
           class="btn primary"
@@ -142,12 +135,8 @@ export function renderChannelConfigSection(params: { channelId: string; props: C
         >
           ${props.configSaving ? "保存中…" : "保存"}
         </button>
-        <button
-          class="btn"
-          ?disabled=${disabled}
-          @click=${() => props.onConfigReload()}
-        >
-          重新加载
+        <button class="btn" ?disabled=${disabled} @click=${() => props.onConfigReload()}>
+          ${t("common.reload")}
         </button>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import type { OpenClawConfig } from "../config/types.js";
 import { isValidEnvSecretRefId, type SecretRef } from "../config/types.secrets.js";
+import { formatErrorMessage } from "../infra/errors.js";
 import { encodeJsonPointerToken } from "../secrets/json-pointer.js";
 import { getProviderEnvVars } from "../secrets/provider-env-vars.js";
 import {
@@ -32,13 +33,6 @@ export type SecretRefSetupPromptCopy = {
   providerValidatedMessage?: (provider: string, id: string, source: "file" | "exec") => string;
 };
 
-function formatErrorMessage(error: unknown): string {
-  if (error instanceof Error && typeof error.message === "string" && error.message.trim()) {
-    return error.message;
-  }
-  return String(error);
-}
-
 export function extractEnvVarFromSourceLabel(source: string): string | undefined {
   const match = ENV_SOURCE_LABEL_RE.exec(source.trim());
   return match?.[1];
@@ -57,6 +51,7 @@ export function resolveRefFallbackInput(params: {
   config: OpenClawConfig;
   provider: string;
   preferredEnvVar?: string;
+  env?: NodeJS.ProcessEnv;
 }): { ref: SecretRef; resolvedValue: string } {
   const fallbackEnvVar = params.preferredEnvVar ?? resolveDefaultProviderEnvVar(params.provider);
   if (!fallbackEnvVar) {
@@ -64,7 +59,8 @@ export function resolveRefFallbackInput(params: {
       `No default environment variable mapping found for provider "${params.provider}". Set a provider-specific env var, or re-run setup in an interactive terminal to configure a ref.`,
     );
   }
-  const value = process.env[fallbackEnvVar]?.trim();
+  const env = params.env ?? process.env;
+  const value = env[fallbackEnvVar]?.trim();
   if (!value) {
     throw new Error(
       `Environment variable "${fallbackEnvVar}" is required for --secret-input-mode ref in non-interactive setup.`,
@@ -88,7 +84,9 @@ async function promptEnvSecretRefForSetup(params: {
   prompter: WizardPrompter;
   defaultEnvVar: string;
   copy?: SecretRefSetupPromptCopy;
+  env?: NodeJS.ProcessEnv;
 }): Promise<{ ref: SecretRef; resolvedValue: string }> {
+  const env = params.env ?? process.env;
   const envVarRaw = await params.prompter.text({
     message: params.copy?.envVarMessage ?? "环境变量名称",
     initialValue: params.defaultEnvVar || undefined,
@@ -101,7 +99,7 @@ async function promptEnvSecretRefForSetup(params: {
           'Use an env var name like "OPENAI_API_KEY" (uppercase letters, numbers, underscores).'
         );
       }
-      if (!process.env[candidate]?.trim()) {
+      if (!env[candidate]?.trim()) {
         return (
           params.copy?.envVarMissingError?.(candidate) ??
           `Environment variable "${candidate}" is missing or empty in this session.`
@@ -118,7 +116,7 @@ async function promptEnvSecretRefForSetup(params: {
       `No valid environment variable name provided for provider "${params.provider}".`,
     );
   }
-  const resolvedValue = process.env[envVar]?.trim();
+  const resolvedValue = env[envVar]?.trim();
   if (!resolvedValue) {
     throw new Error(`Environment variable "${envVar}" is missing or empty in this session.`);
   }
@@ -143,6 +141,7 @@ async function promptProviderSecretRefForSetup(params: {
   prompter: WizardPrompter;
   defaultFilePointer: string;
   copy?: SecretRefSetupPromptCopy;
+  env?: NodeJS.ProcessEnv;
 }): Promise<{ ref: SecretRef; resolvedValue: string }> {
   const externalProviders = Object.entries(params.config.secrets?.providers ?? {}).filter(
     ([, provider]) => provider?.source === "file" || provider?.source === "exec",
@@ -229,7 +228,7 @@ async function promptProviderSecretRefForSetup(params: {
     const { resolveSecretRefString } = await loadSecretResolve();
     const resolvedValue = await resolveSecretRefString(ref, {
       config: params.config,
-      env: process.env,
+      env: params.env ?? process.env,
     });
     await params.prompter.note(
       params.copy?.providerValidatedMessage?.(selectedProvider, id, providerEntry.source) ??
@@ -256,6 +255,7 @@ export async function promptSecretRefForSetup(params: {
   prompter: WizardPrompter;
   preferredEnvVar?: string;
   copy?: SecretRefSetupPromptCopy;
+  env?: NodeJS.ProcessEnv;
 }): Promise<{ ref: SecretRef; resolvedValue: string }> {
   const defaultEnvVar =
     params.preferredEnvVar ?? resolveDefaultProviderEnvVar(params.provider) ?? "";
@@ -289,6 +289,7 @@ export async function promptSecretRefForSetup(params: {
         prompter: params.prompter,
         defaultEnvVar,
         copy: params.copy,
+        env: params.env,
       });
     }
 
@@ -299,6 +300,7 @@ export async function promptSecretRefForSetup(params: {
         prompter: params.prompter,
         defaultFilePointer,
         copy: params.copy,
+        env: params.env,
       });
     } catch (error) {
       if (error instanceof Error && error.message === "retry") {

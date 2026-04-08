@@ -1,5 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { formatErrorMessage } from "../infra/errors.js";
 import {
+  installRequestBodyLimitGuard,
   isRequestBodyLimitError,
   readJsonBodyWithLimit,
   readRequestBodyWithLimit,
@@ -11,7 +13,9 @@ import type { FixedWindowRateLimiter } from "./webhook-memory-guards.js";
 export type WebhookBodyReadProfile = "pre-auth" | "post-auth";
 
 export {
+  installRequestBodyLimitGuard,
   isRequestBodyLimitError,
+  readJsonBodyWithLimit,
   readRequestBodyWithLimit,
   requestBodyErrorToText,
 } from "../infra/http-body.js";
@@ -265,8 +269,7 @@ export async function readWebhookBodyOrReject(params: {
     return respondWebhookBodyReadError({
       res: params.res,
       code: "INVALID_BODY",
-      invalidMessage:
-        params.invalidBodyMessage ?? (error instanceof Error ? error.message : String(error)),
+      invalidMessage: params.invalidBodyMessage ?? formatErrorMessage(error),
     });
   }
 }

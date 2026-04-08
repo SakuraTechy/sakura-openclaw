@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { t } from "../../i18n/index.ts";
 import { formatRelativeTimestamp } from "../format.ts";
 import type { ChannelAccountSnapshot, TelegramStatus } from "../types.ts";
 import { renderChannelConfigSection } from "./channels.config.ts";
@@ -26,33 +27,29 @@ export function renderTelegramCard(params: {
     return html`
       <div class="account-card">
         <div class="account-card-header">
-          <div class="account-card-title">
-            ${botUsername ? `@${botUsername}` : label}
-          </div>
+          <div class="account-card-title">${botUsername ? `@${botUsername}` : label}</div>
           <div class="account-card-id">${account.accountId}</div>
         </div>
         <div class="status-list account-card-status">
           <div>
-            <span class="label">运行中</span>
-            <span>${account.running ? "Yes" : "No"}</span>
+            <span class="label">${t("common.running")}</span>
+            <span>${account.running ? t("common.yes") : t("common.no")}</span>
           </div>
           <div>
-            <span class="label">已配置</span>
-            <span>${account.configured ? "Yes" : "No"}</span>
+            <span class="label">${t("common.configured")}</span>
+            <span>${account.configured ? t("common.yes") : t("common.no")}</span>
           </div>
           <div>
-            <span class="label">最后入站</span>
-            <span>${account.lastInboundAt ? formatRelativeTimestamp(account.lastInboundAt) : "n/a"}</span>
+            <span class="label">${t("common.lastInbound")}</span>
+            <span
+              >${account.lastInboundAt
+                ? formatRelativeTimestamp(account.lastInboundAt)
+                : t("common.na")}</span
+            >
           </div>
-          ${
-            account.lastError
-              ? html`
-                <div class="account-card-error">
-                  ${account.lastError}
-                </div>
-              `
-              : nothing
-          }
+          ${account.lastError
+            ? html` <div class="account-card-error">${account.lastError}</div> `
+            : nothing}
         </div>
       </div>
     `;
@@ -69,29 +66,19 @@ export function renderTelegramCard(params: {
           ${telegramAccounts.map((account) => renderAccountCard(account))}
         </div>
 
-        ${
-          telegram?.lastError
-            ? html`<div class="callout danger" style="margin-top: 12px;">
-              ${telegram.lastError}
-            </div>`
-            : nothing
-        }
-
-        ${
-          telegram?.probe
-            ? html`<div class="callout" style="margin-top: 12px;">
-              探测 ${telegram.probe.ok ? "成功" : "失败"} ·
+        ${telegram?.lastError
+          ? html`<div class="callout danger" style="margin-top: 12px;">${telegram.lastError}</div>`
+          : nothing}
+        ${telegram?.probe
+          ? html`<div class="callout" style="margin-top: 12px;">
+              ${telegram.probe.ok ? t("common.probeOk") : t("common.probeFailed")} ·
               ${telegram.probe.status ?? ""} ${telegram.probe.error ?? ""}
             </div>`
-            : nothing
-        }
-
+          : nothing}
         ${renderChannelConfigSection({ channelId: "telegram", props })}
 
         <div class="row" style="margin-top: 12px;">
-          <button class="btn" @click=${() => props.onRefresh(true)}>
-            Probe
-          </button>
+          <button class="btn" @click=${() => props.onRefresh(true)}>${t("common.probe")}</button>
         </div>
       </div>
     `;
@@ -102,30 +89,32 @@ export function renderTelegramCard(params: {
     subtitle: "机器人状态和渠道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "已配置", value: formatNullableBoolean(configured) },
-      { label: "运行中", value: telegram?.running ? "Yes" : "No" },
-      { label: "模式", value: telegram?.mode ?? "n/a" },
+      { label: t("common.configured"), value: formatNullableBoolean(configured) },
+      { label: t("common.running"), value: telegram?.running ? t("common.yes") : t("common.no") },
+      { label: t("common.mode"), value: telegram?.mode ?? t("common.na") },
       {
-        label: "上次启动",
-        value: telegram?.lastStartAt ? formatRelativeTimestamp(telegram.lastStartAt) : "n/a",
+        label: t("common.lastStart"),
+        value: telegram?.lastStartAt
+          ? formatRelativeTimestamp(telegram.lastStartAt)
+          : t("common.na"),
       },
       {
-        label: "上次探测",
-        value: telegram?.lastProbeAt ? formatRelativeTimestamp(telegram.lastProbeAt) : "n/a",
+        label: t("common.last探测"),
+        value: telegram?.last探测At
+          ? formatRelativeTimestamp(telegram.last探测At)
+          : t("common.na"),
       },
     ],
     lastError: telegram?.lastError,
     secondaryCallout: telegram?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          探测 ${telegram.probe.ok ? "成功" : "失败"} ·
+          ${telegram.probe.ok ? t("common.probeOk") : t("common.probeFailed")} ·
           ${telegram.probe.status ?? ""} ${telegram.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "telegram", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>
-        Probe
-      </button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>${t("common.probe")}</button>
     </div>`,
   });
 }

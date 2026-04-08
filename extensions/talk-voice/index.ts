@@ -1,4 +1,5 @@
 import { resolveActiveTalkProviderConfig } from "openclaw/plugin-sdk/config-runtime";
+import { formatErrorMessage } from "openclaw/plugin-sdk/error-runtime";
 import type { SpeechVoiceOption } from "openclaw/plugin-sdk/speech";
 import { definePluginEntry, type OpenClawPluginApi } from "./api.js";
 
@@ -99,6 +100,18 @@ function asProviderBaseUrl(value: unknown): string | undefined {
   return trimmed || undefined;
 }
 
+const TALK_ADMIN_SCOPE = "operator.admin";
+
+function requiresAdminToSetVoice(
+  channel: string,
+  gatewayClientScopes?: readonly string[],
+): boolean {
+  if (Array.isArray(gatewayClientScopes)) {
+    return !gatewayClientScopes.includes(TALK_ADMIN_SCOPE);
+  }
+  return channel === "webchat";
+}
+
 export default definePluginEntry({
   id: "talk-voice",
   name: "Talk Voice",
@@ -132,15 +145,14 @@ export default definePluginEntry({
         const apiKey = asTrimmedString(active.config.apiKey);
         const baseUrl = asProviderBaseUrl(active.config.baseUrl);
 
-        const currentVoiceId =
-          asTrimmedString(active.config.voiceId) || asTrimmedString(cfg.talk?.voiceId);
+        const currentVoiceId = asTrimmedString(active.config.voiceId);
 
         if (action === "status") {
           return {
             text:
               "Talk voice status:\n" +
               `- provider: ${providerId}\n` +
-              `- talk.voiceId: ${currentVoiceId ? currentVoiceId : "(unset)"}\n` +
+              `- talk.providers.${providerId}.voiceId: ${currentVoiceId ? currentVoiceId : "(unset)"}\n` +
               `- ${providerId}.apiKey: ${apiKey ? mask(apiKey) : "(unset)"}`,
           };
         }
@@ -158,18 +170,16 @@ export default definePluginEntry({
               text: formatVoiceList(voices, Number.isFinite(limit) ? limit : 12, providerId),
             };
           } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
+            const message = formatErrorMessage(error);
             return { text: `${providerLabel} voice list failed: ${message}` };
           }
         }
 
         if (action === "set") {
-          // Persistent config writes require operator.admin for gateway clients.
-          // Without this check, a caller with only operator.write could bypass the
-          // admin-only config.patch RPC by reaching writeConfigFile indirectly
-          // through chat.send → /voice set.
-          if (ctx.channel === "webchat" && !ctx.gatewayClientScopes?.includes("operator.admin")) {
-            return { text: `⚠️ ${commandLabel} set requires operator.admin for gateway clients.` };
+          // Gateway callers can override messageChannel, so scope presence is
+          // the reliable signal for internal admin-only mutations.
+          if (requiresAdminToSetVoice(ctx.channel, ctx.gatewayClientScopes)) {
+            return { text: `⚠️ ${commandLabel} set requires operator.admin.` };
           }
 
           const query = tokens.slice(1).join(" ").trim();
@@ -185,7 +195,7 @@ export default definePluginEntry({
               baseUrl,
             });
           } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
+            const message = formatErrorMessage(error);
             return { text: `${providerLabel} voice lookup failed: ${message}` };
           }
           const chosen = findVoice(voices, query);
@@ -200,9 +210,9 @@ export default definePluginEntry({
               ...cfg.talk,
               provider: providerId,
               providers: {
-                ...(cfg.talk?.providers ?? {}),
+                ...cfg.talk?.providers,
                 [providerId]: {
-                  ...(cfg.talk?.providers?.[providerId] ?? {}),
+                  ...cfg.talk?.providers?.[providerId],
                   voiceId: chosen.id,
                 },
               },

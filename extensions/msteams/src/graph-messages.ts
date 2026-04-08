@@ -74,7 +74,7 @@ async function resolveGraphConversationId(to: string): Promise<string> {
 
   // user:<aadId> — look up the conversation store for the real chat ID
   const store = createMSTeamsConversationStoreFs();
-  const found = await store.findByUserId(cleaned);
+  const found = await store.findPreferredDmByUserId(cleaned);
   if (!found) {
     throw new Error(
       `No conversation found for user:${cleaned}. ` +
@@ -109,7 +109,7 @@ function resolveConversationPath(to: string): {
     const [teamId, channelId] = cleaned.split("/", 2);
     return {
       kind: "channel",
-      basePath: `/teams/${encodeURIComponent(teamId!)}/channels/${encodeURIComponent(channelId!)}`,
+      basePath: `/teams/${encodeURIComponent(teamId)}/channels/${encodeURIComponent(channelId)}`,
       teamId,
       channelId,
     };

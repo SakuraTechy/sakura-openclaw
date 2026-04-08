@@ -26,6 +26,7 @@ import type { OpenClawConfig } from "../config/config.js";
 import { describeGatewayServiceRestart, resolveGatewayService } from "../daemon/service.js";
 import { isSystemdUserServiceAvailable } from "../daemon/systemd.js";
 import { ensureControlUiAssetsBuilt } from "../infra/control-ui-assets.js";
+import { formatErrorMessage } from "../infra/errors.js";
 import type { RuntimeEnv } from "../runtime.js";
 import { restoreTerminalState } from "../terminal/restore.js";
 import { runTui } from "../tui/tui.js";
@@ -51,6 +52,7 @@ export async function finalizeSetupWizard(
   options: FinalizeOnboardingOptions,
 ): Promise<{ launchedTui: boolean }> {
   const { flow, opts, baseConfig, nextConfig, settings, prompter, runtime } = options;
+  let gatewayProbe: { ok: boolean; detail?: string } = { ok: true };
 
   const withWizardProgress = async <T>(
     label: string,
@@ -211,7 +213,7 @@ export async function finalizeSetupWizard(
           });
         }
       } catch (err) {
-        installError = err instanceof Error ? err.message : String(err);
+        installError = formatErrorMessage(err);
       } finally {
         progress.stop(
           installError ? "网关服务安装失败。" : "网关服务已安装。",
@@ -232,15 +234,33 @@ export async function finalizeSetupWizard(
       basePath: undefined,
     });
     // Daemon install/restart can briefly flap the WS; wait a bit so health check doesn't false-fail.
-    await waitForGatewayReachable({
+    gatewayProbe = await waitForGatewayReachable({
       url: probeLinks.wsUrl,
       token: settings.gatewayToken,
       deadlineMs: 15_000,
     });
-    try {
-      await healthCommand({ json: false, timeoutMs: 10_000 }, runtime);
-    } catch (err) {
-      runtime.error(formatHealthCheckFailure(err));
+    if (gatewayProbe.ok) {
+      try {
+        await healthCommand({ json: false, timeoutMs: 10_000 }, runtime);
+      } catch (err) {
+        runtime.error(formatHealthCheckFailure(err));
+        await prompter.note(
+          [
+            "Docs:",
+            "https://docs.openclaw.ai/gateway/health",
+            "https://docs.openclaw.ai/gateway/troubleshooting",
+          ].join("\n"),
+          "Health check help",
+        );
+      }
+    } else if (installDaemon) {
+      runtime.error(
+        formatHealthCheckFailure(
+          new Error(
+            gatewayProbe.detail ?? `gateway did not become reachable at ${probeLinks.wsUrl}`,
+          ),
+        ),
+      );
       await prompter.note(
         [
           "文档：",
@@ -248,6 +268,17 @@ export async function finalizeSetupWizard(
           "https://docs.openclaw.ai/gateway/troubleshooting",
         ].join("\n"),
         "健康检查帮助",
+      );
+    } else {
+      await prompter.note(
+        [
+          "Gateway not detected yet.",
+          "Setup was run without Gateway service install, so no background gateway is expected.",
+          `Start now: ${formatCliCommand("openclaw gateway run")}`,
+          `Or rerun with: ${formatCliCommand("openclaw onboard --install-daemon")}`,
+          `Or skip this probe next time: ${formatCliCommand("openclaw onboard --skip-health")}`,
+        ].join("\n"),
+        "Gateway",
       );
     }
   }
@@ -297,18 +328,20 @@ export async function finalizeSetupWizard(
       await prompter.note(
         [
           "Could not resolve gateway.auth.password SecretRef for setup auth.",
-          error instanceof Error ? error.message : String(error),
+          formatErrorMessage(error),
         ].join("\n"),
         "Gateway auth",
       );
     }
   }
 
-  const gatewayProbe = await probeGatewayReachable({
-    url: links.wsUrl,
-    token: settings.authMode === "token" ? settings.gatewayToken : undefined,
-    password: settings.authMode === "password" ? resolvedGatewayPassword : "",
-  });
+  if (opts.skipHealth || !gatewayProbe.ok) {
+    gatewayProbe = await probeGatewayReachable({
+      url: links.wsUrl,
+      token: settings.authMode === "token" ? settings.gatewayToken : undefined,
+      password: settings.authMode === "password" ? resolvedGatewayPassword : "",
+    });
+  }
   const gatewayStatusLine = gatewayProbe.ok
     ? "网关：已连接"
     : `网关：未检测到${gatewayProbe.detail ? `（${gatewayProbe.detail}）` : ""}`;
@@ -358,7 +391,7 @@ export async function finalizeSetupWizard(
     await prompter.note(
       [
         "网关令牌：网关和控制面板的共享认证。",
-        "存储位置：~/.openclaw/openclaw.json (gateway.auth.token) 或 OPENCLAW_GATEWAY_TOKEN 环境变量。",
+        "存储位置：$OPENCLAW_CONFIG_PATH（默认 ~/.openclaw/openclaw.json）gateway.auth.token 字段，或 OPENCLAW_GATEWAY_TOKEN 环境变量。",
         `View token: ${formatCliCommand("openclaw config get gateway.auth.token")}`,
         `Generate token: ${formatCliCommand("openclaw doctor --generate-gateway-token")}`,
         "Web UI 会将控制台 URL 令牌保存在当前标签页内存中，并在加载后从 URL 中移除。",
@@ -446,6 +479,7 @@ export async function finalizeSetupWizard(
 
   const shouldOpenControlUi =
     !opts.skipUi &&
+    gatewayProbe.ok &&
     settings.authMode === "token" &&
     Boolean(settings.gatewayToken) &&
     hatchChoice === null;
@@ -482,6 +516,8 @@ export async function finalizeSetupWizard(
     );
   }
 
+  const { describeCodexNativeWebSearch } = await import("../agents/codex-native-web-search.js");
+  const codexNativeSummary = describeCodexNativeWebSearch(nextConfig);
   const webSearchProvider = nextConfig.tools?.web?.search?.provider;
   const webSearchEnabled = nextConfig.tools?.web?.search?.enabled;
   const configuredSearchProviders = listConfiguredWebSearchProviders({ config: nextConfig });
@@ -561,6 +597,15 @@ export async function finalizeSetupWizard(
         ].join("\n"),
         "网页搜索",
       );
+    } else if (codexNativeSummary) {
+      await prompter.note(
+        [
+          "Managed web search provider was skipped.",
+          codexNativeSummary,
+          "Docs: https://docs.openclaw.ai/tools/web",
+        ].join("\n"),
+        "Web search",
+      );
     } else {
       await prompter.note(
         [
@@ -572,6 +617,17 @@ export async function finalizeSetupWizard(
         "网页搜索",
       );
     }
+  }
+
+  if (codexNativeSummary) {
+    await prompter.note(
+      [
+        codexNativeSummary,
+        "Used only for Codex-capable models.",
+        "Docs: https://docs.openclaw.ai/tools/web",
+      ].join("\n"),
+      "Codex native search",
+    );
   }
 
   await prompter.note(

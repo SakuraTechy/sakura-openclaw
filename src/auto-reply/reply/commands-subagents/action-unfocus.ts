@@ -1,120 +1,41 @@
 import { getSessionBindingService } from "../../../infra/outbound/session-binding-service.js";
 import type { CommandHandlerResult } from "../commands-types.js";
-import {
-  resolveMatrixConversationId,
-  resolveMatrixParentConversationId,
-} from "../matrix-context.js";
-import {
-  type SubagentsCommandContext,
-  isDiscordSurface,
-  isMatrixSurface,
-  isTelegramSurface,
-  resolveChannelAccountId,
-  resolveCommandSurfaceChannel,
-  resolveTelegramConversationId,
-  stopWithText,
-} from "./shared.js";
+import { resolveConversationBindingContextFromAcpCommand } from "../conversation-binding-input.js";
+import { type SubagentsCommandContext, stopWithText } from "./shared.js";
 
 export async function handleSubagentsUnfocusAction(
   ctx: SubagentsCommandContext,
 ): Promise<CommandHandlerResult> {
   const { params } = ctx;
-  const channel = resolveCommandSurfaceChannel(params);
-  if (channel !== "discord" && channel !== "matrix" && channel !== "telegram") {
-    return stopWithText("⚠️ /unfocus 仅在 Discord、Matrix 和 Telegram 上可用。");
-  }
-
-  const accountId = resolveChannelAccountId(params);
   const bindingService = getSessionBindingService();
-
-  const conversationId = (() => {
-    if (isDiscordSurface(params)) {
-      const threadId = params.ctx.MessageThreadId != null ? String(params.ctx.MessageThreadId) : "";
-      return threadId.trim() || undefined;
-    }
-    if (isTelegramSurface(params)) {
-      return resolveTelegramConversationId(params);
-    }
-    if (isMatrixSurface(params)) {
-      return resolveMatrixConversationId({
-        ctx: {
-          MessageThreadId: params.ctx.MessageThreadId,
-          OriginatingTo: params.ctx.OriginatingTo,
-          To: params.ctx.To,
-        },
-        command: {
-          to: params.command.to,
-        },
-      });
-    }
-    return undefined;
-  })();
-  const parentConversationId = (() => {
-    if (!isMatrixSurface(params)) {
-      return undefined;
-    }
-    return resolveMatrixParentConversationId({
-      ctx: {
-        MessageThreadId: params.ctx.MessageThreadId,
-        OriginatingTo: params.ctx.OriginatingTo,
-        To: params.ctx.To,
-      },
-      command: {
-        to: params.command.to,
-      },
-    });
-  })();
-
-  if (!conversationId) {
-    if (channel === "discord") {
-      return stopWithText("⚠️ /unfocus 必须在 Discord 线程中运行。");
-    }
-    if (channel === "matrix") {
-      return stopWithText("⚠️ /unfocus must be run inside a Matrix thread.");
-    }
-    return stopWithText(
-      "⚠️ /unfocus on Telegram requires a topic context in groups, or a direct-message conversation.",
-    );
+  const bindingContext = resolveConversationBindingContextFromAcpCommand(params);
+  if (!bindingContext) {
+    return stopWithText("⚠️ /unfocus 必须在已聚焦的对话中运行。");
   }
 
   const binding = bindingService.resolveByConversation({
-    channel,
-    accountId,
-    conversationId,
-    ...(parentConversationId && parentConversationId !== conversationId
-      ? { parentConversationId }
+    channel: bindingContext.channel,
+    accountId: bindingContext.accountId,
+    conversationId: bindingContext.conversationId,
+    ...(bindingContext.parentConversationId &&
+    bindingContext.parentConversationId !== bindingContext.conversationId
+      ? { parentConversationId: bindingContext.parentConversationId }
       : {}),
   });
   if (!binding) {
-    return stopWithText(
-      channel === "discord"
-        ? "ℹ️ 此线程当前未聚焦。"
-        : channel === "matrix"
-          ? "ℹ️ 此线程当前未聚焦。"
-          : "ℹ️ This conversation is not currently focused.",
-    );
+    return stopWithText("ℹ️ 此对话当前未聚焦。");
   }
 
   const senderId = params.command.senderId?.trim() || "";
   const boundBy =
     typeof binding.metadata?.boundBy === "string" ? binding.metadata.boundBy.trim() : "";
   if (boundBy && boundBy !== "system" && senderId && senderId !== boundBy) {
-    return stopWithText(
-      channel === "discord"
-        ? `⚠️ Only ${boundBy} can unfocus this thread.`
-        : channel === "matrix"
-          ? `⚠️ Only ${boundBy} can unfocus this thread.`
-          : `⚠️ Only ${boundBy} can unfocus this conversation.`,
-    );
+    return stopWithText(`⚠️ 只有 ${boundBy} 可以取消聚焦此对话。`);
   }
 
   await bindingService.unbind({
     bindingId: binding.bindingId,
     reason: "manual",
   });
-  return stopWithText(
-    channel === "discord" || channel === "matrix"
-      ? "✅ 线程已取消聚焦。"
-      : "✅ Conversation unfocused.",
-  );
+  return stopWithText("✅ 对话已取消聚焦。");
 }

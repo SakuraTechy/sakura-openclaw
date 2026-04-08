@@ -23,6 +23,7 @@ export type SlashCommandOptions = {
 
 const COMMAND_ALIASES: Record<string, string> = {
   elev: "elevated",
+  gwstatus: "gateway-status",
 };
 
 function createLevelCompletion(
@@ -60,7 +61,8 @@ export function getSlashCommands(options: SlashCommandOptions = {}): SlashComman
   const activationCompletions = createLevelCompletion(ACTIVATION_LEVELS);
   const commands: SlashCommand[] = [
     { name: "help", description: "显示斜杠命令帮助" },
-    { name: "status", description: "显示网关状态摘要" },
+    { name: "gateway-status", description: "显示网关状态摘要" },
+    { name: "gwstatus", description: "Alias for /gateway-status" },
     { name: "agent", description: "切换 Agent（或打开选择器）" },
     { name: "agents", description: "打开 Agent 选择器" },
     { name: "session", description: "切换会话（或打开选择器）" },
@@ -145,6 +147,8 @@ export function helpText(options: SlashCommandOptions = {}): string {
     "/help",
     "/commands",
     "/status",
+    "/gateway-status",
+    "/gwstatus",
     "/agent <id> (or /agents)",
     "/session <key> (or /sessions)",
     "/model <provider/model> (or /models)",

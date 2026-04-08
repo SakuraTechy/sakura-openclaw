@@ -8,7 +8,7 @@ export type SkillGroup = {
 
 const SKILL_SOURCE_GROUPS: Array<{ id: string; label: string; sources: string[] }> = [
   { id: "workspace", label: "工作区技能", sources: ["openclaw-workspace"] },
-  { id: "built-in", label: "Built-in Skills", sources: ["openclaw-bundled"] },
+  { id: "built-in", label: "内置技能", sources: ["openclaw-bundled"] },
   { id: "installed", label: "已安装技能", sources: ["openclaw-managed"] },
   { id: "extra", label: "额外技能", sources: ["openclaw-extra"] },
 ];

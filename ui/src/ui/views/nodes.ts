@@ -1,4 +1,5 @@
 import { html, nothing } from "lit";
+import { t } from "../../i18n/index.ts";
 import type {
   DevicePairingList,
   DeviceTokenSummary,
@@ -50,9 +51,7 @@ export function renderNodes(props: NodesProps) {
   const bindingState = resolveBindingsState(props);
   const approvalsState = resolveExecApprovalsState(props);
   return html`
-    ${renderExecApprovals(approvalsState)}
-    ${renderBindings(bindingState)}
-    ${renderDevices(props)}
+    ${renderExecApprovals(approvalsState)} ${renderBindings(bindingState)} ${renderDevices(props)}
     <section class="card">
       <div class="row" style="justify-content: space-between;">
         <div>
@@ -60,17 +59,13 @@ export function renderNodes(props: NodesProps) {
           <div class="card-sub">配对设备和实时链接。</div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-          ${props.loading ? "加载中…" : "刷新"}
+          ${props.loading ? t("common.loading") : t("common.refresh")}
         </button>
       </div>
       <div class="list" style="margin-top: 16px;">
-        ${
-          props.nodes.length === 0
-            ? html`
-                <div class="muted">未找到节点。</div>
-              `
-            : props.nodes.map((n) => renderNode(n))
-        }
+        ${props.nodes.length === 0
+          ? html` <div class="muted">未找到节点。</div> `
+          : props.nodes.map((n) => renderNode(n))}
       </div>
     </section>
   `;
@@ -88,38 +83,28 @@ function renderDevices(props: NodesProps) {
           <div class="card-sub">配对请求 + 角色令牌。</div>
         </div>
         <button class="btn" ?disabled=${props.devicesLoading} @click=${props.onDevicesRefresh}>
-          ${props.devicesLoading ? "加载中…" : "刷新"}
+          ${props.devicesLoading ? t("common.loading") : t("common.refresh")}
         </button>
       </div>
-      ${
-        props.devicesError
-          ? html`<div class="callout danger" style="margin-top: 12px;">${props.devicesError}</div>`
-          : nothing
-      }
+      ${props.devicesError
+        ? html`<div class="callout danger" style="margin-top: 12px;">${props.devicesError}</div>`
+        : nothing}
       <div class="list" style="margin-top: 16px;">
-        ${
-          pending.length > 0
-            ? html`
+        ${pending.length > 0
+          ? html`
               <div class="muted" style="margin-bottom: 8px;">待处理</div>
               ${pending.map((req) => renderPendingDevice(req, props))}
             `
-            : nothing
-        }
-        ${
-          paired.length > 0
-            ? html`
+          : nothing}
+        ${paired.length > 0
+          ? html`
               <div class="muted" style="margin-top: 12px; margin-bottom: 8px;">已配对</div>
               ${paired.map((device) => renderPairedDevice(device, props))}
             `
-            : nothing
-        }
-        ${
-          pending.length === 0 && paired.length === 0
-            ? html`
-                <div class="muted">没有配对设备。</div>
-              `
-            : nothing
-        }
+          : nothing}
+        ${pending.length === 0 && paired.length === 0
+          ? html` <div class="muted">没有配对设备。</div> `
+          : nothing}
       </div>
     </section>
   `;
@@ -127,7 +112,7 @@ function renderDevices(props: NodesProps) {
 
 function renderPendingDevice(req: PendingDevice, props: NodesProps) {
   const name = req.displayName?.trim() || req.deviceId;
-  const age = typeof req.ts === "number" ? formatRelativeTimestamp(req.ts) : "n/a";
+  const age = typeof req.ts === "number" ? formatRelativeTimestamp(req.ts) : t("common.na");
   const roleValue = req.role?.trim() || formatList(req.roles);
   const scopesValue = formatList(req.scopes);
   const repair = req.isRepair ? " · repair" : "";
@@ -167,18 +152,14 @@ function renderPairedDevice(device: PairedDevice, props: NodesProps) {
         <div class="list-title">${name}</div>
         <div class="list-sub">${device.deviceId}${ip}</div>
         <div class="muted" style="margin-top: 6px;">${roles} · ${scopes}</div>
-        ${
-          tokens.length === 0
-            ? html`
-                <div class="muted" style="margin-top: 6px">令牌：无</div>
-              `
-            : html`
+        ${tokens.length === 0
+          ? html` <div class="muted" style="margin-top: 6px">令牌：无</div> `
+          : html`
               <div class="muted" style="margin-top: 10px;">令牌</div>
               <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
                 ${tokens.map((token) => renderTokenRow(device.deviceId, token, props))}
               </div>
-            `
-        }
+            `}
       </div>
     </div>
   `;
@@ -200,18 +181,16 @@ function renderTokenRow(deviceId: string, token: DeviceTokenSummary, props: Node
         >
           轮换
         </button>
-        ${
-          token.revokedAtMs
-            ? nothing
-            : html`
+        ${token.revokedAtMs
+          ? nothing
+          : html`
               <button
                 class="btn btn--sm danger"
                 @click=${() => props.onDeviceRevoke(deviceId, token.role)}
               >
                 撤销
               </button>
-            `
-        }
+            `}
       </div>
     </div>
   `;
@@ -273,48 +252,42 @@ function renderBindings(state: BindingState) {
     <section class="card">
       <div class="row" style="justify-content: space-between; align-items: center;">
         <div>
-          <div class="card-title">执行节点绑定</div>
-          <div class="card-sub">
-            将代理固定到特定节点（使用 <span class="mono">exec host=node</span> 时）。
-          </div>
+          <div class="card-title">${t("nodes.binding.execNodeBinding")}</div>
+          <div class="card-sub">${t("nodes.binding.execNodeBindingSubtitle")}</div>
         </div>
         <button
           class="btn"
           ?disabled=${state.disabled || !state.configDirty}
           @click=${state.onSave}
         >
-          ${state.configSaving ? "保存中…" : "保存"}
+          ${state.configSaving ? t("common.saving") : t("common.save")}
         </button>
       </div>
 
-      ${
-        state.formMode === "raw"
-          ? html`
-              <div class="callout warn" style="margin-top: 12px">
-                切换到配置页的<strong>表单</strong>模式以在此编辑绑定。
-              </div>
-            `
-          : nothing
-      }
-
-      ${
-        !state.ready
-          ? html`<div class="row" style="margin-top: 12px; gap: 12px;">
-            <div class="muted">加载配置以编辑绑定。</div>
+      ${state.formMode === "raw"
+        ? html`
+            <div class="callout warn" style="margin-top: 12px">
+              ${t("nodes.binding.formModeHint")}
+            </div>
+          `
+        : nothing}
+      ${!state.ready
+        ? html`<div class="row" style="margin-top: 12px; gap: 12px;">
+            <div class="muted">${t("nodes.binding.loadConfigHint")}</div>
             <button class="btn" ?disabled=${state.configLoading} @click=${state.onLoadConfig}>
-              ${state.configLoading ? "加载中…" : "加载配置"}
+              ${state.configLoading ? t("common.loading") : t("common.loadConfig")}
             </button>
           </div>`
-          : html`
+        : html`
             <div class="list" style="margin-top: 16px;">
               <div class="list-item">
                 <div class="list-main">
-                  <div class="list-title">默认绑定</div>
-                  <div class="list-sub">当代理未覆盖节点绑定时使用。</div>
+                  <div class="list-title">${t("nodes.binding.defaultBinding")}</div>
+                  <div class="list-sub">${t("nodes.binding.defaultBindingHint")}</div>
                 </div>
                 <div class="list-meta">
                   <label class="field">
-                    <span>节点</span>
+                    <span>${t("nodes.binding.node")}</span>
                     <select
                       ?disabled=${state.disabled || !supportsBinding}
                       @change=${(event: Event) => {
@@ -326,35 +299,23 @@ function renderBindings(state: BindingState) {
                       <option value="" ?selected=${defaultValue === ""}>任意节点</option>
                       ${state.nodes.map(
                         (node) =>
-                          html`<option
-                            value=${node.id}
-                            ?selected=${defaultValue === node.id}
-                          >
+                          html`<option value=${node.id} ?selected=${defaultValue === node.id}>
                             ${node.label}
                           </option>`,
                       )}
                     </select>
                   </label>
-                  ${
-                    !supportsBinding
-                      ? html`
-                          <div class="muted">没有可用的 system.run 节点。</div>
-                        `
-                      : nothing
-                  }
+                  ${!supportsBinding
+                    ? html` <div class="muted">没有可用的 system.run 节点。</div> `
+                    : nothing}
                 </div>
               </div>
 
-              ${
-                state.agents.length === 0
-                  ? html`
-                      <div class="muted">未找到代理。</div>
-                    `
-                  : state.agents.map((agent) => renderAgentBinding(agent, state))
-              }
+              ${state.agents.length === 0
+                ? html` <div class="muted">未找到代理。</div> `
+                : state.agents.map((agent) => renderAgentBinding(agent, state))}
             </div>
-          `
-      }
+          `}
     </section>
   `;
 }
@@ -369,11 +330,9 @@ function renderAgentBinding(agent: BindingAgent, state: BindingState) {
         <div class="list-title">${label}</div>
         <div class="list-sub">
           ${agent.isDefault ? "默认代理" : "agent"} ·
-          ${
-            bindingValue === "__default__"
-              ? `uses default (${state.defaultBinding ?? "any"})`
-              : `override: ${agent.binding}`
-          }
+          ${bindingValue === "__default__"
+            ? `uses default (${state.defaultBinding ?? "any"})`
+            : `override: ${agent.binding}`}
         </div>
       </div>
       <div class="list-meta">
@@ -392,10 +351,7 @@ function renderAgentBinding(agent: BindingAgent, state: BindingState) {
             </option>
             ${state.nodes.map(
               (node) =>
-                html`<option
-                  value=${node.id}
-                  ?selected=${bindingValue === node.id}
-                >
+                html`<option value=${node.id} ?selected=${bindingValue === node.id}>
                   ${node.label}
                 </option>`,
             )}
