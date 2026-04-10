@@ -17,7 +17,7 @@ export function buildStatusOverviewSection(params: {
 }): StatusReportSection {
   return {
     kind: "table",
-    title: "Overview",
+    title: "概览",
     width: params.width,
     renderTable: params.renderTable,
     columns: [...statusOverviewTableColumns],
@@ -47,7 +47,7 @@ export function buildStatusChannelsSection(params: {
 }): StatusReportSection {
   return {
     kind: "table",
-    title: "Channels",
+    title: "通道",
     width: params.width,
     renderTable: params.renderTable,
     columns: statusChannelsTableColumns.map((column) =>
@@ -73,7 +73,7 @@ export function buildStatusChannelsTableSection(params: {
 }): StatusReportSection {
   return {
     kind: "table",
-    title: "Channels",
+    title: "通道",
     width: params.width,
     renderTable: params.renderTable,
     columns: [...params.columns],
@@ -139,7 +139,7 @@ export function buildStatusSessionsSection(params: {
 }): StatusReportSection {
   return {
     kind: "table",
-    title: "Sessions",
+    title: "会话",
     width: params.width,
     renderTable: params.renderTable,
     columns: [...params.columns],
@@ -155,7 +155,7 @@ export function buildStatusSystemEventsSection(params: {
 }): StatusReportSection {
   return {
     kind: "table",
-    title: "System events",
+    title: "系统事件",
     width: params.width,
     renderTable: params.renderTable,
     columns: [{ key: "Event", header: "Event", flex: true, minWidth: 24 }],
@@ -173,7 +173,7 @@ export function buildStatusHealthSection(params: {
 }): StatusReportSection {
   return {
     kind: "table",
-    title: "Health",
+    title: "健康状态",
     width: params.width,
     renderTable: params.renderTable,
     columns: [...(params.columns ?? [])],
@@ -185,7 +185,7 @@ export function buildStatusHealthSection(params: {
 export function buildStatusUsageSection(params: { usageLines?: string[] }): StatusReportSection {
   return {
     kind: "lines",
-    title: "Usage",
+    title: "用量统计",
     body: params.usageLines ?? [],
     skipIfEmpty: true,
   };

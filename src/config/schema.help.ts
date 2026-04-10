@@ -315,7 +315,7 @@ export const FIELD_HELP: Record<string, string> = {
   "tools.experimental":
     "实验性内置工具开关。默认关闭，仅在有意测试预览功能时启用。",
   "tools.experimental.planTool":
-    "启用实验性结构化 `update_plan` 工具，用于所有提供商的非平凡多步骤工作跟踪。OpenAI 和 OpenAI Codex 运行即使未设置此标志也会自动启用。",
+    "启用或禁用实验性结构化 `update_plan` 工具，用于非平凡多步骤工作跟踪。OpenAI 和 OpenAI Codex 运行在未设置此标志时会自动启用；设为 false 可禁用自动启用。",
   "tools.elevated":
     "特权命令界面的提升工具访问控制，仅应从受信任的发送者可达。除非操作员工作流明确需要提升操作，否则保持禁用。",
   "tools.elevated.enabled":
@@ -720,6 +720,10 @@ export const FIELD_HELP: Record<string, string> = {
   "tools.web.fetch.userAgent": "覆盖 web_fetch 请求的 User-Agent 头。",
   "tools.web.fetch.readability":
     "使用 Readability 从 HTML 中提取主要内容（回退到基本 HTML 清理）。",
+  "tools.web.fetch.ssrfPolicy":
+    "Scoped SSRF policy overrides for web_fetch. Keep this narrow and opt in only for known local-network proxy environments.",
+  "tools.web.fetch.ssrfPolicy.allowRfc2544BenchmarkRange":
+    "Allow RFC 2544 benchmark-range IPs (198.18.0.0/15) for fake-IP proxy compatibility such as Clash or Surge.",
   models:
     "模型配置。",
   "models.mode":
@@ -827,7 +831,7 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.defaults.workspace":
     "暴露给代理运行时工具的默认工作区路径，用于文件系统上下文和仓库感知行为。从包装器运行时请显式设置，以保持路径解析确定性。",
   "agents.defaults.contextInjection":
-    'Controls when workspace bootstrap files are injected into the system prompt: "always" (default) or "continuation-skip" for safe continuation turns after a completed assistant response.',
+    "控制工作区引导文件何时注入系统提示词：\"always\"（默认）或 \"continuation-skip\" 用于在助手完成响应后的安全续接轮次中跳过注入。",
   "agents.defaults.bootstrapMaxChars":
     "注入系统提示的每个工作区引导文件在截断前的最大字符数（默认：20000）。",
   "agents.defaults.bootstrapTotalMaxChars":
@@ -1098,7 +1102,7 @@ export const FIELD_HELP: Record<string, string> = {
   "agents.defaults.musicGenerationModel.fallbacks":
     "有序的回退音乐生成模型（提供商/模型）。",
   "agents.defaults.mediaGenerationAutoProviderFallback":
-    "When true (default), shared image, music, and video generation automatically appends other auth-backed provider defaults after explicit primary/fallback refs. Set false to disable implicit cross-provider fallback while keeping explicit fallbacks.",
+    "为 true 时（默认），共享图像、音乐和视频生成会在显式主/回退引用之后自动追加其他已认证提供商的默认模型。设为 false 可禁用隐式跨提供商回退，同时保留显式回退。",
   "agents.defaults.pdfModel.primary":
     "PDF 分析工具的可选 PDF 模型（provider/model）。默认为 imageModel，然后是会话模型。",
   "agents.defaults.pdfModel.fallbacks": "有序的回退 PDF 模型（provider/model）。",
@@ -1113,6 +1117,8 @@ export const FIELD_HELP: Record<string, string> = {
     "上下文接近令牌限制时的压缩调优，包括历史份额、保留头部空间和预压缩记忆刷新行为。当长时间运行的会话需要在紧凑的上下文窗口下保持稳定的连续性时使用。",
   "agents.defaults.compaction.mode":
     'Compaction strategy mode: "default" uses baseline behavior, while "safeguard" applies stricter guardrails to preserve recent context. Keep "default" unless you observe aggressive history loss near limit boundaries.',
+  "agents.defaults.compaction.provider":
+    "已注册的压缩提供商插件 ID，用于摘要生成。设置后且提供商已注册时，将调用其 summarize() 方法而非内置的 summarizeInStages 管道。提供商失败时回退到内置方案。留空则使用默认内置摘要。",
   "agents.defaults.compaction.reserveTokens":
     "压缩运行后为回复生成和工具输出保留的令牌头部空间。对详细/工具密集的会话使用更高的保留值，对最大化保留历史更重要时使用较低的保留值。",
   "agents.defaults.compaction.keepRecentTokens":
@@ -1490,6 +1496,10 @@ export const FIELD_HELP: Record<string, string> = {
     "为 true 时显示降级/错误心跳警报，以便操作员渠道及时发现问题。在生产中保持启用以使损坏的渠道状态可见。",
   "channels.defaults.heartbeat.useIndicator":
     "启用简洁的指示器风格心跳渲染而非冗长的状态文本（在支持的地方）。对有许多活跃渠道的密集仪表盘使用指示器模式。",
+  "agents.defaults.heartbeat.includeSystemPromptSection":
+    "为 true 时在默认代理的系统提示词中包含 ## Heartbeats 段落。关闭此项可保留心跳运行时行为，但从代理系统提示词中省略心跳提示指令。",
+  "agents.list.*.heartbeat.includeSystemPromptSection":
+    "每代理覆盖：是否注入 ## Heartbeats 系统提示词段落。设为 false 可保留心跳运行时行为但从该代理的系统提示词中省略心跳提示指令。",
   "agents.defaults.heartbeat.directPolicy":
     'Controls whether heartbeat delivery may target direct/DM chats: "allow" (default) permits DM delivery and "block" suppresses direct-target sends.',
   "agents.list.*.heartbeat.directPolicy":

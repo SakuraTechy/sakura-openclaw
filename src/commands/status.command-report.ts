@@ -32,7 +32,7 @@ export async function buildStatusCommandReportLines(params: {
   footerLines: string[];
 }) {
   const lines: string[] = [];
-  lines.push(params.heading("OpenClaw status"));
+  lines.push(params.heading("OpenClaw 状态"));
 
   appendStatusReportSections({
     lines,
@@ -63,7 +63,7 @@ export async function buildStatusCommandReportLines(params: {
       },
       {
         kind: "lines",
-        title: "Security audit",
+        title: "安全审计",
         body: params.securityAuditLines,
       },
       {

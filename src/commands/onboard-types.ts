@@ -13,11 +13,15 @@ export type BuiltInAuthChoice =
   | "shengsuanyun-api-key"
   | "qtcool-api-key"
   | "shengsuanyun-api-key"
+  | "qtcool-api-key"
+  | "shengsuanyun-api-key"
   | "custom-api-key" | "skip";
 export type AuthChoice = BuiltInAuthChoice | (string & {});
 
 /** Auth choice groups are plugin-owned ids plus the core `custom` bucket. */
-export type AuthChoiceGroupId = "custom" | (string & {});
+export type AuthChoiceGroupId = "qtcool"
+  | "shengsuanyun"
+  | "custom" | (string & {});
 export type GatewayAuthChoice = "token" | "password";
 export type ResetScope = "config" | "config+creds+sessions" | "full";
 export type GatewayBind = "loopback" | "lan" | "auto" | "custom" | "tailnet";
@@ -62,6 +66,8 @@ export type OnboardOptions = OnboardDynamicProviderOptions & {
   cloudflareAiGatewayGatewayId?: string;
   customBaseUrl?: string;
   customApiKey?: string;
+  shengsuanyunApiKey?: string;
+  qtcoolApiKey?: string;
   customModelId?: string;
   customProviderId?: string;
   customCompatibility?: "openai" | "anthropic";

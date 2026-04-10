@@ -23,6 +23,16 @@ const subCliCommandCatalog = defineCommandDescriptorCatalog([
     hasSubcommands: true,
   },
   {
+    name: "infer",
+    description: "Run provider-backed inference commands",
+    hasSubcommands: true,
+  },
+  {
+    name: "capability",
+    description: "Run provider-backed inference commands (fallback alias: infer)",
+    hasSubcommands: true,
+  },
+  {
     name: "approvals",
     description: "管理执行审批（网关或节点主机）",
     hasSubcommands: true,

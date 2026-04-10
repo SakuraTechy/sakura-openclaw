@@ -72,6 +72,15 @@ docker compose run --rm openclaw-cli onboard
 
 # 3. 启动网关服务
 docker compose up -d openclaw-gateway
+
+# 4. 启动 Control UI 开发服务验证（最快）
+pnpm --filter openclaw-control-ui dev
+pnpm --filter openclaw-control-ui build
+pnpm --filter openclaw-control-ui preview
+
+# 5. 主项目（生成 dist/，发布用的核心包）
+pnpm install
+pnpm build
 ```
 
 ## 环境变量配置

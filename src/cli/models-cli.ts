@@ -381,7 +381,7 @@ export function registerModelsCli(program: Command) {
 
   order
     .command("get")
-    .description("Show per-agent auth order override (from auth-state.json)")
+    .description("显示每代理认证顺序覆盖 (来自 auth-state.json)")
     .requiredOption("--provider <name>", "Provider id (e.g. anthropic)")
     .option("--agent <id>", "Agent id (default: configured default agent)")
     .option("--json", "Output JSON", false)
@@ -402,7 +402,7 @@ export function registerModelsCli(program: Command) {
 
   order
     .command("set")
-    .description("Set per-agent auth order override (writes auth-state.json)")
+    .description("设置每代理认证顺序覆盖 (写入 auth-state.json)")
     .requiredOption("--provider <name>", "Provider id (e.g. anthropic)")
     .option("--agent <id>", "Agent id (default: configured default agent)")
     .argument("<profileIds...>", "认证配置 ID (例如 anthropic:default)")

@@ -8,7 +8,7 @@ export function logGatewayConnectionDetails(params: {
   message: string;
   trailingBlankLine?: boolean;
 }) {
-  params.runtime.log(params.info("Gateway connection:"));
+  params.runtime.log(params.info("网关连接："));
   for (const line of params.message.split("\n")) {
     params.runtime.log(`  ${line}`);
   }
